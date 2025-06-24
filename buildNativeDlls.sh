@@ -9,3 +9,6 @@ cmake -B build -G "MinGW Makefiles" \
   -DCMAKE_MAKE_PROGRAM=mingw32-make
 
 cmake --build build
+
+#clean up the out directory that is being created
+rm -rf ../out
