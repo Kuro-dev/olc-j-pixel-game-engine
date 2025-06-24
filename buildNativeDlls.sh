@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-# Add MinGW to PATH
-export PATH="/mingw64/bin:$PATH"
+# Determine current platform
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    PLATFORM="linux"
+    echo "Building for Linux"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]] then
+    PLATFORM="win32"
+    # Add MinGW to PATH if on Windows
+    export PATH="/mingw64/bin:$PATH"
+    echo "Building for Windows (MinGW)"
+else
+    echo "Unsupported platform: $OSTYPE"
+    exit 1
+fi
 
 # Verify CMake is available
 if ! command -v cmake &> /dev/null; then
@@ -13,42 +24,20 @@ fi
 # Change to native directory
 cd native || { echo "Failed to enter native directory"; exit 1; }
 
-# Build for current platform by default
-PLATFORMS=("win32" "linux" "darwin")
-ARCHS=("x86-64")  # Simplified to just x86-64 for now
+# Create build directory
+build_dir="build"
+mkdir -p "$build_dir"
 
-for platform in "${PLATFORMS[@]}"; do
-    for arch in "${ARCHS[@]}"; do
-        echo "Building for $platform-$arch"
+# Configure and build
+if [[ "$PLATFORM" == "win32" ]]; then
+    cmake -B "$build_dir" -G "MinGW Makefiles" \
+        -DCMAKE_C_COMPILER=gcc \
+        -DCMAKE_MAKE_PROGRAM=mingw32-make \
+        -S .
+else
+    cmake -B "$build_dir" -S .
+fi
 
-        # Create separate build directory for each platform/arch
-        build_dir="build-$platform-$arch"
+cmake --build "$build_dir"
 
-        case "$platform" in
-            win32)
-                # Windows build using MinGW
-                cmake -B "$build_dir" -G "MinGW Makefiles" \
-                    -DCMAKE_C_COMPILER=gcc \
-                    -DCMAKE_MAKE_PROGRAM=mingw32-make \
-                    -DPLATFORM="$platform" -DARCH="$arch" \
-                    -S .
-                ;;
-            linux)
-                # Linux build
-                cmake -B "$build_dir" \
-                    -DPLATFORM="$platform" -DARCH="$arch" \
-                    -S .
-                ;;
-            darwin)
-                # macOS build (would need proper toolchain)
-                echo "Skipping macOS build - requires proper toolchain setup"
-                continue
-                ;;
-        esac
-
-        cmake --build "$build_dir"
-    done
-done
-
-# Clean up
-rm -rf ../../out
+echo "Build completed for $PLATFORM"

@@ -1,5 +1,7 @@
 package org.kurodev;
 
+import org.kurodev.jpixelgameengine.PixelGameEngineWrapper;
+
 import java.io.IOException;
 
 public class Main {
@@ -12,9 +14,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
-        Example ex = new Example("Hello World");
-        int result = ex.doStuff(5); //calling native method
-        System.out.println(result); // prints "1"
+        PixelGameEngineWrapper wrapper = PixelGameEngineWrapper.getInstance();
+        wrapper.start();
     }
 }

@@ -35,6 +35,6 @@ public class NativeLoader {
     }
 
     public static void loadLibraries() throws IOException {
-        loadLibrary("Example");
+        loadLibrary("pixelgameEngineWrapper");
     }
 }

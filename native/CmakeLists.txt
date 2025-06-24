@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.21)
-project(jni_example LANGUAGES C)
+project(jni_example LANGUAGES C CXX)
 
-# Use explicitly specified platform/arch or detect
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_definitions(OLC_PGE_APPLICATION)
+
+# Platform detection
 if(NOT DEFINED PLATFORM)
     if(WIN32)
         set(PLATFORM "win32")
-    elseif(APPLE)
-        set(PLATFORM "darwin")
     else()
         set(PLATFORM "linux")
     endif()
@@ -28,29 +30,26 @@ endif()
 find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS})
 
-# Find all source files
-file(GLOB NATIVE_SOURCES "org_kurodev_*.c")
+# Find source files
+file(GLOB NATIVE_SOURCES "org_kurodev_*.cpp" "org_kurodev_*.c")
 
-# Output directory
-set(JAVA_RESOURCES_DIR "../../src/main/resources/${PLATFORM}-${ARCH}")
-file(MAKE_DIRECTORY "${JAVA_RESOURCES_DIR}")
-
-# Platform-specific library settings
+# Platform settings
 if(PLATFORM STREQUAL "win32")
     set(LIB_PREFIX "")
     set(LIB_SUFFIX ".dll")
-elseif(PLATFORM STREQUAL "darwin")
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".dylib")
-else() # Linux
+    set(JAVA_RESOURCES_DIR "../../src/main/resources/${PLATFORM}-${ARCH}")
+else()
     set(LIB_PREFIX "lib")
     set(LIB_SUFFIX ".so")
+    set(JAVA_RESOURCES_DIR "../src/main/resources/${PLATFORM}-${ARCH}")
 endif()
 
-# For each source file, create a separate library
+# Create output directory
+file(MAKE_DIRECTORY "${JAVA_RESOURCES_DIR}")
+
+# Build each source file
 foreach(SRC_FILE ${NATIVE_SOURCES})
     get_filename_component(LIB_NAME ${SRC_FILE} NAME_WE)
-
     add_library(${LIB_NAME} SHARED ${SRC_FILE})
 
     set_target_properties(${LIB_NAME} PROPERTIES
@@ -61,6 +60,20 @@ foreach(SRC_FILE ${NATIVE_SOURCES})
         RUNTIME_OUTPUT_DIRECTORY "${JAVA_RESOURCES_DIR}"
     )
 
-    # Link against JVM if needed
-    target_link_libraries(${LIB_NAME} ${JNI_LIBRARIES})
+    # Link libraries
+    if(WIN32)
+        target_link_libraries(${LIB_NAME} 
+            ${JNI_LIBRARIES}
+            opengl32.lib
+            gdi32.lib
+            gdiplus.lib
+            dwmapi.lib
+            shlwapi.lib
+        )
+    else()
+        target_link_libraries(${LIB_NAME} 
+            ${JNI_LARBIRES}
+            GL
+        )
+    endif()
 endforeach()
