@@ -1,3 +1,0 @@
-/home/kimi_l/IdeaProjects/jni-playground/native/CMakeFiles/org_kurodev_Example.dir
-/home/kimi_l/IdeaProjects/jni-playground/native/CMakeFiles/edit_cache.dir
-/home/kimi_l/IdeaProjects/jni-playground/native/CMakeFiles/rebuild_cache.dir
