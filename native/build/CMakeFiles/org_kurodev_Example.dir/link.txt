@@ -1,0 +1,3 @@
+C:\msys64\mingw64\bin\cmake.exe -E rm -f CMakeFiles\org_kurodev_Example.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\org_kurodev_Example.dir/objects.a @CMakeFiles\org_kurodev_Example.dir\objects1.rsp
+C:\msys64\mingw64\bin\gcc.exe -shared -o C:\Users\Kuro\IdeaProjects\JNI-Test\src\main\resources\win32-x86-64\org_kurodev_Example.dll -Wl,--out-implib,liborg_kurodev_Example.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles\org_kurodev_Example.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\org_kurodev_Example.dir\linkLibs.rsp
