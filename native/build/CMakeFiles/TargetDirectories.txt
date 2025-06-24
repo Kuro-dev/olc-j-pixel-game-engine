@@ -1,7 +1,0 @@
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/org_kurodev_Example.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/edit_cache.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/rebuild_cache.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/list_install_components.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/install.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/install/local.dir
-C:/Users/Kuro/IdeaProjects/JNI-Test/native/build/CMakeFiles/install/strip.dir

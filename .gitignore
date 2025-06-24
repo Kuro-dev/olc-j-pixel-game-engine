@@ -22,8 +22,6 @@ bin/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
-
+/native/build
 ### Mac OS ###
 .DS_Store
