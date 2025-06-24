@@ -23,6 +23,7 @@ bin/
 /.nb-gradle/
 
 /native/build
+/native/build-*
 ### Mac OS ###
 .DS_Store
 .idea
