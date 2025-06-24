@@ -10,14 +10,18 @@ import java.nio.file.StandardCopyOption;
 public class NativeLoader {
     public static void loadLibrary(String name) throws IOException {
         String platform = getPlatformFolder();
-        String resourcePath = platform + "/org_kurodev_" + System.mapLibraryName(name);
+        String resourcePath = platform + "/" + System.mapLibraryName("org_kurodev_" + name);
 
         try (InputStream is = NativeLoader.class.getResourceAsStream("/" + resourcePath)) {
             if (is == null) {
                 throw new UnsatisfiedLinkError("Native library not found: " + resourcePath);
             }
-
-            Path tempFile = Files.createTempFile(name, ".dll");
+            String os = System.getProperty("os.name").toLowerCase();
+            String suffix = ".so";
+            if (os.contains("win")) {
+                suffix = ".dll";
+            }
+            Path tempFile = Files.createTempFile(name, suffix);
             Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
             System.load(tempFile.toAbsolutePath().toString());
         }
@@ -29,9 +33,11 @@ public class NativeLoader {
 
         if (os.contains("win")) {
             return "win32-" + (arch.contains("64") ? "x86-64" : "x86");
+        } else if (os.contains("linux")) {
+            return "linux-" + (arch.contains("64") ? "x86-64" : "x86");
         }
         // Add other platforms if needed
-        throw new UnsupportedOperationException("Unsupported platform");
+        throw new UnsupportedOperationException("Unsupported platform" + os + arch);
     }
 
     public static void loadLibraries() throws IOException {

@@ -32,7 +32,7 @@ include_directories(${JNI_INCLUDE_DIRS})
 file(GLOB NATIVE_SOURCES "org_kurodev_*.c")
 
 # Output directory
-set(JAVA_RESOURCES_DIR "../../src/main/resources/${PLATFORM}-${ARCH}")
+set(JAVA_RESOURCES_DIR "../src/main/resources/${PLATFORM}-${ARCH}")
 file(MAKE_DIRECTORY "${JAVA_RESOURCES_DIR}")
 
 # Platform-specific library settings
