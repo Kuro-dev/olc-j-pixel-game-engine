@@ -28,3 +28,5 @@ bin/
 .DS_Store
 .idea
 /target
+
+*.log
