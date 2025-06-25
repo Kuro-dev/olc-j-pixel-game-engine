@@ -27,10 +27,10 @@ public class Pixel {
     }
 
     public Pixel(int rgba) {
-        a = (rgba & 0xFF_00_00_00);
-        b = (rgba & 0x00_FF_00_00);
-        g = (rgba & 0x00_00_FF_00);
-        r = (rgba & 0x00_00_00_FF);
+        r = (rgba & 0xFF_00_00_00);
+        g = (rgba & 0x00_FF_00_00);
+        b = (rgba & 0x00_00_FF_00);
+        a = (rgba & 0x00_00_00_FF);
     }
 
     public int getRGBA() {

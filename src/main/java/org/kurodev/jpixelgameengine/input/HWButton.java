@@ -1,7 +1,10 @@
-package org.kurodev.jpixelgameengine;
+package org.kurodev.jpixelgameengine.input;
+
+import org.kurodev.jpixelgameengine.NativeCallCandidate;
 
 import java.util.Objects;
 
+@NativeCallCandidate
 public class HWButton {
     private final boolean pressed;
     private final boolean released;
@@ -11,6 +14,15 @@ public class HWButton {
         this.pressed = pressed;
         this.released = released;
         this.held = held;
+    }
+
+    @Override
+    public String toString() {
+        return "HWButton{" +
+                "pressed=" + pressed +
+                ", released=" + released +
+                ", held=" + held +
+                '}';
     }
 
     public boolean isPressed() {

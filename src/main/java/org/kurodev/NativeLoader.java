@@ -2,29 +2,14 @@ package org.kurodev;
 
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+
 
 public class NativeLoader {
     public static void loadLibrary(String name) throws IOException {
         String platform = getPlatformFolder();
         String resourcePath = platform + "/" + System.mapLibraryName("org_kurodev_" + name);
-
-        try (InputStream is = NativeLoader.class.getResourceAsStream("/" + resourcePath)) {
-            if (is == null) {
-                throw new UnsatisfiedLinkError("Native library not found: " + resourcePath);
-            }
-            String os = System.getProperty("os.name").toLowerCase();
-            String suffix = ".so";
-            if (os.contains("win")) {
-                suffix = ".dll";
-            }
-            Path tempFile = Files.createTempFile(name, suffix);
-            Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            System.load(tempFile.toAbsolutePath().toString());
-        }
+        System.load(Path.of("./lib", resourcePath).toAbsolutePath().toString());
     }
 
     private static String getPlatformFolder() {

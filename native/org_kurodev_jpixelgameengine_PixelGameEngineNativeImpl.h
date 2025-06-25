@@ -31,6 +31,70 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
 JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_draw
   (JNIEnv *, jclass, jint, jint, jint);
 
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    isFocused
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_isFocused
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getKey
+ * Signature: (I)Lorg/kurodev/jpixelgameengine/input/HWButton;
+ */
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getKey
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getMouse
+ * Signature: (I)Lorg/kurodev/jpixelgameengine/input/HWButton;
+ */
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouse
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getMouseX
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseX
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getMouseY
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseY
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getMouseWheel
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseWheel
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getWindowMouse
+ * Signature: ()Lorg/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D;
+ */
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getWindowMouse
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    getMousePos
+ * Signature: ()Lorg/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D;
+ */
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMousePos
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

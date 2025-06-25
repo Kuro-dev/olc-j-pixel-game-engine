@@ -1,5 +1,8 @@
 package org.kurodev.jpixelgameengine;
 
+import org.kurodev.jpixelgameengine.input.HWButton;
+import org.kurodev.jpixelgameengine.vectorimpl.IntegerVector2D;
+
 public class PixelGameEngineNativeImpl {
 
     /**
@@ -15,15 +18,7 @@ public class PixelGameEngineNativeImpl {
      * @param realwindow  Whether to use 1:1 "Real Window" mode.
      * @return True if successful, false otherwise.
      */
-    static native boolean construct(int screen_w,
-                                    int screen_h,
-                                    int pixel_w,
-                                    int pixel_h,
-                                    boolean full_screen,
-                                    boolean vsync,
-                                    boolean cohesion,
-                                    boolean realwindow,
-                                    PixelGameEngineWrapper wrapper);
+    static native boolean construct(int screen_w, int screen_h, int pixel_w, int pixel_h, boolean full_screen, boolean vsync, boolean cohesion, boolean realwindow, PixelGameEngineWrapper wrapper);
 
     /**
      * Starts the PixelGameEngine application loop.
@@ -35,70 +30,70 @@ public class PixelGameEngineNativeImpl {
     /**
      * Draws a single Pixel.
      *
-     * @param x The x position of the pixel.
-     * @param y The y position of the pixel.
-     * @param rgba   The pixel color. Defaults to WHITE.
+     * @param x    The x position of the pixel.
+     * @param y    The y position of the pixel.
+     * @param rgba The pixel color. Defaults to WHITE.
      * @return True if successful, false otherwise.
      */
     static native boolean draw(int x, int y, int rgba);
 
-//    /**
-//     * Returns true if window is currently in focus.
-//     *
-//     * @return True if window is currently in focus.
-//     */
-//    public native boolean isFocused();
-//
-//    /**
-//     * Get the state of a specific keyboard button.
-//     *
-//     * @param k The key code.
-//     * @return The state of the hardware button.
-//     */
-//    public native HWButton getKey(int k); // olc::Key maps to int
-//
-//    /**
-//     * Get the state of a specific mouse button.
-//     *
-//     * @param b The mouse button code (e.g., olc::Mouse::LEFT).
-//     * @return The state of the hardware button.
-//     */
-//    public native HWButton getMouse(int b);
-//
-//    /**
-//     * Get Mouse X coordinate in "pixel" space.
-//     *
-//     * @return Mouse X coordinate.
-//     */
-//    public native int getMouseX();
-//
-//    /**
-//     * Get Mouse Y coordinate in "pixel" space.
-//     *
-//     * @return Mouse Y coordinate.
-//     */
-//    public native int getMouseY();
-//
-//    /**
-//     * Get Mouse Wheel Delta.
-//     *
-//     * @return Mouse wheel delta.
-//     */
-//    public native int getMouseWheel();
-//
-//    /**
-//     * Get the mouse in window space.
-//     *
-//     * @return The mouse position in window space as a Vector2D.
-//     */
-//    public native Vector2D getWindowMouse();
-//
-//    /**
-//     * Gets the mouse as a vector.
-//     *
-//     * @return The mouse position as a Vector2D.
-//     */
-//    public native Vector2D getMousePos();
+    /**
+     * Returns true if window is currently in focus.
+     *
+     * @return True if window is currently in focus.
+     */
+    public static native boolean isFocused();
+
+    /**
+     * Get the state of a specific keyboard button.
+     *
+     * @param k The key code.
+     * @return The state of the hardware button.
+     */
+    public static native HWButton getKey(int k); // olc::Key maps to int
+
+    /**
+     * Get the state of a specific mouse button.
+     *
+     * @param b The mouse button code (e.g., olc::Mouse::LEFT).
+     * @return The state of the hardware button.
+     */
+    public static native HWButton getMouse(int b);
+
+    /**
+     * Get Mouse X coordinate in "pixel" space.
+     *
+     * @return Mouse X coordinate.
+     */
+    public static native int getMouseX();
+
+    /**
+     * Get Mouse Y coordinate in "pixel" space.
+     *
+     * @return Mouse Y coordinate.
+     */
+    public static native int getMouseY();
+
+    /**
+     * Get Mouse Wheel Delta.
+     *
+     * @return Mouse wheel delta.
+     */
+    public static native int getMouseWheel();
+
+    /**
+     * Get the mouse in window space.
+     *
+     * @return The mouse position in window space as a Vector2D.
+     */
+    public static native IntegerVector2D getWindowMouse();
+
+    /**
+     * Gets the mouse as a vector.
+     *
+     * @return The mouse position as a Vector2D.
+     */
+    public static native IntegerVector2D getMousePos();
 //
 //    /**
 //     * Sets the window size and position.

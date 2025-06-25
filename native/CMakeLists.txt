@@ -37,11 +37,11 @@ file(GLOB NATIVE_SOURCES "org_kurodev_*.cpp" "org_kurodev_*.c")
 if(PLATFORM STREQUAL "win32")
     set(LIB_PREFIX "")
     set(LIB_SUFFIX ".dll")
-    set(JAVA_RESOURCES_DIR "../../src/main/resources/${PLATFORM}-${ARCH}")
+    set(JAVA_RESOURCES_DIR "../../lib/${PLATFORM}-${ARCH}")
 else()
     set(LIB_PREFIX "lib")
     set(LIB_SUFFIX ".so")
-    set(JAVA_RESOURCES_DIR "../src/main/resources/${PLATFORM}-${ARCH}")
+    set(JAVA_RESOURCES_DIR "../lib/${PLATFORM}-${ARCH}")
 endif()
 
 # Create output directory
