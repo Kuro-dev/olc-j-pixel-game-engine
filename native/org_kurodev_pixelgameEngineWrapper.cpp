@@ -4,125 +4,68 @@
 #include "olcPixelGameEngine.h"
 #include "org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl.h"
 
-class org_kurodev_pixelgameEnginewrapper : public olc::PixelGameEngine
-{
-private:
-    /* data */
-public:
-    org_kurodev_pixelgameEnginewrapper(/* args */);
-    ~org_kurodev_pixelgameEnginewrapper();
+static jobject singletonListener = nullptr;
 
-    bool OnUserCreate() override
-    {
-        return true;
-    }
-    bool OnUserUpdate(float fElapsedTime) override
-    {
-        return true;
-    }
-};
-
-class JavaMethodCache
+struct Global_context
 {
-private:
+    JavaVM *jvm;
     JNIEnv *env;
-    jobject javaSingleton;
-    const std::string methodName;
-    const std::string signature;
-    jmethodID methodID = nullptr;
-
-public:
-    JavaMethodCache(JNIEnv *env, jobject listener,
-                    const char *methodName,
-                    const char *signature)
-        : env(env), javaSingleton(listener),
-          methodName(methodName), signature(signature) {}
-
-    template <typename ReturnType, typename... Args>
-    ReturnType call(Args... args)
-    {
-        if (!methodID)
-        {
-            jclass clazz = env->GetObjectClass(javaSingleton);
-            methodID = env->GetMethodID(clazz, methodName.c_str(), signature.c_str());
-            env->DeleteLocalRef(clazz);
-
-            if (!methodID)
-            {
-                if constexpr (std::is_same_v<ReturnType, bool>)
-                    return false;
-                if constexpr (std::is_same_v<ReturnType, float>)
-                    return 0.0f;
-                if constexpr (std::is_same_v<ReturnType, void>)
-                    return;
-                // Remove this line as it causes the error:
-                // return nullptr;
-                // Instead throw an exception or return a default-constructed object
-                if constexpr (std::is_default_constructible_v<ReturnType>)
-                {
-                    return ReturnType{};
-                }
-                else
-                {
-                    throw std::runtime_error("Method not found and no default return type");
-                }
-            }
-        }
-
-        if constexpr (std::is_same_v<ReturnType, bool>)
-        {
-            return env->CallBooleanMethod(javaSingleton, methodID, args...);
-        }
-        else if constexpr (std::is_same_v<ReturnType, float>)
-        {
-            return env->CallFloatMethod(javaSingleton, methodID, args...);
-        }
-        else if constexpr (std::is_same_v<ReturnType, void>)
-        {
-            env->CallVoidMethod(javaSingleton, methodID, args...);
-        }
-        else
-        {
-            return static_cast<ReturnType>(env->CallObjectMethod(javaSingleton, methodID, args...));
-        }
-    }
+    jobject listener;
 };
 
-class NativeEngineWrapper : public olc::PixelGameEngine
+static Global_context gContext;
+
+jmethodID getMethod(std::string methodName, std::string methodSignature)
+{
+    jclass myClass = gContext.env->GetObjectClass(gContext.listener);
+    jmethodID method = gContext.env->GetMethodID(myClass, methodName.c_str(), methodSignature.c_str());
+    return method;
+}
+
+class PixelGameEngineWrapper : public olc::PixelGameEngine
 {
 private:
-    JavaMethodCache onUserCreate;
-    JavaMethodCache onUserUpdate;
-    JavaMethodCache onUserDestroy;
+    jmethodID onUserUpdateMethodID;
+    jmethodID onUserDestroyMethodID;
 
 public:
-    NativeEngineWrapper(JNIEnv *env, jobject listener)
-        : onUserCreate(env, listener, "onUserCreate", "()Z"),
-          onUserUpdate(env, listener, "onUserUpdate", "(F)Z"),
-          onUserDestroy(env, listener, "onUserDestroy", "()Z") {}
-
-    bool OnUserCreate() override
+    PixelGameEngineWrapper() {
+    };
+    bool OnUserCreate()
     {
-        std::cout << "Created" << std::endl;
-        return onUserCreate.call<bool>();
+        std::cout << "OLC PixelGameEngine created" << std::endl;
+        gContext.jvm->AttachCurrentThread((void **)&gContext.env, nullptr);
+        jmethodID method = getMethod("onUserCreate", "()Z");
+        onUserUpdateMethodID = getMethod("onUserUpdate", "(F)Z");
+        onUserDestroyMethodID = getMethod("onUserDestroy", "()Z");
+        jboolean result = gContext.env->CallBooleanMethod(gContext.listener, method);
+        return result == JNI_TRUE;
+        ;
     }
 
-    bool OnUserUpdate(float fElapsedTime) override
+    bool OnUserUpdate(float fElapsedTime)
     {
-        std::cout << "Updated" << std::endl;
-        return onUserUpdate.call<bool>(fElapsedTime);
+        jmethodID method = getMethod("onUserUpdate", "(F)Z");
+        jboolean result = gContext.env->CallBooleanMethod(gContext.listener, onUserUpdateMethodID, fElapsedTime);
+        return result == JNI_TRUE;
     }
-
-    bool OnUserDestroy() override
+    bool OnUserDestroy()
     {
-        std::cout << "Destroyed" << std::endl;
-        return onUserDestroy.call<bool>();
+        std::cout << "destroy" << std::endl;
+        jboolean result = gContext.env->CallBooleanMethod(gContext.listener, onUserDestroyMethodID);
+        if (result == JNI_TRUE)
+        {
+            gContext.jvm->DetachCurrentThread();
+            return true;
+        }
+        return false;
     }
 };
 
-static NativeEngineWrapper *engineInstance = nullptr;
+static PixelGameEngineWrapper *engineInstance = new PixelGameEngineWrapper();
 
-JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_construct(
+JNIEXPORT jboolean JNICALL
+Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_construct(
     JNIEnv *env,
     jclass clazz,
     jint screen_w,
@@ -135,12 +78,11 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
     jboolean realwindow,
     jobject listener)
 {
-    if (engineInstance)
-    {
-        return JNI_TRUE; // Already initialized
-    }
 
-    engineInstance = new NativeEngineWrapper(env, listener);
+    env->GetJavaVM(&gContext.jvm);
+    gContext.jvm->AttachCurrentThread((void **)&gContext.env, nullptr);
+    gContext.listener = gContext.env->NewGlobalRef(listener);
+
     int32_t width = static_cast<int32_t>(screen_w);
     int32_t height = static_cast<int32_t>(screen_h);
 
@@ -168,4 +110,9 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
         result = engineInstance->Start();
     }
     return result == olc::OK ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_draw(JNIEnv *env, jclass c, jint x, jint y, jint rgba)
+{
+    return engineInstance->Draw(x, y, olc::Pixel(rgba)) ? JNI_TRUE : JNI_FALSE;
 }

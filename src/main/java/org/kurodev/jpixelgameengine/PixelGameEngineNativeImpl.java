@@ -30,7 +30,17 @@ public class PixelGameEngineNativeImpl {
      *
      * @return True if successful, false otherwise.
      */
-    public static native boolean start();
+    static native boolean start();
+
+    /**
+     * Draws a single Pixel.
+     *
+     * @param x The x position of the pixel.
+     * @param y The y position of the pixel.
+     * @param rgba   The pixel color. Defaults to WHITE.
+     * @return True if successful, false otherwise.
+     */
+    static native boolean draw(int x, int y, int rgba);
 
 //    /**
 //     * Returns true if window is currently in focus.
@@ -324,14 +334,7 @@ public class PixelGameEngineNativeImpl {
 //     */
 //    public native boolean draw(int x, int y, Pixel p);
 //
-//    /**
-//     * Draws a single Pixel.
-//     *
-//     * @param pos The position of the pixel as a Vector2D.
-//     * @param p   The pixel color. Defaults to olc::WHITE.
-//     * @return True if successful, false otherwise.
-//     */
-//    public native boolean draw(Vector2D pos, Pixel p);
+
 //
 //    /**
 //     * Draws a line from (x1,y1) to (x2,y2).

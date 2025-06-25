@@ -23,6 +23,14 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
 JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_start
   (JNIEnv *, jclass);
 
+/*
+ * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
+ * Method:    draw
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_draw
+  (JNIEnv *, jclass, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif
