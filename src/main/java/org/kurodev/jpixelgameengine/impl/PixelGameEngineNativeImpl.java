@@ -1,7 +1,7 @@
-package org.kurodev.jpixelgameengine;
+package org.kurodev.jpixelgameengine.impl;
 
 import org.kurodev.jpixelgameengine.input.HWButton;
-import org.kurodev.jpixelgameengine.vectorimpl.IntegerVector2D;
+import org.kurodev.jpixelgameengine.pos.IntegerVector2D;
 
 public class PixelGameEngineNativeImpl {
 

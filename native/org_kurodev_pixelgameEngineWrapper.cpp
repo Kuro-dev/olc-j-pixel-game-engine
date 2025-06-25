@@ -2,7 +2,7 @@
 #include <jni.h>
 #include <stdio.h>
 #include "olcPixelGameEngine.h"
-#include "org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl.h"
+#include "org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl.h"
 
 static jobject singletonListener = nullptr;
 
@@ -72,7 +72,7 @@ public:
 static PixelGameEngineWrapper *gui = new PixelGameEngineWrapper();
 
 JNIEXPORT jboolean JNICALL
-Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_construct(
+Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_construct(
     JNIEnv *env,
     jclass clazz,
     jint screen_w,
@@ -107,7 +107,7 @@ Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_construct(
     return result == olc::OK ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_start(
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_start(
     JNIEnv *env, jclass clazz)
 {
     auto result = olc::FAIL;
@@ -119,7 +119,7 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
     return result == olc::OK ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_draw(JNIEnv *env, jclass c, jint x, jint y, jint rgba)
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_draw(JNIEnv *env, jclass c, jint x, jint y, jint rgba)
 {
     return gui->Draw(x, y, olc::Pixel(rgba)) ? JNI_TRUE : JNI_FALSE;
 }
@@ -129,7 +129,7 @@ JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNati
  * Method:    isFocused
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_isFocused(JNIEnv *env, jclass clazz)
+JNIEXPORT jboolean JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_isFocused(JNIEnv *env, jclass clazz)
 {
     return gui->IsFocused() ? JNI_TRUE : JNI_FALSE;
 }
@@ -144,7 +144,7 @@ jboolean toJbool(bool val)
  * Method:    getKey
  * Signature: (I)L org/kurodev/jpixelgameengine/input/HWButton;
  */
-JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getKey(JNIEnv *env, jclass clazz, jint k)
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getKey(JNIEnv *env, jclass clazz, jint k)
 {
     jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/input/HWButton");
     if (targetClass == nullptr)
@@ -166,7 +166,7 @@ JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativ
  * Method:    getMouse
  * Signature: (I)L org/kurodev/jpixelgameengine/input/HWButton;
  */
-JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouse(JNIEnv *env, jclass clazz, jint k)
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getMouse(JNIEnv *env, jclass clazz, jint k)
 {
     jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/input/HWButton");
     if (targetClass == nullptr)
@@ -191,7 +191,7 @@ JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativ
  * Method:    getMouseX
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseX(JNIEnv *env, jclass _c)
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getMouseX(JNIEnv *env, jclass _c)
 {
     return gui->GetMouseX();
 }
@@ -201,7 +201,7 @@ JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeIm
  * Method:    getMouseY
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseY(JNIEnv *env, jclass _c)
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getMouseY(JNIEnv *env, jclass _c)
 {
     return gui->GetMouseY();
 }
@@ -211,7 +211,7 @@ JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeIm
  * Method:    getMouseWheel
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMouseWheel(JNIEnv *env, jclass _c)
+JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getMouseWheel(JNIEnv *env, jclass _c)
 {
     return gui->GetMouseWheel();
 }
@@ -219,11 +219,11 @@ JNIEXPORT jint JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeIm
 /*
  * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
  * Method:    getWindowMouse
- * Signature: ()L org/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D;
+ * Signature: ()L org/kurodev/jpixelgameengine/pos/IntegerVector2D;
  */
-JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getWindowMouse(JNIEnv *env, jclass _c)
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getWindowMouse(JNIEnv *env, jclass _c)
 {
-    jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D");
+    jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/pos/IntegerVector2D");
     jmethodID constructor = getConstructor(targetClass, "(II)V");
     auto result = gui->GetWindowMouse();
 
@@ -233,11 +233,11 @@ JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativ
 /*
  * Class:     org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl
  * Method:    getMousePos
- * Signature: ()L org/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D;
+ * Signature: ()L org/kurodev/jpixelgameengine/pos/IntegerVector2D;
  */
-JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_PixelGameEngineNativeImpl_getMousePos(JNIEnv *env, jclass _c)
+JNIEXPORT jobject JNICALL Java_org_kurodev_jpixelgameengine_impl_PixelGameEngineNativeImpl_getMousePos(JNIEnv *env, jclass _c)
 {
-    jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/vectorimpl/IntegerVector2D");
+    jclass targetClass = env->FindClass("org/kurodev/jpixelgameengine/pos/IntegerVector2D");
     jmethodID constructor = getConstructor(targetClass, "(II)V");
     auto result = gui->GetMousePos();
 

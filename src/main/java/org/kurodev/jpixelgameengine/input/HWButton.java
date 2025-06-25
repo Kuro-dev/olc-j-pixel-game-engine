@@ -1,6 +1,6 @@
 package org.kurodev.jpixelgameengine.input;
 
-import org.kurodev.jpixelgameengine.NativeCallCandidate;
+import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 
 import java.util.Objects;
 

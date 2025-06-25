@@ -1,6 +1,4 @@
-package org.kurodev.jpixelgameengine.vectorimpl;
-
-import org.kurodev.jpixelgameengine.Vector2D;
+package org.kurodev.jpixelgameengine.pos;
 
 public class LongVector2D extends Vector2D<Long> {
     private final long x;

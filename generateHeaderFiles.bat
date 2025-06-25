@@ -3,7 +3,7 @@ setlocal
 
 set "CURRENT_DIRECTORY=%~dp0"
 set "PROJECT_ROOT=%CURRENT_DIRECTORY%/src/main/java"
-set "TARGET_CLASS=%PROJECT_ROOT%/org/kurodev/jpixelgameengine/PixelGameEngineNativeImpl.java"
+set "TARGET_CLASS=%PROJECT_ROOT%/org/kurodev/jpixelgameengine/impl/PixelGameEngineNativeImpl.java"
 set "TARGET_COMPILE_OUT=%CURRENT_DIRECTORY%/target/classes/javac"
 
 echo Native class: %TARGET_CLASS%

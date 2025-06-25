@@ -1,12 +1,15 @@
-package org.kurodev.jpixelgameengine;
+package org.kurodev.jpixelgameengine.impl;
 
+import org.kurodev.jpixelgameengine.PixelGameEngine;
+import org.kurodev.jpixelgameengine.draw.Pixel;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.input.MouseKey;
+import org.kurodev.jpixelgameengine.pos.Vector2D;
 
-public class PixelGameEngineWrapper {
+public class PixelGameEngineWrapper implements PixelGameEngine {
 
-    private static final PixelGameEngineWrapper instance = new PixelGameEngineWrapper();
+    static final PixelGameEngineWrapper instance = new PixelGameEngineWrapper();
     private boolean initialised = false;
 
     private PixelGameEngineWrapper() {
@@ -15,33 +18,13 @@ public class PixelGameEngineWrapper {
 
     public static PixelGameEngineWrapper getInstance() {
         if (!instance.initialised) {
-            PixelGameEngineNativeImpl.construct(
-                    1200,
-                    1200,
-                    1,
-                    1,
-                    false,
-                    false,
-                    false,
-                    true,
-                    instance);
-            instance.initialised = true;
+            throw new IllegalStateException("PixelGameEngineWrapper has not been initialised");
         }
-
         return instance;
     }
 
-    public void start() {
-        Thread t = new Thread(() -> {
-            boolean result = PixelGameEngineNativeImpl.start();
-            System.out.print("PixelGameEngineWrapper ");
-            if (result) {
-                System.out.println("successfully started");
-            } else {
-                System.out.println("failed to start");
-            }
-        }, "Game thread");
-        t.start();
+    void setInitialised(boolean initialised) {
+        this.initialised = initialised;
     }
 
     @NativeCallCandidate
@@ -49,8 +32,6 @@ public class PixelGameEngineWrapper {
         System.out.println("JAVA- created");
         return true;
     }
-
-    int lastMousewheel = 0;
 
     @NativeCallCandidate
     public boolean onUserUpdate(float delta) {

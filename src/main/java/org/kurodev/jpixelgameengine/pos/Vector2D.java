@@ -1,9 +1,6 @@
-package org.kurodev.jpixelgameengine;
+package org.kurodev.jpixelgameengine.pos;
 
-import org.kurodev.jpixelgameengine.vectorimpl.DoubleVector2D;
-import org.kurodev.jpixelgameengine.vectorimpl.FloatVector2D;
-import org.kurodev.jpixelgameengine.vectorimpl.IntegerVector2D;
-import org.kurodev.jpixelgameengine.vectorimpl.LongVector2D;
+import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 
 import java.util.Objects;
 
