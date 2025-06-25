@@ -1,11 +1,12 @@
 package org.kurodev.jpixelgameengine;
 
-import java.util.Random;
+import org.kurodev.jpixelgameengine.input.HWButton;
+import org.kurodev.jpixelgameengine.input.KeyBoardKey;
+import org.kurodev.jpixelgameengine.input.MouseKey;
 
 public class PixelGameEngineWrapper {
 
     private static final PixelGameEngineWrapper instance = new PixelGameEngineWrapper();
-    Random rand = new Random();
     private boolean initialised = false;
 
     private PixelGameEngineWrapper() {
@@ -49,13 +50,24 @@ public class PixelGameEngineWrapper {
         return true;
     }
 
+    int lastMousewheel = 0;
+
     @NativeCallCandidate
     public boolean onUserUpdate(float delta) {
-        int size = 1200;
+        if (!isFocussed()) {
+            return true;
+        }
+        int size = 30;
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                draw(x, y, new Pixel(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)));
+                draw(x, y, new Pixel((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)));
             }
+        }
+
+        var mouse = getKey(MouseKey.LEFT);
+        if (mouse.isHeld()) {
+            Vector2D<Integer> pos = getWindowMousePos();
+            draw(pos, Pixel.RED);
         }
         return true;
     }
@@ -66,6 +78,10 @@ public class PixelGameEngineWrapper {
         return true;
     }
 
+    public boolean isFocussed() {
+        return PixelGameEngineNativeImpl.isFocused();
+    }
+
     public boolean draw(Vector2D<? extends Number> pos, Pixel p) {
         return draw(pos.getX().intValue(), pos.getY().intValue(), p);
     }
@@ -74,4 +90,26 @@ public class PixelGameEngineWrapper {
         return PixelGameEngineNativeImpl.draw(x, y, p.getRGBA());
     }
 
+    public HWButton getKey(KeyBoardKey k) {
+        return PixelGameEngineNativeImpl.getKey((byte) k.ordinal());
+    }
+
+    public HWButton getKey(MouseKey k) {
+        return PixelGameEngineNativeImpl.getMouse((byte) k.ordinal());
+    }
+
+    public Vector2D<Integer> getMousePos() {
+        return PixelGameEngineNativeImpl.getMousePos();
+    }
+
+    public Vector2D<Integer> getWindowMousePos() {
+        return PixelGameEngineNativeImpl.getWindowMouse();
+    }
+
+    /**
+     * @return a value < 0 if scrolling down, a value > 0 if scrolling up, or 0 if not scrolling
+     */
+    public int getMouseWheel() {
+        return PixelGameEngineNativeImpl.getMouseWheel();
+    }
 }

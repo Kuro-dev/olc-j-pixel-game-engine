@@ -1,7 +1,9 @@
 package org.kurodev.jpixelgameengine.vectorimpl;
 
+import org.kurodev.jpixelgameengine.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.Vector2D;
 
+@NativeCallCandidate
 public class IntegerVector2D extends Vector2D<Integer> {
     private final int x;
     private final int y;

@@ -1,7 +1,9 @@
 package org.kurodev.jpixelgameengine.vectorimpl;
 
+import org.kurodev.jpixelgameengine.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.Vector2D;
 
+@NativeCallCandidate
 public class FloatVector2D extends Vector2D<Float> {
     private final float x;
     private final float y;

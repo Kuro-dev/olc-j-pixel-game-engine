@@ -7,6 +7,7 @@ import org.kurodev.jpixelgameengine.vectorimpl.LongVector2D;
 
 import java.util.Objects;
 
+@NativeCallCandidate
 public abstract class Vector2D<T extends Number> {
 
     static Vector2D<Integer> ofInt(int x, int y) {
