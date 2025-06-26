@@ -1,6 +1,6 @@
 package org.kurodev;
 
-import org.kurodev.jpixelgameengine.PixelGameEngine;
+import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 
 import java.io.IOException;
 
@@ -14,9 +14,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        PixelGameEngine.init()
-                .screen_w(800)
-                .screen_h(500)
-                .start();
+        PixelGameEngine wrapper = new PixelGameEngineImpl(500, 500);
+        wrapper.start();
     }
 }

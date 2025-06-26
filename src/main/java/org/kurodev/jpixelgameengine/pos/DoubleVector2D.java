@@ -1,8 +1,24 @@
 package org.kurodev.jpixelgameengine.pos;
 
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
+
 public class DoubleVector2D extends Vector2D<Double> {
     private final double x;
     private final double y;
+
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            ValueLayout.JAVA_DOUBLE.withName("x"),
+            ValueLayout.JAVA_DOUBLE.withName("y")
+    );
+
+    // Constructor from a MemorySegment
+    public DoubleVector2D(MemorySegment segment) {
+        this.x = segment.get(ValueLayout.JAVA_DOUBLE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")));
+        this.y = segment.get(ValueLayout.JAVA_DOUBLE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")));
+    }
 
     public DoubleVector2D(double x) {
         this.x = x;

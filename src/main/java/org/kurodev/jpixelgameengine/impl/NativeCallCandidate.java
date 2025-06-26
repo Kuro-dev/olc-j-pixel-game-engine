@@ -7,9 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marker interface indicating that this method is called from native C code.
- * The name should not be changed and will have to be change in the underlying native code as well.
- * NEITHER CLASS NAME NOR FIELDS SHOULD BE CHANGED
- * ALSO NOT METHOD NAMES
+ * The Method signature should not be changed and will have to be changed in the underlying native code as well.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.TYPE})

@@ -2,6 +2,10 @@ package org.kurodev.jpixelgameengine.input;
 
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
 import java.util.Objects;
 
 @NativeCallCandidate
@@ -9,6 +13,19 @@ public class HWButton {
     private final boolean pressed;
     private final boolean released;
     private final boolean held;
+
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            ValueLayout.JAVA_BOOLEAN.withName("bpressed"),
+            ValueLayout.JAVA_BOOLEAN.withName("breleased"),
+            ValueLayout.JAVA_BOOLEAN.withName("bheld")
+    );
+
+    // Constructor from a MemorySegment
+    public HWButton(MemorySegment segment) {
+        this.pressed = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("pressed")));
+        this.released = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("released")));
+        this.held = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("held")));
+    }
 
     public HWButton(boolean pressed, boolean released, boolean held) {
         this.pressed = pressed;

@@ -2,10 +2,26 @@ package org.kurodev.jpixelgameengine.pos;
 
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
+
 @NativeCallCandidate
 public class FloatVector2D extends Vector2D<Float> {
     private final float x;
     private final float y;
+
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            ValueLayout.JAVA_FLOAT.withName("x"),
+            ValueLayout.JAVA_FLOAT.withName("y")
+    );
+
+    // Constructor from a MemorySegment
+    public FloatVector2D(MemorySegment segment) {
+        this.x = segment.get(ValueLayout.JAVA_FLOAT, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")));
+        this.y = segment.get(ValueLayout.JAVA_FLOAT, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")));
+    }
 
     public FloatVector2D(float x) {
         this.x = x;

@@ -6,6 +6,10 @@ import java.nio.file.Path;
 
 
 public class NativeLoader {
+    static {
+        System.setProperty("jdk.incubator.foreign", "permit");
+    }
+
     public static void loadLibrary(String name) throws IOException {
         String platform = getPlatformFolder();
         String resourcePath = platform + "/" + System.mapLibraryName("org_kurodev_" + name);
@@ -26,6 +30,6 @@ public class NativeLoader {
     }
 
     public static void loadLibraries() throws IOException {
-        loadLibrary("pixelgameEngineWrapper");
+        loadLibrary("pixelGameEngineFFM");
     }
 }

@@ -8,7 +8,7 @@ import java.util.Objects;
 public abstract class Vector2D<T extends Number> {
 
     static Vector2D<Integer> ofInt(int x, int y) {
-        return new IntegerVector2D(x, y);
+        return new IntVector2D(x, y);
     }
 
     static Vector2D<Long> ofLong(long x, long y) {

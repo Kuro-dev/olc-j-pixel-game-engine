@@ -2,17 +2,32 @@ package org.kurodev.jpixelgameengine.pos;
 
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
+
 @NativeCallCandidate
-public class IntegerVector2D extends Vector2D<Integer> {
+public class IntVector2D extends Vector2D<Integer> {
     private final int x;
     private final int y;
 
-    public IntegerVector2D(int x) {
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            ValueLayout.JAVA_INT.withName("x"),
+            ValueLayout.JAVA_INT.withName("y")
+    );
+
+    public IntVector2D(MemorySegment segment) {
+        this.x = segment.get(ValueLayout.JAVA_INT, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")));
+        this.y = segment.get(ValueLayout.JAVA_INT, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")));
+    }
+
+    public IntVector2D(int x) {
         this.x = x;
         this.y = x;
     }
 
-    public IntegerVector2D(int x, int y) {
+    public IntVector2D(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -39,17 +54,17 @@ public class IntegerVector2D extends Vector2D<Integer> {
 
     @Override
     public Vector2D<Integer> add(Vector2D<Integer> v) {
-        return new IntegerVector2D(x + v.getX(), y + v.getY());
+        return new IntVector2D(x + v.getX(), y + v.getY());
     }
 
     @Override
     public Vector2D<Integer> subtract(Vector2D<Integer> v) {
-        return new IntegerVector2D(x - v.getX(), y - v.getY());
+        return new IntVector2D(x - v.getX(), y - v.getY());
     }
 
     @Override
     public Vector2D<Integer> multiply(Integer m) {
-        return new IntegerVector2D(x * m, y * m);
+        return new IntVector2D(x * m, y * m);
     }
 
     @Override
