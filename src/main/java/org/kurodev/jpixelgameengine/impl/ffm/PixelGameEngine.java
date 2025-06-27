@@ -94,30 +94,66 @@ public abstract class PixelGameEngine implements AutoCloseable {
 
     }
 
+    /**
+     * @return Whether the application window is focused
+     */
     public boolean isFocussed() {
         return methods.isFocused().invoke();
     }
 
-    public boolean draw(Vector2D<? extends Number> pos, Pixel p) {
-        return draw(pos.getX().intValue(), pos.getY().intValue(), p);
+    /**
+     * Draws a single Pixel at the given position in the given color.
+     *
+     * @param pos The position to draw to
+     * @param p   Color of the Pixel
+     * @return True if the drawing was successful, false otherwise
+     */
+    public boolean draw(IntVector2D pos, Pixel p) {
+        return draw(pos.getX(), pos.getY(), p);
     }
 
+    /**
+     * Draws a single Pixel at the given position in the given color.
+     *
+     * @param x The x position to draw to
+     * @param y The y position to draw to
+     * @param p Color of the Pixel
+     * @return True if the drawing was successful, false otherwise
+     */
     public boolean draw(int x, int y, Pixel p) {
         return methods.draw().invoke(x, y, p.getRGBA());
     }
 
+    /**
+     * Retrieves the state of a given key at this current Frame.
+     *
+     * @param k Key
+     * @return the state of the given key at this current Frame
+     */
     public HWButton getKey(KeyBoardKey k) {
         return methods.getKey().invoke(k.ordinal());
     }
 
+    /**
+     * Retrieves the state of a given mouse key at this current Frame.
+     *
+     * @param k Key
+     * @return the state of the given mouse key at this current Frame
+     */
     public HWButton getKey(MouseKey k) {
         return methods.getMouseBtn().invokeObj(HWButton::new, k.ordinal());
     }
 
+    /**
+     * @return Position of the mouse
+     */
     public Vector2D<Integer> getMousePos() {
-        return methods.getMousePos().invoke();
+        return methods.getMousePos().invokeObj(IntVector2D::new);
     }
 
+    /**
+     * @return Position of the mouse in relation to the window
+     */
     @SneakyThrows
     public Vector2D<Integer> getWindowMousePos() {
         return methods.getWindowMousePos().invokeObj(IntVector2D::new);

@@ -1,5 +1,7 @@
 package org.kurodev.jpixelgameengine.input;
-
+/**
+ * Values copied from olcPixelGameEngine.h
+ */
 public enum KeyBoardKey {
     NONE,
     A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
