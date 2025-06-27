@@ -29,7 +29,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         var mouse = getKey(MouseKey.LEFT);
         if (mouse.isHeld()) {
             Vector2D<Integer> pos = getWindowMousePos();
-            draw(pos, Pixel.BLUE);
+            draw(pos, Pixel.WHITE);
         }
         drawString(50, 50, "Hello World", Pixel.WHITE, 4);
         drawCircle(150, 150, 50, Pixel.WHITE);
