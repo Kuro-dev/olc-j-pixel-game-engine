@@ -6,7 +6,7 @@ Uses the new FFM API introduced in Java 22. Rough testing shows no significant p
 at least the example program (random pixels all around) gives the same amount of FPS in Java as it does in C.
 
 Feel free to reach out, especially for alternative OS support!
-[img.png](readme-res/img.png)
+
 
 Simple implementation example:
 
@@ -53,5 +53,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         wrapper.start();
     }
 }
-
 ```
+
+<img alt="" src="readme-res/img.png">
