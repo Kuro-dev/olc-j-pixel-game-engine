@@ -12,7 +12,9 @@ import org.kurodev.jpixelgameengine.pos.Vector2D;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 
-
+/**
+ * Due to how FFM works this class must be inherited by a Named (NOT ANONYMOUS) class. Otherwise, it will fail.
+ */
 public abstract class PixelGameEngine {
     static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
@@ -45,9 +47,9 @@ public abstract class PixelGameEngine {
                         ValueLayout.ADDRESS)
         );
         //statuscode 0, 1, 2
-        var onUserCreateStub = EngineInitialiser.createOnUserCreateStub(arena, this);
-        var onUserUpdateStub = EngineInitialiser.createOnUserUpdateStub(arena, this);
-        var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(arena, this);
+        var onUserCreateStub = EngineInitialiser.createOnUserCreateStub(LINKER, arena, this);
+        var onUserUpdateStub = EngineInitialiser.createOnUserUpdateStub(LINKER, arena, this);
+        var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
         int statusCode = (int) createInstance.invokeExact(width, height, onUserCreateStub, onUserUpdateStub, onUserDestroyStub);
         switch (NativeStatusCode.ofCode(statusCode)) {
             case SUCCESS -> System.out.println("Successfully initialised Pixel Game Engine");

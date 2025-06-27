@@ -61,6 +61,7 @@ extern "C"
                 result = m_onDestroy();
             }
             instance.release();
+            instance = nullptr;
             return result;
         }
     };
@@ -105,7 +106,7 @@ extern "C"
             return FAIL;
         }
 
-        std::cout << "Starting pixelgame engine: " << std::endl;
+        std::cout << "Starting pixelgame engine" << std::endl;
         return instance->Start();
     }
 
@@ -137,7 +138,6 @@ extern "C"
     olc::vi2d getWindowMouse()
     {
         olc::vi2d vec = instance->GetWindowMouse();
-        std::cout << vec << std::endl;
         return vec;
     }
 
