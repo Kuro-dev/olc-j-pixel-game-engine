@@ -14,7 +14,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        PixelGameEngine wrapper = new PixelGameEngineImpl(500, 500);
-        wrapper.start();
+        try (PixelGameEngine wrapper = new PixelGameEngineImpl(500, 500)) {
+            wrapper.start();
+        }
     }
 }

@@ -43,7 +43,7 @@ public class EngineInitialiser {
      static MemorySegment createOnUserDestroyStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         if (onUserDestroyStub == null) {
             MethodHandle onCreateHandle = MethodHandles.lookup()
-                    .findVirtual(binding.getClass(), "onUserDestroyIntl",
+                    .findVirtual(binding.getClass(), "onUserDestroy",
                             MethodType.methodType(boolean.class))
                     .bindTo(binding);
             onUserDestroyStub = linker.upcallStub(

@@ -22,9 +22,9 @@ public class HWButton {
 
     // Constructor from a MemorySegment
     public HWButton(MemorySegment segment) {
-        this.pressed = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("pressed")));
-        this.released = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("released")));
-        this.held = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("held")));
+        this.pressed = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("bpressed")));
+        this.released = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("breleased")));
+        this.held = segment.get(ValueLayout.JAVA_BOOLEAN, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("bheld")));
     }
 
     public HWButton(boolean pressed, boolean released, boolean held) {

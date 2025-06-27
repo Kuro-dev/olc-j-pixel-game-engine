@@ -83,7 +83,6 @@ extern "C"
             return INSTANCE_ALREADY_EXISTS;
         }
 
-        std::cout << "Creation! " << onCreate << std::endl;
         std::cout << "Instantiating new Game Engine instance" << std::endl;
 
         instance = std::make_unique<GameEngine>(onCreate, onUpdate, onDestroy);
@@ -106,7 +105,7 @@ extern "C"
             return FAIL;
         }
 
-        std::cout << "Starting pixelgame engine: " << instance.get() << std::endl;
+        std::cout << "Starting pixelgame engine: " << std::endl;
         return instance->Start();
     }
 
@@ -150,6 +149,21 @@ extern "C"
     void setScreenSize(int w, int h)
     {
         instance->SetScreenSize(w, h);
+    }
+
+    void drawString(int32_t x, int32_t y, const char *str, int32_t color, uint32_t scale)
+    {
+        instance->DrawString(x, y, str, olc::Pixel(color), scale);
+    }
+
+    void drawCircle(int32_t x, int32_t y, int32_t radius, int32_t color, int32_t mask)
+    {
+        instance->DrawCircle(x, y, radius, olc::Pixel(color), mask & 0xFF);
+    }
+
+    void fillCircle(int32_t x, int32_t y, int32_t radius, int32_t color)
+    {
+        instance->FillCircle(x, y, radius, olc::Pixel(color));
     }
 
 #ifdef __cplusplus

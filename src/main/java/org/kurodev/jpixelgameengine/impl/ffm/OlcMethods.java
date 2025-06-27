@@ -10,11 +10,12 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.ValueLayout;
 
 /**
- * Cache for fast access to frequently used methods to reduce the need for cache map lookups.
+ * Cache for fast access to frequently used methods to reduce the need for library lookups.
  */
 @Getter
 @Accessors(fluent = true)
 public class OlcMethods {
+
 
     private <T> NativeFunction<T> createFn(String name, ValueLayout returnVal, ValueLayout... args) {
         return new NativeFunction<T>(name, returnVal, args);
@@ -46,4 +47,13 @@ public class OlcMethods {
 
     private final NativeFunction<Void> setScreenSize = createFn("setScreenSize",
             FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> drawString = createFn("drawString",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> drawCircle = createFn("drawCircle",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> fillCircle = createFn("fillCircle",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
 }
