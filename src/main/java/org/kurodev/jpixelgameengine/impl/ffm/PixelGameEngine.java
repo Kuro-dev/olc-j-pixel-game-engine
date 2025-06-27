@@ -75,7 +75,8 @@ public abstract class PixelGameEngine {
     }
 
     /**
-     * { FAIL = 0, OK = 1, NO_FILE = -1 };
+     * Starts the engine and opens the window.
+     * @implNote Blocks the current Thread until the pixel game engine finishes.
      */
     @SneakyThrows
     public void start() {
