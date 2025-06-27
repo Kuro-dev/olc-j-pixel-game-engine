@@ -13,7 +13,7 @@ import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 
 
-public abstract class PixelGameEngine implements AutoCloseable {
+public abstract class PixelGameEngine {
     static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private final Arena arena;
@@ -26,7 +26,7 @@ public abstract class PixelGameEngine implements AutoCloseable {
 
     @SneakyThrows
     public PixelGameEngine(int width, int height) {
-        this.arena = Arena.ofShared();
+        this.arena = Arena.ofAuto();
         methods = new OlcMethods();
         init(width, height);
     }
@@ -72,12 +72,6 @@ public abstract class PixelGameEngine implements AutoCloseable {
         return true;
     }
 
-
-    @Override
-    public void close() {
-        arena.close();
-    }
-
     /**
      * { FAIL = 0, OK = 1, NO_FILE = -1 };
      */
@@ -108,7 +102,7 @@ public abstract class PixelGameEngine implements AutoCloseable {
      * @param p   Color of the Pixel
      * @return True if the drawing was successful, false otherwise
      */
-    public boolean draw(IntVector2D pos, Pixel p) {
+    public boolean draw(Vector2D<Integer> pos, Pixel p) {
         return draw(pos.getX(), pos.getY(), p);
     }
 

@@ -108,7 +108,7 @@ public class NativeFunction<T> {
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj) {
         if (arena == null) {
-            arena = Arena.ofConfined();
+            arena = Arena.ofAuto();
         }
         ensureInitialized();
         var seg = (MemorySegment) cachedHandle.invoke(arena);
