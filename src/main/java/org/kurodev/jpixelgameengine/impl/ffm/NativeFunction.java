@@ -69,17 +69,42 @@ public class NativeFunction<T> {
         return "NativeFn{'" + symbolName + "' Initialised: " + (cachedHandle != null) + '}';
     }
 
-    public MethodHandle getCachedHandle() {
-        ensureInitialized();
-        return cachedHandle;
-    }
-
+    /**
+     * Invokes this method and returns the result, automatically casted to generic type.
+     *
+     * @return T
+     * @implNote For any non-primitive types {@link #invokeObj(Function)} must be used.
+     * @see #invokeObj(Function)
+     * @see #invokeObj(Function, Object...)
+     */
     @SneakyThrows
     public T invoke() {
         ensureInitialized();
         return (T) cachedHandle.invoke();
     }
 
+    /**
+     * Invokes this method and returns the result, automatically casted to generic type.
+     *
+     * @param args Method arguments
+     * @return T
+     * @implNote For any non-primitive types {@link #invokeObj(Function)} must be used.
+     * @see #invokeObj(Function)
+     * @see #invokeObj(Function, Object...)
+     */
+    @SneakyThrows
+    public T invoke(Object... args) {
+        ensureInitialized();
+        return (T) cachedHandle.invokeWithArguments(args);
+    }
+
+    /**
+     * Invokes this method and returns the result, converted to the return type.
+     * Works for Objects, probably also for primitive types, but untested. Use {@link #invoke()} for that.
+     *
+     * @param toObj Mapper function to turn memory segment into the desired type. Usually a specialized constructor.
+     * @return T
+     */
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj) {
         if (arena == null) {
@@ -90,10 +115,18 @@ public class NativeFunction<T> {
         return toObj.apply(seg);
     }
 
-
+    /**
+     * Invokes this method and returns the result, converted to the return type.
+     * Works for Objects, probably also for primitive types, but untested. Use {@link #invoke()} for that.
+     *
+     * @param toObj Mapper function to turn memory segment into the desired type. Usually a specialized constructor.
+     * @param args  Method arguments.
+     * @return T
+     */
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {
         if (arena == null) {
+            //Create arena only on first call, otherwise don't waste the memory
             arena = Arena.ofConfined();
         }
         ensureInitialized();
@@ -103,12 +136,12 @@ public class NativeFunction<T> {
         ptypes[0] = SegmentAllocator.class;
         Arrays.fill(ptypes, 1, ptypes.length, Object.class);
 
-        // Adapt the method handle
+        // Methodhandle needs to be adapted to include the MemorySegment and the types of the arguments.
+        // otherwise will throw classCastException
         MethodHandle adapted = cachedHandle.asType(
                 MethodType.methodType(MemorySegment.class, ptypes)
         );
 
-        // Build arguments array
         Object[] invokeArgs = new Object[args.length + 1];
         invokeArgs[0] = arena;
         System.arraycopy(args, 0, invokeArgs, 1, args.length);
@@ -117,10 +150,5 @@ public class NativeFunction<T> {
         return toObj.apply(seg);
     }
 
-    @SneakyThrows
-    public T invoke(Object... args) {
-        ensureInitialized();
-        return (T) cachedHandle.invokeWithArguments(args);
-    }
 
 }

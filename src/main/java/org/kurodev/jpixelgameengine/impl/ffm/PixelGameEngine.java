@@ -198,7 +198,7 @@ public abstract class PixelGameEngine implements AutoCloseable {
      * @param color  the color of the circle
      * @param mask   an 8-bit value (0-255) controlling which circle segments are drawn
      */
-    //TODO: replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
+    //TODO:maybe replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
     public void drawCircle(int x, int y, int radius, Pixel color, int mask) {
         methods.drawCircle().invoke(x, y, radius, color.getRGBA(), mask);
     }
