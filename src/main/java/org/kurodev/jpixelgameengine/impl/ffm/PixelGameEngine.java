@@ -86,7 +86,6 @@ public abstract class PixelGameEngine {
             System.out.println("Successfully started Pixel Game Engine");
         } else {
             throw new RuntimeException("Failed to start Pixel Game Engine");
-
         }
 
     }
