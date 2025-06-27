@@ -45,9 +45,9 @@ public abstract class PixelGameEngine implements AutoCloseable {
                         ValueLayout.ADDRESS)
         );
         //statuscode 0, 1, 2
-        var onUserCreateStub = EngineInitialiser.createOnUserCreateStub(LINKER, arena, this);
-        var onUserUpdateStub = EngineInitialiser.createOnUserUpdateStub(LINKER, arena, this);
-        var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
+        var onUserCreateStub = EngineInitialiser.createOnUserCreateStub(arena, this);
+        var onUserUpdateStub = EngineInitialiser.createOnUserUpdateStub(arena, this);
+        var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(arena, this);
         int statusCode = (int) createInstance.invokeExact(width, height, onUserCreateStub, onUserUpdateStub, onUserDestroyStub);
         switch (NativeStatusCode.ofCode(statusCode)) {
             case SUCCESS -> System.out.println("Successfully initialised Pixel Game Engine");

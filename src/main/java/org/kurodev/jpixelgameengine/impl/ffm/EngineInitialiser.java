@@ -10,13 +10,13 @@ public class EngineInitialiser {
     private static MemorySegment onUserUpdateStub;
     private static MemorySegment onUserDestroyStub;
 
-     static MemorySegment createOnUserCreateStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
+     static MemorySegment createOnUserCreateStub(Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         if (onUserCreateStub == null) {
             MethodHandle onCreateHandle = MethodHandles.lookup()
                     .findVirtual(binding.getClass(), "onUserCreate",
                             MethodType.methodType(boolean.class))
                     .bindTo(binding);
-            onUserCreateStub = linker.upcallStub(
+            onUserCreateStub = PixelGameEngine.LINKER.upcallStub(
                     onCreateHandle,
                     FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN),
                     arena
@@ -25,13 +25,13 @@ public class EngineInitialiser {
         return onUserCreateStub;
     }
 
-     static MemorySegment createOnUserUpdateStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
+     static MemorySegment createOnUserUpdateStub(Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         if (onUserUpdateStub == null) {
             MethodHandle onUpdateHandle = MethodHandles.lookup()
                     .findVirtual(binding.getClass(), "onUserUpdate",
                             MethodType.methodType(boolean.class, float.class))
                     .bindTo(binding);
-            onUserUpdateStub = linker.upcallStub(
+            onUserUpdateStub = PixelGameEngine.LINKER.upcallStub(
                     onUpdateHandle,
                     FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN, ValueLayout.JAVA_FLOAT),
                     arena
@@ -40,13 +40,13 @@ public class EngineInitialiser {
         return onUserUpdateStub;
     }
 
-     static MemorySegment createOnUserDestroyStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
+     static MemorySegment createOnUserDestroyStub(Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         if (onUserDestroyStub == null) {
             MethodHandle onCreateHandle = MethodHandles.lookup()
                     .findVirtual(binding.getClass(), "onUserDestroy",
                             MethodType.methodType(boolean.class))
                     .bindTo(binding);
-            onUserDestroyStub = linker.upcallStub(
+            onUserDestroyStub = PixelGameEngine.LINKER.upcallStub(
                     onCreateHandle,
                     FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN),
                     arena
