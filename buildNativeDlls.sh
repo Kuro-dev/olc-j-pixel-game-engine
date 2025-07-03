@@ -4,6 +4,8 @@ set -e
 # Determine current platform
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     PLATFORM="linux"
+    export JAVA_HOME="~.jdks/openjdk-24.0.1"
+    export JAVA_INCLUDE_PATH="$JAVA_HOME/include"
     echo "Building for Linux"
 elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]] then
     PLATFORM="win32"
@@ -37,7 +39,5 @@ if [[ "$PLATFORM" == "win32" ]]; then
 else
     cmake -B "$build_dir" -S .
 fi
-
-cmake --build "$build_dir"
 
 echo "Build completed for $PLATFORM"

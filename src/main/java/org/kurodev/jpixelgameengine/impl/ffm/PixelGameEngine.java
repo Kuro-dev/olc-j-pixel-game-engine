@@ -44,13 +44,24 @@ public abstract class PixelGameEngine {
                         ValueLayout.JAVA_INT,
                         ValueLayout.ADDRESS,
                         ValueLayout.ADDRESS,
+                        ValueLayout.ADDRESS,
+                        ValueLayout.ADDRESS,
                         ValueLayout.ADDRESS)
         );
         //statuscode 0, 1, 2
         var onUserCreateStub = EngineInitialiser.createOnUserCreateStub(LINKER, arena, this);
         var onUserUpdateStub = EngineInitialiser.createOnUserUpdateStub(LINKER, arena, this);
         var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
-        int statusCode = (int) createInstance.invokeExact(width, height, onUserCreateStub, onUserUpdateStub, onUserDestroyStub);
+        var onConsoleCommandStub = EngineInitialiser.createOnConsoleCommandStub(LINKER, arena, this);
+        var onTextEntryCompleteStub = EngineInitialiser.createTextEntryCompleteStub(LINKER, arena, this);
+        int statusCode = (int) createInstance.invokeExact(
+                width,
+                height,
+                onUserCreateStub,
+                onUserUpdateStub,
+                onUserDestroyStub,
+                onConsoleCommandStub,
+                onTextEntryCompleteStub);
         switch (NativeStatusCode.ofCode(statusCode)) {
             case SUCCESS -> System.out.println("Successfully initialised Pixel Game Engine");
             case FAIL -> System.out.println("Failed to initialise Pixel Game Engine");
@@ -74,8 +85,20 @@ public abstract class PixelGameEngine {
         return true;
     }
 
+    @NativeCallCandidate
+    protected void onConsoleCommand(String command) {
+
+    }
+
+    @NativeCallCandidate
+    protected void onTextEntryComplete(String text) {
+
+    }
+
+
     /**
      * Starts the engine and opens the window.
+     *
      * @implNote Blocks the current Thread until the pixel game engine finishes.
      */
     @SneakyThrows

@@ -13,6 +13,9 @@ extern "C"
     typedef bool (*UserCreateCallback)(void);
     typedef bool (*UserUpdateCallback)(float);
     typedef bool (*UserDestroyCallback)(void);
+    typedef void (*OnConsoleCommandCallback)(char *);
+    typedef bool (*OnTextEntryCompleteCallback)(char *);
+
     class GameEngine;
 
     static std::unique_ptr<GameEngine> instance;
@@ -23,21 +26,26 @@ extern "C"
         UserCreateCallback m_onCreate;
         UserUpdateCallback m_onUpdate;
         UserDestroyCallback m_onDestroy;
+        OnConsoleCommandCallback onConsoleCommand;
+        OnTextEntryCompleteCallback onTextEntryComplete;
 
     public:
         GameEngine(UserCreateCallback onCreate,
                    UserUpdateCallback onUpdate,
-                   UserDestroyCallback onDestroy)
+                   UserDestroyCallback onDestroy,
+                   OnConsoleCommandCallback onConsoleCommand,
+                   OnTextEntryCompleteCallback onTextEntryComplete)
             : m_onCreate(onCreate),
               m_onUpdate(onUpdate),
-              m_onDestroy(onDestroy) {}
+              m_onDestroy(onDestroy),
+              onConsoleCommand(onConsoleCommand),
+              onTextEntryComplete(onTextEntryComplete) {}
 
         bool OnUserCreate() override
         {
-            std::cout << "onUserCreate!" << std::endl;
             if (!m_onCreate)
             {
-                std::cerr << "No onCreate callback provided" << std::endl;
+                std::cerr << "No OnUserCreate callback provided" << std::endl;
                 return false;
             }
             return m_onCreate();
@@ -47,7 +55,7 @@ extern "C"
         {
             if (!m_onUpdate)
             {
-                std::cerr << "No onUpdate callback provided" << std::endl;
+                std::cerr << "No OnUserUpdate callback provided" << std::endl;
                 return false;
             }
             return m_onUpdate(fElapsedTime);
@@ -64,6 +72,16 @@ extern "C"
             instance = nullptr;
             return result;
         }
+        // Called when a text entry is confirmed with "enter" key
+        void OnTextEntryComplete(const std::string &sText)
+        {
+            onTextEntryComplete(sText.c_str());
+        }
+        // Called when a console command is executed
+        bool OnConsoleCommand(const std::string &sCommand)
+        {
+            return onConsoleCommand(sCommand.c_str());
+        }
     };
 
     enum NativeStatusCode
@@ -77,7 +95,9 @@ extern "C"
                                  int32_t height,
                                  UserCreateCallback onCreate,
                                  UserUpdateCallback onUpdate,
-                                 UserDestroyCallback onDestroy)
+                                 UserDestroyCallback onDestroy,
+                                 OnConsoleCommandCallback onConsoleCommand,
+                                 OnTextEntryCompleteCallback onTextEntryComplete)
     {
         if (instance && instance->olc_IsRunning())
         {
@@ -86,7 +106,7 @@ extern "C"
 
         std::cout << "Instantiating new Game Engine instance" << std::endl;
 
-        instance = std::make_unique<GameEngine>(onCreate, onUpdate, onDestroy);
+        instance = std::make_unique<GameEngine>(onCreate, onUpdate, onDestroy, onConsoleCommand, onTextEntryComplete);
         instance->Construct(width, height, 1, 1, false, false, false, true);
         // Verify callbacks were stored
         if (!instance)
@@ -149,6 +169,20 @@ extern "C"
     void setScreenSize(int w, int h)
     {
         instance->SetScreenSize(w, h);
+    }
+    void consoleShow()
+    {
+        instance->ConsoleShow()
+    }
+
+    void consoleClear()
+    {
+        instance->ConsoleClear();
+    }
+
+    bool isConsoleShowing()
+    {
+        return instance->IsConsoleShowing();
     }
 
     void drawString(int32_t x, int32_t y, const char *str, int32_t color, uint32_t scale)
