@@ -65,4 +65,9 @@ public class OlcMethods {
 
     private final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
 
+    private final NativeFunction<Void> drawLine = createFn("drawLine",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT, ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+
 }

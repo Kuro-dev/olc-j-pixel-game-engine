@@ -98,13 +98,13 @@ public abstract class PixelGameEngine {
 
     @NativeCallCandidate
     protected final boolean onConsoleCommand(MemorySegment command) {
-        return onConsoleCommand(Util.cString(command, Integer.MAX_VALUE));
+        return onConsoleCommand(Util.cString(command));
     }
 
 
     @NativeCallCandidate
     protected final void onTextEntryComplete(MemorySegment text) {
-        onTextEntryComplete(Util.cString(text, Integer.MAX_VALUE));
+        onTextEntryComplete(Util.cString(text));
     }
 
     /**
@@ -115,8 +115,7 @@ public abstract class PixelGameEngine {
      * or true if it was handled by this method
      */
     protected boolean onConsoleCommand(String command) {
-        System.out.println(command + " " + "test".equals(command));
-        return "test".equals(command);
+        return false;
     }
 
     /**
@@ -174,6 +173,10 @@ public abstract class PixelGameEngine {
      */
     public final boolean draw(int x, int y, Pixel p) {
         return methods.draw().invoke(x, y, p.getRGBA());
+    }
+
+    public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
+        methods.drawLine().invoke(x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
     /**
