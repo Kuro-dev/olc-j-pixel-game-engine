@@ -13,8 +13,8 @@ extern "C"
     typedef bool (*UserCreateCallback)(void);
     typedef bool (*UserUpdateCallback)(float);
     typedef bool (*UserDestroyCallback)(void);
-    typedef void (*OnConsoleCommandCallback)(char *);
-    typedef bool (*OnTextEntryCompleteCallback)(char *);
+    typedef bool (*OnConsoleCommandCallback)(const char *);
+    typedef void (*OnTextEntryCompleteCallback)(const char *);
 
     class GameEngine;
 
@@ -80,6 +80,7 @@ extern "C"
         // Called when a console command is executed
         bool OnConsoleCommand(const std::string &sCommand)
         {
+            ConsoleOut() << "> " + sCommand << std::endl;
             return onConsoleCommand(sCommand.c_str());
         }
     };
@@ -170,9 +171,9 @@ extern "C"
     {
         instance->SetScreenSize(w, h);
     }
-    void consoleShow()
+    void consoleShow(olc::Key closeKey, bool suspendTime)
     {
-        instance->ConsoleShow()
+        instance->ConsoleShow(closeKey, suspendTime);
     }
 
     void consoleClear()

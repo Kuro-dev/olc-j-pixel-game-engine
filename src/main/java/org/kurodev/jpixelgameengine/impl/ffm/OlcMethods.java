@@ -61,11 +61,8 @@ public class OlcMethods {
 
     private final NativeFunction<Void> consoleClear = createFn("consoleClear", FunctionDescriptor.ofVoid());
 
-    private final NativeFunction<Void> consoleShow = createFn("consoleShow", FunctionDescriptor.ofVoid());
+    private final NativeFunction<Void> consoleShow = createFn("consoleShow", FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN));
 
     private final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
-
-    private final NativeFunction<Void> registerConsoleListener = createFn("registerConsoleListener",
-            FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
 }
