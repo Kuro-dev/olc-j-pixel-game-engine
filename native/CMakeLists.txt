@@ -32,7 +32,7 @@ find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS})
 
 # Specify the single source file to build
-set(SRC_FILE "org_kurodev_pixelGameEngineFFM.cpp")  # Change this to your specific file name
+set(SRC_FILE "org_kurodev_pixelGameEngineFFM.cpp")
 
 # Platform settings
 if(PLATFORM STREQUAL "win32")

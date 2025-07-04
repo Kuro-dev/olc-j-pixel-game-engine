@@ -53,25 +53,23 @@ public class EngineInitialiser {
     static MemorySegment createOnConsoleCommandStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         MethodHandle handle = MethodHandles.lookup()
                 .findVirtual(binding.getClass(), "onConsoleCommand",
-                        MethodType.methodType(boolean.class))
+                        MethodType.methodType(boolean.class, MemorySegment.class))
                 .bindTo(binding);
-        onConsoleCommandStub = linker.upcallStub(
+        return onConsoleCommandStub = linker.upcallStub(
                 handle,
-                FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN),
+                FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS),
                 arena
         );
-        return onUserDestroyStub;
     }
 
     static MemorySegment createTextEntryCompleteStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         MethodHandle handle = MethodHandles.lookup()
-                .findVirtual(binding.getClass(), "onTextEntryComplete", MethodType.methodType(void.class))
+                .findVirtual(binding.getClass(), "onTextEntryComplete", MethodType.methodType(void.class, MemorySegment.class))
                 .bindTo(binding);
-        onTextEntryCompleteStub = linker.upcallStub(
+        return onTextEntryCompleteStub = linker.upcallStub(
                 handle,
-                FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN),
+                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS),
                 arena
         );
-        return onUserDestroyStub;
     }
 }

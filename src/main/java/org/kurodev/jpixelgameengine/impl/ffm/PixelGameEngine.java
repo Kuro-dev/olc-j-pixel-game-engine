@@ -70,10 +70,20 @@ public abstract class PixelGameEngine {
     }
 
 
-    // Callback methods called from native code
+    /**
+     * Called once on application startup, use to load your resources
+     *
+     * @return True if initialisation was successful
+     */
     @NativeCallCandidate
     public abstract boolean onUserCreate();
 
+    /**
+     * Called every frame, and provides you with a time per frame value
+     *
+     * @param delta time since last frame
+     * @return True if the app should keep running
+     */
     @NativeCallCandidate
     public abstract boolean onUserUpdate(float delta);
 
@@ -85,14 +95,36 @@ public abstract class PixelGameEngine {
         return true;
     }
 
-    @NativeCallCandidate
-    protected void onConsoleCommand(String command) {
 
+    @NativeCallCandidate
+    protected final boolean onConsoleCommand(MemorySegment command) {
+        return onConsoleCommand(Util.cString(command));
     }
 
-    @NativeCallCandidate
-    protected void onTextEntryComplete(String text) {
 
+    @NativeCallCandidate
+    protected final void onTextEntryComplete(MemorySegment text) {
+        onTextEntryComplete(Util.cString(text));
+    }
+
+    /**
+     * Called when a console command is executed
+     *
+     * @param command Command line
+     * @return false if the pixelGameEngine should check with its own internal commands,
+     * or true if it was handled by this method
+     */
+    protected boolean onConsoleCommand(String command) {
+        return false;
+    }
+
+    /**
+     * Called when a text entry is confirmed with "enter" key
+     *
+     * @param text The text
+     */
+    protected void onTextEntryComplete(String text) {
+        System.err.println(text);
     }
 
 
@@ -102,7 +134,7 @@ public abstract class PixelGameEngine {
      * @implNote Blocks the current Thread until the pixel game engine finishes.
      */
     @SneakyThrows
-    public void start() {
+    public final void start() {
         NativeFunction<Integer> fn = new NativeFunction<>("start", ValueLayout.JAVA_INT);
         int returnCode = fn.invoke();
         if (returnCode == 1) {
@@ -116,7 +148,7 @@ public abstract class PixelGameEngine {
     /**
      * @return Whether the application window is focused
      */
-    public boolean isFocussed() {
+    public final boolean isFocussed() {
         return methods.isFocused().invoke();
     }
 
@@ -127,7 +159,7 @@ public abstract class PixelGameEngine {
      * @param p   Color of the Pixel
      * @return True if the drawing was successful, false otherwise
      */
-    public boolean draw(Vector2D<Integer> pos, Pixel p) {
+    public final boolean draw(Vector2D<Integer> pos, Pixel p) {
         return draw(pos.getX(), pos.getY(), p);
     }
 
@@ -139,8 +171,12 @@ public abstract class PixelGameEngine {
      * @param p Color of the Pixel
      * @return True if the drawing was successful, false otherwise
      */
-    public boolean draw(int x, int y, Pixel p) {
+    public final boolean draw(int x, int y, Pixel p) {
         return methods.draw().invoke(x, y, p.getRGBA());
+    }
+
+    public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
+        methods.drawLine().invoke(x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
     /**
@@ -149,8 +185,8 @@ public abstract class PixelGameEngine {
      * @param k Key
      * @return the state of the given key at this current Frame
      */
-    public HWButton getKey(KeyBoardKey k) {
-        return methods.getKey().invoke(k.ordinal());
+    public final HWButton getKey(KeyBoardKey k) {
+        return methods.getKey().invokeObj(HWButton::new, k.ordinal());
     }
 
     /**
@@ -159,14 +195,14 @@ public abstract class PixelGameEngine {
      * @param k Key
      * @return the state of the given mouse key at this current Frame
      */
-    public HWButton getKey(MouseKey k) {
+    public final HWButton getKey(MouseKey k) {
         return methods.getMouseBtn().invokeObj(HWButton::new, k.ordinal());
     }
 
     /**
      * @return Position of the mouse
      */
-    public Vector2D<Integer> getMousePos() {
+    public final Vector2D<Integer> getMousePos() {
         return methods.getMousePos().invokeObj(IntVector2D::new);
     }
 
@@ -174,7 +210,7 @@ public abstract class PixelGameEngine {
      * @return Position of the mouse in relation to the window
      */
     @SneakyThrows
-    public Vector2D<Integer> getWindowMousePos() {
+    public final Vector2D<Integer> getWindowMousePos() {
         return methods.getWindowMousePos().invokeObj(IntVector2D::new);
     }
 
@@ -184,7 +220,7 @@ public abstract class PixelGameEngine {
      * @return a value less than 0 if scrolling down, a value greater than 0 if scrolling up,
      * or 0 if there is no scrolling activity
      */
-    public int getMouseWheel() {
+    public final int getMouseWheel() {
         return methods.getMouseWheel().invoke();
     }
 
@@ -194,7 +230,7 @@ public abstract class PixelGameEngine {
      * @param width  the new width of the screen in pixels
      * @param height the new height of the screen in pixels
      */
-    public void setScreenSize(int width, int height) {
+    public final void setScreenSize(int width, int height) {
         methods.setScreenSize().invoke(width, height);
     }
 
@@ -206,7 +242,7 @@ public abstract class PixelGameEngine {
      * @param text  the string to be drawn
      * @param color the color of the text
      */
-    public void drawString(int x, int y, String text, Pixel color) {
+    public final void drawString(int x, int y, String text, Pixel color) {
         drawString(x, y, text, color, 1);
     }
 
@@ -219,7 +255,7 @@ public abstract class PixelGameEngine {
      * @param color the color of the text
      * @param scale the scaling factor for the text (1 = original size)
      */
-    public void drawString(int x, int y, String text, Pixel color, int scale) {
+    public final void drawString(int x, int y, String text, Pixel color, int scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawString().invoke(x, y, cString, color.getRGBA(), scale);
     }
@@ -232,7 +268,7 @@ public abstract class PixelGameEngine {
      * @param radius the radius of the circle
      * @param color  the color of the circle
      */
-    public void drawCircle(int x, int y, int radius, Pixel color) {
+    public final void drawCircle(int x, int y, int radius, Pixel color) {
         methods.drawCircle().invoke(x, y, radius, color.getRGBA(), 0xFF);
     }
 
@@ -254,7 +290,7 @@ public abstract class PixelGameEngine {
      * @param mask   an 8-bit value (0-255) controlling which circle segments are drawn
      */
     //TODO:maybe replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
-    public void drawCircle(int x, int y, int radius, Pixel color, int mask) {
+    public final void drawCircle(int x, int y, int radius, Pixel color, int mask) {
         methods.drawCircle().invoke(x, y, radius, color.getRGBA(), mask);
     }
 
@@ -266,7 +302,23 @@ public abstract class PixelGameEngine {
      * @param radius the radius of the circle
      * @param color  the fill color of the circle
      */
-    public void fillCircle(int x, int y, int radius, Pixel color) {
+    public final void fillCircle(int x, int y, int radius, Pixel color) {
         methods.fillCircle().invoke(x, y, radius, color.getRGBA());
+    }
+
+    /**
+     * @param closeKey    Button that determines that its time to close the console again
+     * @param suspendTime whether the Application should halt while console is opened
+     */
+    public final void consoleShow(KeyBoardKey closeKey, boolean suspendTime) {
+        methods.consoleShow().invoke(closeKey.ordinal(), suspendTime);
+    }
+
+    public final void consoleClear() {
+        methods.consoleClear().invoke();
+    }
+
+    public final boolean isConsoleShowing() {
+        return methods.isConsoleShowing().invoke();
     }
 }
