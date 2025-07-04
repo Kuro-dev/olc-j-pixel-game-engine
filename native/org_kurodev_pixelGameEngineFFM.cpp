@@ -135,6 +135,22 @@ extern "C"
         return instance->Draw(olc::vd2d(x, y), olc::Pixel(rgba));
     }
 
+
+    void drawString(int32_t x, int32_t y, const char *str, int32_t color, uint32_t scale)
+    {
+        instance->DrawString(x, y, str, olc::Pixel(color), scale);
+    }
+
+    void drawCircle(int32_t x, int32_t y, int32_t radius, int32_t color, int32_t mask)
+    {
+        instance->DrawCircle(x, y, radius, olc::Pixel(color), mask & 0xFF);
+    }
+
+    void fillCircle(int32_t x, int32_t y, int32_t radius, int32_t color)
+    {
+        instance->FillCircle(x, y, radius, olc::Pixel(color));
+    }
+
     bool isFocused()
     {
         return instance->IsFocused();
@@ -185,20 +201,23 @@ extern "C"
         return instance->IsConsoleShowing();
     }
 
-    void drawString(int32_t x, int32_t y, const char *str, int32_t color, uint32_t scale)
+    void test(bool enable, char *initialString)
     {
-        instance->DrawString(x, y, str, olc::Pixel(color), scale);
+        instance->TextEntryEnable(enable, std::string(initialString));
     }
 
-    void drawCircle(int32_t x, int32_t y, int32_t radius, int32_t color, int32_t mask)
-    {
-        instance->DrawCircle(x, y, radius, olc::Pixel(color), mask & 0xFF);
+    char* textEntryGetString(){
+       return instance->TextEntryGetString().c_str();
     }
 
-    void fillCircle(int32_t x, int32_t y, int32_t radius, int32_t color)
-    {
-        instance->FillCircle(x, y, radius, olc::Pixel(color));
+    int32_t textEntryGetCursor(){
+        return instance->TextEntryGetCursor();
     }
+
+    bool isTextEntryEnabled(){
+        return instance->IsTextEntryEnabled();
+    }
+
 
 #ifdef __cplusplus
 }
