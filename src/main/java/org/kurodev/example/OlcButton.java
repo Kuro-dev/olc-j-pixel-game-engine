@@ -2,7 +2,7 @@ package org.kurodev.example;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.kurodev.jpixelgameengine.draw.Pixel;
+import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.impl.ui.UIManager;
 import org.kurodev.jpixelgameengine.impl.ui.base.IntersectComponent;

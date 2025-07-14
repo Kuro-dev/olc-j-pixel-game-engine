@@ -236,6 +236,54 @@ extern "C"
         return instance->IsTextEntryEnabled();
     }
 
+    olc::vi2d getScreenPixelSize()
+    {
+        return instance->GetScreenPixelSize();
+    }
+
+    olc::vi2d getScreenSize()
+    {
+        return instance->GetScreenSize();
+    }
+
+    void drawSprite(int32_t x, int32_t y, olc::Sprite *sprite, uint32_t scale, uint8_t flip)
+    {
+        instance->DrawSprite(x, y, sprite, scale, olc::Sprite::Flip(flip));
+    }
+
+    void drawPartialSprite(int32_t x, int32_t y, olc::Sprite *sprite, int32_t ox, int32_t oy, int32_t w, int32_t h, uint32_t scale, uint8_t flip)
+    {
+        instance->DrawPartialSprite(x, y, sprite, ox, oy, w, h, scale, olc::Sprite::Flip(flip));
+    }
+
+    void setPixelMode(int32_t mode)
+    {
+        instance->SetPixelMode(olc::Pixel::Mode(mode));
+    }
+
+    olc::Sprite *create_sprite(const char *path)
+    {
+        return new olc::Sprite(std::string(path));
+    }
+
+    olc::Decal *create_decal(olc::Sprite *sprite)
+    {
+        return new olc::Decal(sprite);
+    }
+
+    void destroy_sprite(olc::Sprite *sprite)
+    {
+        delete sprite;
+    }
+
+    void destroy_decal(olc::Decal *decal)
+    {
+        delete decal;
+    }
+
+    int32_t sprite_width(olc::Sprite *s) { return s->width; }
+    int32_t sprite_height(olc::Sprite *s) { return s->height; }
+
 #ifdef __cplusplus
 }
 #endif

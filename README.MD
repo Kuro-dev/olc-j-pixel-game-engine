@@ -11,7 +11,7 @@ Feel free to reach out, especially for alternative OS support!
 Simple implementation example:
 
 ```java
-import org.kurodev.jpixelgameengine.draw.Pixel;
+import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.pos.Vector2D;

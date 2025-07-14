@@ -1,7 +1,10 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
-import org.kurodev.jpixelgameengine.draw.Pixel;
+import org.kurodev.jpixelgameengine.gfx.Pixel;
+import org.kurodev.jpixelgameengine.gfx.PixelMode;
+import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
+import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.impl.ui.UIManager;
 import org.kurodev.jpixelgameengine.input.HWButton;
@@ -328,6 +331,19 @@ public abstract class PixelGameEngine {
         methods.fillCircle().invoke(x, y, radius, color.getRGBA());
     }
 
+    public final void fill(Pixel color) {
+        Vector2D<Integer> screen = getScreenSize();
+        fillRect(0, 0, screen.getX(), screen.getY(), color);
+    }
+
+    public final Vector2D<Integer> getScreenPixelSize() {
+        return methods.getScreenPixelSize().invokeObj(IntVector2D::new);
+    }
+
+    public final Vector2D<Integer> getScreenSize() {
+        return methods.getScreenSize().invokeObj(IntVector2D::new);
+    }
+
     /**
      * @param closeKey    Button that determines that it's time to close the console again
      * @param suspendTime whether the Application should halt while console is opened
@@ -379,5 +395,35 @@ public abstract class PixelGameEngine {
 
     public final boolean isTextEntryEnabled() {
         return methods.isTextEntryEnabled().invoke();
+    }
+
+    public final void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
+        methods.drawSprite().invoke(x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
+    }
+
+    /**
+     * @see #drawPartialSprite(int, int, Sprite, int, int, int, int, int, FlipMode)
+     */
+    public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale) {
+        drawPartialSprite(x, y, sprite, ox, oy, w, h, scale, FlipMode.NONE);
+    }
+
+    /**
+     * @param x      X Coordinate in the screen
+     * @param y      Y Coordinate in the screen
+     * @param sprite The sprite to draw from
+     * @param ox     The X coordinate where the sprite part begins
+     * @param oy     The Y coordinate where the sprite part begins
+     * @param w      The Width of the sprite frame
+     * @param h      The height of the sprite frame
+     * @param scale  the scale to draw it in
+     * @param mode   Optional Flip mode to mirror the sprite.
+     */
+    public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale, FlipMode mode) {
+        methods.drawPartialSprite().invoke(x, y, sprite.getSpritePtr(), scale, ox, oy, w, h, (byte) mode.ordinal());
+    }
+
+    public final void setPixelMode(PixelMode mode) {
+        methods.setPixelMode().invoke(mode.ordinal());
     }
 }

@@ -1,4 +1,4 @@
-package org.kurodev.jpixelgameengine.draw;
+package org.kurodev.jpixelgameengine.gfx;
 
 public class Pixel {
     public static final Pixel BLACK = new Pixel(0, 0, 0);

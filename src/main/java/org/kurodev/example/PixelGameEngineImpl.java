@@ -1,13 +1,17 @@
 package org.kurodev.example;
 
-import org.kurodev.jpixelgameengine.draw.Pixel;
+import org.kurodev.jpixelgameengine.gfx.Pixel;
+import org.kurodev.jpixelgameengine.gfx.PixelMode;
+import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
+import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
-import org.kurodev.jpixelgameengine.input.MouseKey;
-import org.kurodev.jpixelgameengine.pos.Vector2D;
+
+import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
     private boolean run = true;
+    private Sprite sprite;
 
     public PixelGameEngineImpl(int width, int height) {
         super(width, height);
@@ -15,8 +19,10 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     public boolean onUserCreate() {
-        getUIManager().setEnabled(true);
+        getUIManager().setEnabled(false);
         getUIManager().registerComponent(new OlcButton(50, 50, 200, 50, () -> System.out.println("CLICKED")));
+        sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
+        setPixelMode(PixelMode.NORMAL);
         return true;
     }
 
@@ -26,24 +32,14 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             return true;
         }
         if (getKey(KeyBoardKey.TAB).isPressed()) {
-//            consoleShow(KeyBoardKey.TAB, true);
-            textEntryEnable(true, "Example");
+            consoleShow(KeyBoardKey.TAB, true);
+//            textEntryEnable(true, "Example");
         }
-        int size = 50;
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                draw(x, y, new Pixel((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)));
-            }
+        if (sprite != null) {
+            drawRect(50, 50, 64, 64, Pixel.RED);
+            drawPartialSprite(50, 50, sprite, 0, 0, 64, 64, 1, FlipMode.NONE);
+//            drawSprite(0, 0, sprite, 0, FlipMode.NONE);
         }
-
-        var mouse = getKey(MouseKey.LEFT);
-        if (mouse.isHeld()) {
-            Vector2D<Integer> pos = getWindowMousePos();
-            draw(pos, Pixel.WHITE);
-        }
-        drawString(50, 50, "Hello World", Pixel.WHITE, 4);
-        drawCircle(150, 150, 50, Pixel.WHITE);
-        fillCircle(250, 250, 50, Pixel.WHITE);
         return run;
     }
 
@@ -54,6 +50,14 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     protected boolean onConsoleCommand(String command) {
+        System.out.println(command);
+        if ("unload".equals(command)) {
+            sprite = null;
+            fill(Pixel.BLACK);
+        }
+        if ("reload".equals(command)) {
+            sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
+        }
         if ("quit".equals(command) || "exit".equals(command)) {
             run = false;
         }

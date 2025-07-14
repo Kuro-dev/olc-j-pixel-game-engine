@@ -95,5 +95,31 @@ public class OlcMethods {
 
     private final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
 
+    private final NativeFunction<Void> drawSprite = createFn("drawSprite",
+            FunctionDescriptor.ofVoid(
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.ADDRESS,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_BYTE));
+
+    private final NativeFunction<Void> drawPartialSprite = createFn("drawPartialSprite",
+            FunctionDescriptor.ofVoid(
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.ADDRESS,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_BYTE)
+    );
+
+    private final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", FunctionDescriptor.of(IntVector2D.LAYOUT));
+
+    private final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", FunctionDescriptor.of(IntVector2D.LAYOUT));
+
+    private final NativeFunction<Void> setPixelMode = createFn("setPixelMode", FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT));
 
 }

@@ -34,6 +34,9 @@ public class NativeFunction<T> {
     }
 
     private void ensureInitialized() {
+        if (arena == null) {
+            arena = Arena.ofAuto();
+        }
         if (cachedHandle != null) {
             return;
         }
@@ -107,9 +110,6 @@ public class NativeFunction<T> {
      */
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj) {
-        if (arena == null) {
-            arena = Arena.ofAuto();
-        }
         ensureInitialized();
         var seg = (MemorySegment) cachedHandle.invoke(arena);
         return toObj.apply(seg);
@@ -125,10 +125,6 @@ public class NativeFunction<T> {
      */
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {
-        if (arena == null) {
-            //Create arena only on first call, otherwise don't waste the memory
-            arena = Arena.ofConfined();
-        }
         ensureInitialized();
 
         // Create exact parameter types list
@@ -151,4 +147,9 @@ public class NativeFunction<T> {
     }
 
 
+    @SneakyThrows
+    public T invokeExact(Function<MemorySegment, T> toObj, Object... args) {
+        ensureInitialized();
+        return toObj.apply((MemorySegment) cachedHandle.invokeWithArguments(args));
+    }
 }
