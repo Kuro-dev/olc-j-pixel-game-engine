@@ -66,8 +66,34 @@ public class OlcMethods {
     private final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
 
     private final NativeFunction<Void> drawLine = createFn("drawLine",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT, ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> drawRect = createFn("drawRect",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> fillRect = createFn("fillRect",
+            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT,
+                    ValueLayout.JAVA_INT));
+
+    private final NativeFunction<Void> textEntryEnable = createFn("textEntryEnable", FunctionDescriptor.ofVoid(ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS));
+
+    private final NativeFunction<String> textEntryGetString = createFn("textEntryGetString", ValueLayout.ADDRESS);
+
+    private final NativeFunction<Integer> textEntryGetCursor = createFn("textEntryGetCursor", ValueLayout.JAVA_INT);
+
+    private final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
+
 
 }

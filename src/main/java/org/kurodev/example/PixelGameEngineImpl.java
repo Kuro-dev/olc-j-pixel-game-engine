@@ -1,4 +1,4 @@
-package org.kurodev;
+package org.kurodev.example;
 
 import org.kurodev.jpixelgameengine.draw.Pixel;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
@@ -15,6 +15,8 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     public boolean onUserCreate() {
+        getUIManager().setEnabled(true);
+        getUIManager().registerComponent(new OlcButton(50, 50, 200, 50, () -> System.out.println("CLICKED")));
         return true;
     }
 
@@ -24,7 +26,8 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             return true;
         }
         if (getKey(KeyBoardKey.TAB).isPressed()) {
-            consoleShow(KeyBoardKey.TAB, true);
+//            consoleShow(KeyBoardKey.TAB, true);
+            textEntryEnable(true, "Example");
         }
         int size = 50;
         for (int y = 0; y < size; y++) {
@@ -42,6 +45,11 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         drawCircle(150, 150, 50, Pixel.WHITE);
         fillCircle(250, 250, 50, Pixel.WHITE);
         return run;
+    }
+
+    @Override
+    protected void onTextEntryComplete(String text) {
+        System.err.println(text);
     }
 
     @Override

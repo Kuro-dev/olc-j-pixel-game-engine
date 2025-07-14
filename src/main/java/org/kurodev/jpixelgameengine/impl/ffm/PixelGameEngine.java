@@ -3,6 +3,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 import lombok.SneakyThrows;
 import org.kurodev.jpixelgameengine.draw.Pixel;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
+import org.kurodev.jpixelgameengine.impl.ui.UIManager;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.input.MouseKey;
@@ -15,7 +16,10 @@ import java.lang.invoke.MethodHandle;
 /**
  * Due to how FFM works this class must be inherited by a Named (NOT ANONYMOUS) class. Otherwise, it will fail.
  */
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class PixelGameEngine {
+    private final UIManager uiManager;
+
     static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private final Arena arena;
@@ -31,8 +35,8 @@ public abstract class PixelGameEngine {
         this.arena = Arena.ofAuto();
         methods = new OlcMethods();
         init(width, height);
+        uiManager = new UIManager(this);
     }
-
 
     private void init(int width, int height) throws Throwable {
         System.out.println("Initializing PixelGameEngine...");
@@ -69,6 +73,9 @@ public abstract class PixelGameEngine {
         }
     }
 
+    public final UIManager getUIManager() {
+        return uiManager;
+    }
 
     /**
      * Called once on application startup, use to load your resources
@@ -78,13 +85,21 @@ public abstract class PixelGameEngine {
     @NativeCallCandidate
     public abstract boolean onUserCreate();
 
+    @NativeCallCandidate
+    public final boolean onUserUpdateIntl(float delta) {
+        boolean result = onUserUpdate(delta);
+        if (uiManager.isEnabled()) {
+            uiManager.draw();
+        }
+        return result;
+    }
+
     /**
      * Called every frame, and provides you with a time per frame value
      *
      * @param delta time since last frame
      * @return True if the app should keep running
      */
-    @NativeCallCandidate
     public abstract boolean onUserUpdate(float delta);
 
     /**
@@ -124,7 +139,6 @@ public abstract class PixelGameEngine {
      * @param text The text
      */
     protected void onTextEntryComplete(String text) {
-        System.err.println(text);
     }
 
 
@@ -177,6 +191,14 @@ public abstract class PixelGameEngine {
 
     public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
         methods.drawLine().invoke(x1, y1, x2, y2, p.getRGBA(), pattern);
+    }
+
+    public final void drawRect(int x, int y, int width, int height, Pixel p) {
+        methods.drawRect().invoke(x, y, width, height, p.getRGBA());
+    }
+
+    public final void fillRect(int x, int y, int width, int height, Pixel p) {
+        methods.fillRect().invoke(x, y, width, height, p.getRGBA());
     }
 
     /**
@@ -307,7 +329,7 @@ public abstract class PixelGameEngine {
     }
 
     /**
-     * @param closeKey    Button that determines that its time to close the console again
+     * @param closeKey    Button that determines that it's time to close the console again
      * @param suspendTime whether the Application should halt while console is opened
      */
     public final void consoleShow(KeyBoardKey closeKey, boolean suspendTime) {
@@ -320,5 +342,42 @@ public abstract class PixelGameEngine {
 
     public final boolean isConsoleShowing() {
         return methods.isConsoleShowing().invoke();
+    }
+
+    /**
+     * Toggle text entry mode with the default String {@code ""}
+     *
+     * @see #textEntryEnable(boolean, String)
+     */
+    public final void textEntryEnable(boolean enable) {
+        textEntryEnable(enable, "");
+    }
+
+    /**
+     * Enters Text Entry mode, allowing the user to enter text.
+     * This text will not be displayed natively,
+     * however it can be queried using {@link #textEntryGetString()} to be displayed manually.
+     * <p>
+     * Expected usage is:
+     * A key is pressed and the game enters a “text entry mode”. All keyboard keys typed now add characters to the text entry mode input text.
+     * When user is done typing they press enter to submit whatever was typed, triggering {@link #onTextEntryComplete(String)} with the user input
+     *
+     * @param enable      whether to enter (true) or exit (false) the text entry mode
+     * @param initialText The initial text that should be inserted upon entering
+     */
+    public final void textEntryEnable(boolean enable, String initialText) {
+        methods.textEntryEnable().invoke(enable, arena.allocateFrom(initialText));
+    }
+
+    public final String textEntryGetString() {
+        return methods.textEntryGetString().invokeObj(Util::cString);
+    }
+
+    public final int textEntryGetCursor() {
+        return methods.textEntryGetCursor().invoke();
+    }
+
+    public final boolean isTextEntryEnabled() {
+        return methods.isTextEntryEnabled().invoke();
     }
 }

@@ -1,5 +1,6 @@
 package org.kurodev;
 
+import org.kurodev.example.PixelGameEngineImpl;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 
 import java.io.IOException;
