@@ -7,6 +7,7 @@ import org.kurodev.jpixelgameengine.gfx.PixelMode;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
+import org.kurodev.jpixelgameengine.impl.MemUtil;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
@@ -469,5 +470,193 @@ public abstract class PixelGameEngine {
      */
     public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
         methods.drawPartialDecal().invoke(pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
+    }
+
+    // Drawing explicit decal with custom vertices, UVs and colors
+    public final void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions, Vector2D<Float>[] uvs, Pixel[] colors) {
+
+
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
+        MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
+
+
+        methods.drawExplicitDecal().invoke(decal.getPtr(), posArray, uvArray, colorArray, positions.length);
+    }
+
+    // Drawing warped decal (perspective transform)
+    public final void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        methods.drawWarpedDecal().invoke(decal.getPtr(), posArray, tint.toPtr());
+    }
+
+    // Drawing partial warped decal
+    public final void drawPartialWarpedDecal(Decal decal, Vector2D<Float>[] positions,
+                                             Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
+                                             Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        methods.drawPartialWarpedDecal().invoke(decal.getPtr(), posArray,
+                sourcePos.toPtr(), sourceSize.toPtr(),
+                tint.toPtr());
+    }
+
+    // Drawing rotated decal
+    public final void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
+                                       Vector2D<Float> center, Vector2D<Float> scale,
+                                       Pixel tint) {
+        methods.drawRotatedDecal().invoke(pos.toPtr(), decal.getPtr(), angle,
+                center.toPtr(), scale.toPtr(), tint.toPtr());
+    }
+
+    // Drawing partial rotated decal
+    public final void drawPartialRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
+                                              Vector2D<Float> center, Vector2D<Float> sourcePos,
+                                              Vector2D<Float> sourceSize, Vector2D<Float> scale,
+                                              Pixel tint) {
+        methods.drawPartialRotatedDecal().invoke(pos.toPtr(), decal.getPtr(), angle,
+                center.toPtr(), sourcePos.toPtr(),
+                sourceSize.toPtr(), scale.toPtr(),
+                tint.toPtr());
+    }
+
+    // Drawing string as decal
+    public final void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
+                                      Vector2D<Float> scale) {
+        MemorySegment cString = arena.allocateFrom(text);
+        methods.drawStringDecal().invoke(pos.toPtr(), cString, color.toPtr(), scale.toPtr());
+    }
+
+    // Drawing proportional string as decal
+    public final void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
+                                          Vector2D<Float> scale) {
+        MemorySegment cString = arena.allocateFrom(text);
+        methods.drawStringPropDecal().invoke(pos.toPtr(), cString, color.toPtr(), scale.toPtr());
+    }
+
+    // Drawing rectangle decal
+    public final void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+        methods.drawRectDecal().invoke(pos.toPtr(), size.toPtr(), color.toPtr());
+    }
+
+    // Filling rectangle decal
+    public final void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+        methods.fillRectDecal().invoke(pos.toPtr(), size.toPtr(), color.toPtr());
+    }
+
+    // Gradient filled rectangle decal
+    public final void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
+                                            Pixel colorTL, Pixel colorBL,
+                                            Pixel colorBR, Pixel colorTR) {
+        methods.gradientFillRectDecal().invoke(pos.toPtr(), size.toPtr(),
+                colorTL.toPtr(), colorBL.toPtr(),
+                colorBR.toPtr(), colorTR.toPtr());
+    }
+
+    // Filled triangle decal
+    public final void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
+                                        Vector2D<Float> p2, Pixel color) {
+        methods.fillTriangleDecal().invoke(p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
+    }
+
+    // Gradient filled triangle decal
+    public final void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
+                                            Vector2D<Float> p2, Pixel c0, Pixel c1,
+                                            Pixel c2) {
+        methods.gradientTriangleDecal().invoke(p0.toPtr(), p1.toPtr(), p2.toPtr(),
+                c0.toPtr(), c1.toPtr(), c2.toPtr());
+    }
+
+    // Drawing polygon decal (basic version)
+    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                       Vector2D<Float>[] uvs, Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
+        methods.drawPolygonDecal().invoke(decal.getPtr(), posArray, uvArray, tint.toPtr());
+    }
+
+    // Drawing polygon decal with depth
+    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                       float[] depths, Vector2D<Float>[] uvs,
+                                       Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
+        methods.drawPolygonDecalWithDepth().invoke(decal.getPtr(), posArray,
+                depthArray, uvArray, tint.toPtr());
+    }
+
+    // Drawing polygon decal with per-vertex colors
+    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                       Vector2D<Float>[] uvs, Pixel[] colors) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
+        MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
+        methods.drawPolygonDecalWithColors().invoke(decal.getPtr(), posArray,
+                uvArray, colorArray);
+    }
+
+    // Drawing polygon decal with per-vertex colors and tint
+    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                       Vector2D<Float>[] uvs, Pixel[] colors,
+                                       Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
+        MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
+        methods.drawPolygonDecalWithColorsAndTint().invoke(decal.getPtr(), posArray,
+                uvArray, colorArray,
+                tint.toPtr());
+    }
+
+    // Drawing polygon decal with depth, per-vertex colors and tint
+    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                       float[] depths, Vector2D<Float>[] uvs,
+                                       Pixel[] colors, Pixel tint) {
+        MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
+        MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
+        MemorySegment uvArray =MemUtil.toArrayPtr(arena, uvs);
+        MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
+        methods.drawPolygonDecalWithDepthAndColorsAndTint().invoke(decal.getPtr(), posArray,
+                depthArray, uvArray,
+                colorArray, tint.toPtr());
+    }
+
+    // Drawing line decal
+    public final void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
+        methods.drawLineDecal().invoke(pos1.toPtr(), pos2.toPtr(), color.toPtr());
+    }
+
+    // Drawing rotated string decal
+    public final void drawRotatedStringDecal(Vector2D<Float> pos, String text, float angle,
+                                             Vector2D<Float> center, Pixel color,
+                                             Vector2D<Float> scale) {
+        MemorySegment cString = arena.allocateFrom(text);
+        methods.drawRotatedStringDecal().invoke(pos.toPtr(), cString, angle,
+                center.toPtr(), color.toPtr(),
+                scale.toPtr());
+    }
+
+    // Drawing rotated proportional string decal
+    public final void drawRotatedStringPropDecal(Vector2D<Float> pos, String text, float angle,
+                                                 Vector2D<Float> center, Pixel color,
+                                                 Vector2D<Float> scale) {
+        MemorySegment cString = arena.allocateFrom(text);
+        methods.drawRotatedStringPropDecal().invoke(pos.toPtr(), cString, angle,
+                center.toPtr(), color.toPtr(),
+                scale.toPtr());
+    }
+
+    // Clearing screen with a color
+    public final void clear(Pixel color) {
+        methods.clear().invoke(color.toPtr());
+    }
+
+    // Setting decal mode
+    public final void setDecalMode(int mode) {
+        methods.setDecalMode().invoke(mode);
+    }
+
+    // Setting decal structure
+    public final void setDecalStructure(int structure) {
+        methods.setDecalStructure().invoke(structure);
     }
 }
