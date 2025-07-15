@@ -3,6 +3,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 import lombok.SneakyThrows;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
+import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
@@ -61,19 +62,27 @@ public abstract class PixelGameEngine {
         var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
         var onConsoleCommandStub = EngineInitialiser.createOnConsoleCommandStub(LINKER, arena, this);
         var onTextEntryCompleteStub = EngineInitialiser.createTextEntryCompleteStub(LINKER, arena, this);
-        int statusCode = (int) createInstance.invokeExact(
-                width,
-                height,
-                onUserCreateStub,
-                onUserUpdateStub,
-                onUserDestroyStub,
-                onConsoleCommandStub,
-                onTextEntryCompleteStub);
-        switch (NativeStatusCode.ofCode(statusCode)) {
-            case SUCCESS -> System.out.println("Successfully initialised Pixel Game Engine");
-            case FAIL -> System.out.println("Failed to initialise Pixel Game Engine");
-            case INSTANCE_ALREADY_EXISTS -> System.out.println("Pixelgame engine instance already exists");
-        }
+        Thread engineThread = new Thread(() -> {
+            try {
+                int statusCode = (int) createInstance.invokeExact(
+                        width, height,
+                        onUserCreateStub,
+                        onUserUpdateStub,
+                        onUserDestroyStub,
+                        onConsoleCommandStub,
+                        onTextEntryCompleteStub
+                );
+
+                switch (NativeStatusCode.ofCode(statusCode)) {
+                    case SUCCESS -> System.out.println("Successfully initialised Pixel Game Engine");
+                    case FAIL -> System.out.println("Failed to initialise Pixel Game Engine");
+                    case INSTANCE_ALREADY_EXISTS -> System.out.println("Pixelgame engine instance already exists");
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        });
+        engineThread.start();
     }
 
     public final UIManager getUIManager() {
@@ -425,5 +434,9 @@ public abstract class PixelGameEngine {
 
     public final void setPixelMode(PixelMode mode) {
         methods.setPixelMode().invoke(mode.ordinal());
+    }
+
+    public final void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
+        methods.drawDecal().invoke(pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
     }
 }

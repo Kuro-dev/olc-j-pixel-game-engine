@@ -90,4 +90,20 @@ public class DoubleVector2D extends Vector2D<Double> {
         double r = 1 / length();
         return new FloatVector2D((float) (x * r), (float) (y * r));
     }
+
+    @Override
+    protected MemoryLayout getLayout() {
+        return LAYOUT;
+    }
+
+    @Override
+    protected MemorySegment toPtr(MemorySegment seg) {
+        seg.set(ValueLayout.JAVA_DOUBLE,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")),
+                x);
+        seg.set(ValueLayout.JAVA_DOUBLE,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")),
+                y);
+        return seg;
+    }
 }

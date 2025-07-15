@@ -2,16 +2,18 @@ package org.kurodev.example;
 
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
-import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
+import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
+import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 
 import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
     private boolean run = true;
     private Sprite sprite;
+    private Decal decal;
 
     public PixelGameEngineImpl(int width, int height) {
         super(width, height);
@@ -22,6 +24,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         getUIManager().setEnabled(false);
         getUIManager().registerComponent(new OlcButton(50, 50, 200, 50, () -> System.out.println("CLICKED")));
         sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
+        decal = new Decal(sprite);
         setPixelMode(PixelMode.NORMAL);
         return true;
     }
@@ -37,8 +40,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         }
         if (sprite != null) {
             drawRect(50, 50, 64, 64, Pixel.RED);
-            drawPartialSprite(50, 50, sprite, 0, 0, 64, 64, 1, FlipMode.NONE);
-//            drawSprite(0, 0, sprite, 0, FlipMode.NONE);
+            drawDecal(FloatVector2D.ZERO, decal, FloatVector2D.ONE, Pixel.WHITE);
         }
         return run;
     }
@@ -50,16 +52,22 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     protected boolean onConsoleCommand(String command) {
-        System.out.println(command);
         if ("unload".equals(command)) {
             sprite = null;
+            decal = null;
             fill(Pixel.BLACK);
+            System.gc();
+            System.gc();
+            return false;
         }
         if ("reload".equals(command)) {
             sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
+            decal = new Decal(sprite);
+            return false;
         }
         if ("quit".equals(command) || "exit".equals(command)) {
             run = false;
+            return false;
         }
         return true;
     }

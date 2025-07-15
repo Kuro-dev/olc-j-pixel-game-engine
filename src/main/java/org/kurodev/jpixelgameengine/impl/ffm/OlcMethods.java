@@ -2,11 +2,14 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.input.HWButton;
+import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
 import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.ValueLayout;
 
 /**
@@ -17,12 +20,12 @@ import java.lang.foreign.ValueLayout;
 public class OlcMethods {
 
 
-    private <T> NativeFunction<T> createFn(String name, ValueLayout returnVal, ValueLayout... args) {
-        return new NativeFunction<T>(name, returnVal, args);
+    private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
+        return new NativeFunction<T>(name, FunctionDescriptor.of(returnVal, args));
     }
 
-    private <T> NativeFunction<T> createFn(String name, FunctionDescriptor descriptor) {
-        return new NativeFunction<T>(name, descriptor);
+    private <T> NativeFunction<T> createVoidFn(String name, MemoryLayout... args) {
+        return new NativeFunction<T>(name, FunctionDescriptor.ofVoid(args));
     }
 
     /**
@@ -33,61 +36,60 @@ public class OlcMethods {
 
     private final NativeFunction<Boolean> isFocused = createFn("isFocused", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<HWButton> getKey = createFn("getKey",
-            FunctionDescriptor.of(HWButton.LAYOUT, ValueLayout.JAVA_INT));
+    private final NativeFunction<HWButton> getKey = createFn("getKey", HWButton.LAYOUT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<HWButton> getMouseBtn = createFn("getMouse",
-            FunctionDescriptor.of(HWButton.LAYOUT, ValueLayout.JAVA_INT));
+    private final NativeFunction<HWButton> getMouseBtn = createFn("getMouse", HWButton.LAYOUT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Vector2D<Integer>> getMousePos = createFn("getMousePos",
-            FunctionDescriptor.of(IntVector2D.LAYOUT));
+    private final NativeFunction<Vector2D<Integer>> getMousePos = createFn("getMousePos", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Vector2D<Integer>> getWindowMousePos = createFn("getWindowMouse",
-            FunctionDescriptor.of(IntVector2D.LAYOUT));
+    private final NativeFunction<Vector2D<Integer>> getWindowMousePos = createFn("getWindowMouse", IntVector2D.LAYOUT);
 
     private final NativeFunction<Integer> getMouseWheel = createFn("getMouseWheel", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> setScreenSize = createFn("setScreenSize",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> setScreenSize = createVoidFn("setScreenSize", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawString = createFn("drawString",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> drawString = createVoidFn("drawString",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.ADDRESS,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawCircle = createFn("drawCircle",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> drawCircle = createVoidFn("drawCircle",
+            ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> fillCircle = createFn("fillCircle",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> fillCircle = createVoidFn("fillCircle",
+            ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> consoleClear = createFn("consoleClear", FunctionDescriptor.ofVoid());
+    private final NativeFunction<Void> consoleClear = createVoidFn("consoleClear");
 
-    private final NativeFunction<Void> consoleShow = createFn("consoleShow", FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN));
+    private final NativeFunction<Void> consoleShow = createVoidFn("consoleShow", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN);
 
     private final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<Void> drawLine = createFn("drawLine",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> drawLine = createVoidFn("drawLine",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawRect = createFn("drawRect",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> drawRect = createVoidFn("drawRect",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> fillRect = createFn("fillRect",
-            FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT));
+    private final NativeFunction<Void> fillRect = createVoidFn("fillRect",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> textEntryEnable = createFn("textEntryEnable", FunctionDescriptor.ofVoid(ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS));
+    private final NativeFunction<Void> textEntryEnable = createVoidFn("textEntryEnable", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS);
 
     private final NativeFunction<String> textEntryGetString = createFn("textEntryGetString", ValueLayout.ADDRESS);
 
@@ -95,31 +97,41 @@ public class OlcMethods {
 
     private final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<Void> drawSprite = createFn("drawSprite",
-            FunctionDescriptor.ofVoid(
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.ADDRESS,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_BYTE));
-
-    private final NativeFunction<Void> drawPartialSprite = createFn("drawPartialSprite",
-            FunctionDescriptor.ofVoid(
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.ADDRESS,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_INT,
-                    ValueLayout.JAVA_BYTE)
+    private final NativeFunction<Void> drawSprite = createVoidFn("drawSprite",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.ADDRESS,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_BYTE
     );
 
-    private final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", FunctionDescriptor.of(IntVector2D.LAYOUT));
+    private final NativeFunction<Void> drawPartialSprite = createVoidFn("drawPartialSprite",
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.ADDRESS,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_BYTE
+    );
 
-    private final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", FunctionDescriptor.of(IntVector2D.LAYOUT));
+    private final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Void> setPixelMode = createFn("setPixelMode", FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT));
+    private final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", IntVector2D.LAYOUT);
+
+    private final NativeFunction<Void> setPixelMode = createVoidFn("setPixelMode", ValueLayout.JAVA_INT);
+
+    private final NativeFunction<Void> setDecalMode = createVoidFn("setDecalMode", ValueLayout.JAVA_INT);
+
+    private final NativeFunction<Void> setDecalStructure = createVoidFn("setDecalStructure", ValueLayout.JAVA_INT);
+
+    private final NativeFunction<Void> drawDecal = createVoidFn("drawDecal",
+            FloatVector2D.LAYOUT,
+            ValueLayout.ADDRESS,
+            FloatVector2D.LAYOUT,
+            Pixel.LAYOUT
+    );
 
 }

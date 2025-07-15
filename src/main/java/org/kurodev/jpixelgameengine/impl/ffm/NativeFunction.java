@@ -1,6 +1,7 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -17,6 +18,7 @@ import java.util.function.Function;
  * @param <T> Return type of this function
  */
 @SuppressWarnings("unchecked")
+@Slf4j
 public class NativeFunction<T> {
     private final String symbolName;
     private final FunctionDescriptor descriptor;
@@ -42,6 +44,7 @@ public class NativeFunction<T> {
         }
         synchronized (this) {
             if (cachedHandle == null) {
+                log.info("Initialising {}", symbolName);
                 try {
                     MemorySegment symbol = PixelGameEngine.LIB
                             .find(symbolName)

@@ -1,9 +1,6 @@
 package org.kurodev.jpixelgameengine.pos;
 
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.StructLayout;
-import java.lang.foreign.ValueLayout;
+import java.lang.foreign.*;
 
 public class LongVector2D extends Vector2D<Long> {
     private final long x;
@@ -89,5 +86,21 @@ public class LongVector2D extends Vector2D<Long> {
     public Vector2D<Float> normalize() {
         long r = 1 / length();
         return new FloatVector2D(x * r, y * r);
+    }
+
+    @Override
+    protected MemoryLayout getLayout() {
+        return LAYOUT;
+    }
+
+    @Override
+    protected MemorySegment toPtr(MemorySegment seg) {
+        seg.set(ValueLayout.JAVA_LONG,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")),
+                x);
+        seg.set(ValueLayout.JAVA_LONG,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")),
+                y);
+        return seg;
     }
 }

@@ -37,7 +37,7 @@ public class Sprite implements Cleaner.Cleanable {
 
     @Override
     public void clean() {
-        log.info("Unloading {}", spritePath);
+        log.info("Unloading sprite {}", spritePath);
         DESTROY_SPRITE.invoke(this.spritePtr);
         arena.close();
     }

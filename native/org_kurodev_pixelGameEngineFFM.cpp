@@ -80,7 +80,6 @@ extern "C"
         // Called when a console command is executed
         bool OnConsoleCommand(const std::string &sCommand)
         {
-            ConsoleOut() << "> " + sCommand << std::endl;
             return onConsoleCommand(sCommand.c_str());
         }
     };
@@ -261,6 +260,13 @@ extern "C"
         instance->SetPixelMode(olc::Pixel::Mode(mode));
     }
 
+    void destroy_sprite(olc::Sprite *sprite) { delete sprite; }
+
+    void destroy_decal(olc::Decal *decal) { delete decal; }
+
+    int32_t sprite_width(olc::Sprite *s) { return s->width; }
+    int32_t sprite_height(olc::Sprite *s) { return s->height; }
+
     olc::Sprite *create_sprite(const char *path)
     {
         return new olc::Sprite(std::string(path));
@@ -271,19 +277,69 @@ extern "C"
         return new olc::Decal(sprite);
     }
 
-    void destroy_sprite(olc::Sprite *sprite)
+    void setDecalMode(int32_t mode)
     {
-        delete sprite;
+        instance->SetDecalMode(olc::DecalMode(mode));
     }
 
-    void destroy_decal(olc::Decal *decal)
+    void setDecalStructure(int32_t structure)
     {
-        delete decal;
+        instance->SetDecalStructure(olc::DecalStructure(structure));
     }
 
-    int32_t sprite_width(olc::Sprite *s) { return s->width; }
-    int32_t sprite_height(olc::Sprite *s) { return s->height; }
+    olc::vi2d decal_vUVScale(olc::Decal *d)
+    {
+        return d->vUVScale;
+    }
 
+    // Draws a whole decal, with optional scale and tinting
+    void drawDecal(const olc::vf2d& pos, olc::Decal* decal, const olc::vf2d& scale, const olc::Pixel& tint)
+    {
+        instance->DrawDecal(pos, decal, scale, olc::Pixel(tint));
+    }
+/*
+    // Draws a region of a decal, with optional scale and tinting
+    void DrawPartialDecal(const olc::vf2d &pos, olc::Decal *decal, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::vf2d &scale = {1.0f, 1.0f}, const olc::Pixel &tint = olc::WHITE);
+    void DrawPartialDecal(const olc::vf2d &pos, const olc::vf2d &size, olc::Decal *decal, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::Pixel &tint = olc::WHITE);
+    // Draws fully user controlled 4 vertices, pos(pixels), uv(pixels), colours
+    void DrawExplicitDecal(olc::Decal *decal, const olc::vf2d *pos, const olc::vf2d *uv, const olc::Pixel *col, uint32_t elements = 4);
+    // Draws a decal with 4 arbitrary points, warping the texture to look "correct"
+    void DrawWarpedDecal(olc::Decal *decal, const olc::vf2d (&pos)[4], const olc::Pixel &tint = olc::WHITE);
+    void DrawWarpedDecal(olc::Decal *decal, const olc::vf2d *pos, const olc::Pixel &tint = olc::WHITE);
+    void DrawWarpedDecal(olc::Decal *decal, const std::array<olc::vf2d, 4> &pos, const olc::Pixel &tint = olc::WHITE);
+    // As above, but you can specify a region of a decal source sprite
+    void DrawPartialWarpedDecal(olc::Decal *decal, const olc::vf2d (&pos)[4], const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::Pixel &tint = olc::WHITE);
+    void DrawPartialWarpedDecal(olc::Decal *decal, const olc::vf2d *pos, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::Pixel &tint = olc::WHITE);
+    void DrawPartialWarpedDecal(olc::Decal *decal, const std::array<olc::vf2d, 4> &pos, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::Pixel &tint = olc::WHITE);
+    // Draws a decal rotated to specified angle, wit point of rotation offset
+    void DrawRotatedDecal(const olc::vf2d &pos, olc::Decal *decal, const float fAngle, const olc::vf2d &center = {0.0f, 0.0f}, const olc::vf2d &scale = {1.0f, 1.0f}, const olc::Pixel &tint = olc::WHITE);
+    void DrawPartialRotatedDecal(const olc::vf2d &pos, olc::Decal *decal, const float fAngle, const olc::vf2d &center, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::vf2d &scale = {1.0f, 1.0f}, const olc::Pixel &tint = olc::WHITE);
+    // Draws a multiline string as a decal, with tiniting and scaling
+    void DrawStringDecal(const olc::vf2d &pos, const std::string &sText, const Pixel col = olc::WHITE, const olc::vf2d &scale = {1.0f, 1.0f});
+    void DrawStringPropDecal(const olc::vf2d &pos, const std::string &sText, const Pixel col = olc::WHITE, const olc::vf2d &scale = {1.0f, 1.0f});
+    // Draws a single shaded filled rectangle as a decal
+    void DrawRectDecal(const olc::vf2d &pos, const olc::vf2d &size, const olc::Pixel col = olc::WHITE);
+    void FillRectDecal(const olc::vf2d &pos, const olc::vf2d &size, const olc::Pixel col = olc::WHITE);
+    // Draws a corner shaded rectangle as a decal
+    void GradientFillRectDecal(const olc::vf2d &pos, const olc::vf2d &size, const olc::Pixel colTL, const olc::Pixel colBL, const olc::Pixel colBR, const olc::Pixel colTR);
+    // Draws a single shaded filled triangle as a decal
+    void FillTriangleDecal(const olc::vf2d &p0, const olc::vf2d &p1, const olc::vf2d &p2, const olc::Pixel col = olc::WHITE);
+    // Draws a corner shaded triangle as a decal
+    void GradientTriangleDecal(const olc::vf2d &p0, const olc::vf2d &p1, const olc::vf2d &p2, const olc::Pixel c0, const olc::Pixel c1, const olc::Pixel c2);
+    // Draws an arbitrary convex textured polygon using GPU
+    void DrawPolygonDecal(olc::Decal *decal, const std::vector<olc::vf2d> &pos, const std::vector<olc::vf2d> &uv, const olc::Pixel tint = olc::WHITE);
+    void DrawPolygonDecal(olc::Decal *decal, const std::vector<olc::vf2d> &pos, const std::vector<float> &depth, const std::vector<olc::vf2d> &uv, const olc::Pixel tint = olc::WHITE);
+    void DrawPolygonDecal(olc::Decal *decal, const std::vector<olc::vf2d> &pos, const std::vector<olc::vf2d> &uv, const std::vector<olc::Pixel> &tint);
+    void DrawPolygonDecal(olc::Decal *decal, const std::vector<olc::vf2d> &pos, const std::vector<olc::vf2d> &uv, const std::vector<olc::Pixel> &colours, const olc::Pixel tint);
+    void DrawPolygonDecal(olc::Decal *decal, const std::vector<olc::vf2d> &pos, const std::vector<float> &depth, const std::vector<olc::vf2d> &uv, const std::vector<olc::Pixel> &colours, const olc::Pixel tint);
+
+    // Draws a line in Decal Space
+    void DrawLineDecal(const olc::vf2d &pos1, const olc::vf2d &pos2, Pixel p = olc::WHITE);
+    void DrawRotatedStringDecal(const olc::vf2d &pos, const std::string &sText, const float fAngle, const olc::vf2d &center = {0.0f, 0.0f}, const olc::Pixel col = olc::WHITE, const olc::vf2d &scale = {1.0f, 1.0f});
+    void DrawRotatedStringPropDecal(const olc::vf2d &pos, const std::string &sText, const float fAngle, const olc::vf2d &center = {0.0f, 0.0f}, const olc::Pixel col = olc::WHITE, const olc::vf2d &scale = {1.0f, 1.0f});
+    // Clears entire draw target to Pixel
+    void Clear(Pixel p);
+*/
 #ifdef __cplusplus
 }
 #endif

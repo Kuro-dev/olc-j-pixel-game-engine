@@ -1,11 +1,12 @@
 package org.kurodev.jpixelgameengine.pos;
 
+import lombok.EqualsAndHashCode;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
-
-import java.util.Objects;
+import org.kurodev.jpixelgameengine.impl.PointerClass;
 
 @NativeCallCandidate
-public abstract class Vector2D<T extends Number> {
+@EqualsAndHashCode(callSuper = false)
+public abstract class Vector2D<T extends Number> extends PointerClass {
 
     static Vector2D<Integer> ofInt(int x, int y) {
         return new IntVector2D(x, y);
@@ -48,20 +49,9 @@ public abstract class Vector2D<T extends Number> {
     public abstract Vector2D<Float> normalize();
 
     @Override
-    public int hashCode() {
-        return Objects.hash(getX(), getY());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-       if (obj == this) return true;
-       if (obj == null || obj.getClass() != this.getClass()) return false;
-       Vector2D other = (Vector2D) obj;
-       return Objects.equals(getX(), other.getX()) && Objects.equals(getY(), other.getY());
-    }
-
-    @Override
     public String toString() {
         return "(" + getX() + ", " + getY() + ")";
     }
+
+
 }

@@ -9,6 +9,9 @@ import java.lang.foreign.ValueLayout;
 
 @NativeCallCandidate
 public class FloatVector2D extends Vector2D<Float> {
+    public static final FloatVector2D ZERO = new FloatVector2D(0.0f, 0.0f);
+    public static final FloatVector2D ONE = new FloatVector2D(1.0f, 1.0f);
+
     private final float x;
     private final float y;
 
@@ -92,5 +95,21 @@ public class FloatVector2D extends Vector2D<Float> {
     public Vector2D<Float> normalize() {
         float r = 1 / length();
         return new FloatVector2D(x * r, y * r);
+    }
+
+    @Override
+    protected MemoryLayout getLayout() {
+        return LAYOUT;
+    }
+
+    @Override
+    protected MemorySegment toPtr(MemorySegment seg) {
+        seg.set(ValueLayout.JAVA_FLOAT,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("x")),
+                x);
+        seg.set(ValueLayout.JAVA_FLOAT,
+                LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")),
+                y);
+        return seg;
     }
 }

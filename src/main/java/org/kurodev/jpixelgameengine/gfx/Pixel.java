@@ -1,6 +1,20 @@
 package org.kurodev.jpixelgameengine.gfx;
 
-public class Pixel {
+import org.kurodev.jpixelgameengine.impl.PointerClass;
+
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
+
+public class Pixel extends PointerClass {
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            ValueLayout.JAVA_BYTE.withName("r"),
+            ValueLayout.JAVA_BYTE.withName("g"),
+            ValueLayout.JAVA_BYTE.withName("b"),
+            ValueLayout.JAVA_BYTE.withName("a")
+    );
+
     public static final Pixel BLACK = new Pixel(0, 0, 0);
     public static final Pixel WHITE = new Pixel(255, 255, 255);
     public static final Pixel RED = new Pixel(255, 0, 0);
@@ -53,5 +67,17 @@ public class Pixel {
         return (int) (a & 0xFF);
     }
 
+    @Override
+    protected MemoryLayout getLayout() {
+        return LAYOUT;
+    }
 
+    @Override
+    protected MemorySegment toPtr(MemorySegment seg) {
+        seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("r")), (byte) r);
+        seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("g")), (byte) g);
+        seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("b")), (byte) b);
+        seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("a")), (byte) a);
+        return seg;
+    }
 }
