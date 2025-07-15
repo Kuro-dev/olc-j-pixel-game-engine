@@ -3,14 +3,16 @@ FROM gcc:15.1.0 AS linux-builder
 
 RUN apt-get update && apt-get install -y \
     libx11-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev \
-    libxi-dev libxcursor-dev libxinerama-dev libxext-dev libpthread-stubs0-dev
+    libxi-dev libxcursor-dev libxinerama-dev libxext-dev libpthread-stubs0-dev \
+    libpng-dev
 
 WORKDIR /src
 COPY ./native/ .
 
+
 RUN g++ -std=c++17 -fPIC -DOLC_PGE_APPLICATION -shared \
     -o liborg_kurodev_pixelGameEngineFFM.so org_kurodev_pixelGameEngineFFM.cpp \
-    -lX11 -lGL -lpthread -ldl
+    -lX11 -lGL -lpng -lpthread -ldl
 
 
 # MSYS2 + MinGW-w64
