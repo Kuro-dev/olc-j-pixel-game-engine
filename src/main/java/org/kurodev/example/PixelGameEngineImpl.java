@@ -56,7 +56,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         if ("unload".equals(command)) {
             sprite = null;
             decal = null;
-            fill(Pixel.BLACK);
+            clear(Pixel.BLACK);
             System.gc();
             System.gc();
             return false;

@@ -17,34 +17,18 @@ public class MemUtil {
      */
     public static <T extends PointerClass> MemorySegment toArrayPtr(Arena arena, T[] array) {
         if (array == null || array.length == 0) {
-            // C‑style convention: an empty array is expressed as a null pointer.
             return MemorySegment.NULL;
         }
-
-        // 1. Layout of ONE element (every T must expose it in the same way)
         MemoryLayout elemLayout = array[0].getLayout();      // size & alignment
         long elemSize = elemLayout.byteSize();
         long elemAlign = elemLayout.byteAlignment();
-
-        // 2. Layout of N elements back‑to‑back
         MemoryLayout arrayLayout = MemoryLayout.sequenceLayout(array.length, elemLayout);
-
-        // 3. Allocate once, large enough for all N elements, honouring alignment
         MemorySegment seg = arena.allocate(arrayLayout, elemAlign);
-
-        // 4. Copy each object's bytes into its slot
         for (int i = 0; i < array.length; i++) {
-            // Get the source segment from the wrapper
             MemorySegment src = array[i].toPtr();
-
-            // Slice the destination to the i‑th element
             MemorySegment dst = seg.asSlice(i * elemSize, elemSize);
-
-            // Copy bytes (fast, bulk move)
             dst.copyFrom(src);
         }
-
-        // 5. Return the base address; caller passes it as const T*
         return seg;
     }
 

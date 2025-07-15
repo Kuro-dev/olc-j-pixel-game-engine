@@ -159,9 +159,6 @@ public class OlcMethods {
             ValueLayout.ADDRESS, // const olc::vf2d (&pos)[4] or const olc::vf2d *pos or const std::array<olc::vf2d, 4> &pos
             Pixel.LAYOUT // const olc::Pixel &tint
     );
-    // Note: Overloaded methods in C++ typically map to a single native function
-    // in JNI/FFM if their signatures can be resolved at runtime or if distinct
-    // C functions are exposed. Assuming a single entry point for simplicity here.
 
     private final NativeFunction<Void> drawPartialWarpedDecal = createVoidFn("DrawPartialWarpedDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
@@ -248,20 +245,6 @@ public class OlcMethods {
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv (array/pointer)
             Pixel.LAYOUT // const olc::Pixel tint (for the single tint case)
     );
-    // Overloaded drawPolygonDecal:
-    // To handle std::vector<float> depth and std::vector<olc::Pixel> colours,
-    // you'd typically need separate native methods if the underlying C++ library
-    // doesn't expose a single flexible entry point.
-    // For simplicity, assuming a common signature, but in a real FFM scenario,
-    // you'd likely have distinct native function calls for each C++ overload.
-    // So, for now, only one is represented, but in practice, you might need:
-    // drawPolygonDecalWithDepth, drawPolygonDecalWithColors, etc.
-    // Or, if the C++ side has a single function that takes optional parameters,
-    // your FFM binding would reflect that.
-    // Given the multiple C++ overloads for `DrawPolygonDecal`,
-    // here are a few representations. In a real FFM scenario,
-    // these would likely map to distinct native functions if the C++ library
-    // does not provide a single entry point for all permutations.
 
     private final NativeFunction<Void> drawPolygonDecalWithDepth = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
