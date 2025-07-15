@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
+import org.kurodev.jpixelgameengine.gfx.decal.DecalMode;
+import org.kurodev.jpixelgameengine.gfx.decal.DecalStructure;
 import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.MemUtil;
@@ -336,11 +338,6 @@ public abstract class PixelGameEngine {
         methods.fillCircle().invoke(x, y, radius, color.getRGBA());
     }
 
-    public final void fill(Pixel color) {
-        Vector2D<Integer> screen = getScreenSize();
-        fillRect(0, 0, screen.getX(), screen.getY(), color);
-    }
-
     public final Vector2D<Integer> getScreenPixelSize() {
         return methods.getScreenPixelSize().invokeObj(IntVector2D::new);
     }
@@ -472,25 +469,49 @@ public abstract class PixelGameEngine {
         methods.drawPartialDecal().invoke(pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
-    // Drawing explicit decal with custom vertices, UVs and colors
-    public final void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions, Vector2D<Float>[] uvs, Pixel[] colors) {
-
-
+    /**
+     * Draws a decal using an explicit list of vertices, UV coordinates and per‑vertex colours.
+     * <p>
+     * This directly maps to {@code DrawExplicitDecal()} in the native engine and allows complete control over the quad.
+     * It is the equivalent of drawing a custom mesh – handy for skeletal animation, isometric billboards, etc.
+     *
+     * @param decal     the texture‐backed decal to render
+     * @param positions array of screen‑space vertices (must be length ≥ 3, typically 4)
+     * @param uvs       array of UV coordinates in texture space, one per vertex
+     * @param colors    array of {@code Pixel}s providing per‑vertex tinting; if you need a flat tint, pass the same colour for every vertex
+     * @throws IllegalArgumentException if the supplied arrays are not all the same length
+     */
+    public final void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions,
+                                        Vector2D<Float>[] uvs, Pixel[] colors) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
-
-
         methods.drawExplicitDecal().invoke(decal.getPtr(), posArray, uvArray, colorArray, positions.length);
     }
 
-    // Drawing warped decal (perspective transform)
+    /**
+     * Draws a decal warped through a perspective transform defined by four destination vertices.
+     * <p>
+     * Maps to {@code DrawWarpedDecal()} – ideal for pseudo‑3D billboards or texture‑mapped quads that need to be skewed.
+     *
+     * @param decal     the decal to render
+     * @param positions array of exactly four destination vertices (top‑left, top‑right, bottom‑right, bottom‑left)
+     * @param tint      overall colour tint; set to {@code Pixel.WHITE} for no tint
+     */
     public final void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         methods.drawWarpedDecal().invoke(decal.getPtr(), posArray, tint.toPtr());
     }
 
-    // Drawing partial warped decal
+    /**
+     * Draws a sub‑rectangle of a decal (defined in texture space) warped to four screen‑space vertices.
+     *
+     * @param decal      the source decal
+     * @param positions  four destination vertices defining the warp
+     * @param sourcePos  top‑left corner in texture space (pixels)
+     * @param sourceSize width × height in texture space (pixels)
+     * @param tint       overall colour tint, applied after the per‑pixel colour is fetched
+     */
     public final void drawPartialWarpedDecal(Decal decal, Vector2D<Float>[] positions,
                                              Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
                                              Pixel tint) {
@@ -500,7 +521,16 @@ public abstract class PixelGameEngine {
                 tint.toPtr());
     }
 
-    // Drawing rotated decal
+    /**
+     * Draws a decal rotated around an arbitrary centre point.
+     *
+     * @param pos    top‑left position of the decal before rotation
+     * @param decal  the decal to render
+     * @param angle  rotation in radians (clockwise, positive‑Y down)
+     * @param center pivot within the decal (relative to {@code pos}) around which to rotate
+     * @param scale  scaling factor applied before rotation (1,1 = original size)
+     * @param tint   overall tint applied to the decal
+     */
     public final void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
                                        Vector2D<Float> center, Vector2D<Float> scale,
                                        Pixel tint) {
@@ -508,7 +538,18 @@ public abstract class PixelGameEngine {
                 center.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
-    // Drawing partial rotated decal
+    /**
+     * Draws a sub‑region of a decal with rotation and scaling.
+     *
+     * @param pos        destination of the unrotated top‑left corner
+     * @param decal      the decal to draw from
+     * @param angle      rotation in radians (clockwise)
+     * @param center     pivot point for rotation, relative to {@code pos}
+     * @param sourcePos  top‑left corner inside the decal’s texture
+     * @param sourceSize width × height of the region inside the decal
+     * @param scale      scaling factors applied before rotation
+     * @param tint       overall tint
+     */
     public final void drawPartialRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
                                               Vector2D<Float> center, Vector2D<Float> sourcePos,
                                               Vector2D<Float> sourceSize, Vector2D<Float> scale,
@@ -519,31 +560,48 @@ public abstract class PixelGameEngine {
                 tint.toPtr());
     }
 
-    // Drawing string as decal
+    /**
+     * Renders a string using the engine’s bitmap font as a decal, preserving sub‑pixel positioning.
+     *
+     * @param pos   screen position
+     * @param text  UTF‑8 text to display (limited to glyphs available in the default font)
+     * @param color tint to apply (per glyph)
+     * @param scale font scaling; values &lt;1 shrink, values &gt;1 enlarge
+     */
     public final void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
                                       Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringDecal().invoke(pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
 
-    // Drawing proportional string as decal
+    /**
+     * Renders proportional (variable‑width) text as a decal.
+     * Identical to {@link #drawStringDecal} but uses the proportional font table in the engine.
+     */
     public final void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
                                           Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringPropDecal().invoke(pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
 
-    // Drawing rectangle decal
+    /**
+     * Draws an un‑filled axis‑aligned rectangle.
+     */
     public final void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
         methods.drawRectDecal().invoke(pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
-    // Filling rectangle decal
+    /**
+     * Draws a filled axis‑aligned rectangle.
+     */
     public final void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
         methods.fillRectDecal().invoke(pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
-    // Gradient filled rectangle decal
+    /**
+     * Draws a filled rectangle with a 4‑corner gradient.
+     * The engine will smoothly interpolate the colours across the quad.
+     */
     public final void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
                                             Pixel colorTL, Pixel colorBL,
                                             Pixel colorBR, Pixel colorTR) {
@@ -552,13 +610,17 @@ public abstract class PixelGameEngine {
                 colorBR.toPtr(), colorTR.toPtr());
     }
 
-    // Filled triangle decal
+    /**
+     * Draws a filled triangle.
+     */
     public final void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                         Vector2D<Float> p2, Pixel color) {
         methods.fillTriangleDecal().invoke(p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
     }
 
-    // Gradient filled triangle decal
+    /**
+     * Draws a filled triangle with per‑vertex gradient colours.
+     */
     public final void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                             Vector2D<Float> p2, Pixel c0, Pixel c1,
                                             Pixel c2) {
@@ -566,7 +628,14 @@ public abstract class PixelGameEngine {
                 c0.toPtr(), c1.toPtr(), c2.toPtr());
     }
 
-    // Drawing polygon decal (basic version)
+    /**
+     * Draws a polygon decal with a uniform tint colour.
+     *
+     * @param decal     decal to sample from
+     * @param positions vertex positions (convex or concave – the engine will triangulate internally)
+     * @param uvs       UV coordinates per vertex
+     * @param tint      overall tint applied after texturing
+     */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
@@ -574,7 +643,9 @@ public abstract class PixelGameEngine {
         methods.drawPolygonDecal().invoke(decal.getPtr(), posArray, uvArray, tint.toPtr());
     }
 
-    // Drawing polygon decal with depth
+    /**
+     * Same as {@link #drawPolygonDecal(Decal, Vector2D[], Vector2D[], Pixel)} but supplies a per‑vertex depth buffer.
+     */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        float[] depths, Vector2D<Float>[] uvs,
                                        Pixel tint) {
@@ -585,7 +656,9 @@ public abstract class PixelGameEngine {
                 depthArray, uvArray, tint.toPtr());
     }
 
-    // Drawing polygon decal with per-vertex colors
+    /**
+     * Polygon decal with per‑vertex colours (no depth).
+     */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel[] colors) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
@@ -595,7 +668,9 @@ public abstract class PixelGameEngine {
                 uvArray, colorArray);
     }
 
-    // Drawing polygon decal with per-vertex colors and tint
+    /**
+     * Polygon decal with per‑vertex colours <em>and</em> an overall tint.
+     */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel[] colors,
                                        Pixel tint) {
@@ -603,60 +678,73 @@ public abstract class PixelGameEngine {
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
         methods.drawPolygonDecalWithColorsAndTint().invoke(decal.getPtr(), posArray,
-                uvArray, colorArray,
-                tint.toPtr());
+                uvArray, colorArray, tint.toPtr());
     }
 
-    // Drawing polygon decal with depth, per-vertex colors and tint
+    /**
+     * Full‑fat polygon draw: per‑vertex depth, colour, plus global tint.
+     */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        float[] depths, Vector2D<Float>[] uvs,
                                        Pixel[] colors, Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
-        MemorySegment uvArray =MemUtil.toArrayPtr(arena, uvs);
+        MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
         methods.drawPolygonDecalWithDepthAndColorsAndTint().invoke(decal.getPtr(), posArray,
                 depthArray, uvArray,
                 colorArray, tint.toPtr());
     }
 
-    // Drawing line decal
+    /**
+     * Draws a single anti‑aliased line between {@code pos1} and {@code pos2}.
+     */
     public final void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
         methods.drawLineDecal().invoke(pos1.toPtr(), pos2.toPtr(), color.toPtr());
     }
 
-    // Drawing rotated string decal
+    /**
+     * Renders a rotated string using the bitmap font.
+     * <p>
+     * Useful for dial gauges, scrolling credits, and other HUD elements that need orientation.
+     */
     public final void drawRotatedStringDecal(Vector2D<Float> pos, String text, float angle,
                                              Vector2D<Float> center, Pixel color,
                                              Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringDecal().invoke(pos.toPtr(), cString, angle,
-                center.toPtr(), color.toPtr(),
-                scale.toPtr());
+                center.toPtr(), color.toPtr(), scale.toPtr());
     }
 
-    // Drawing rotated proportional string decal
+    /**
+     * Proportional version of {@link #drawRotatedStringDecal}.
+     */
     public final void drawRotatedStringPropDecal(Vector2D<Float> pos, String text, float angle,
                                                  Vector2D<Float> center, Pixel color,
                                                  Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringPropDecal().invoke(pos.toPtr(), cString, angle,
-                center.toPtr(), color.toPtr(),
-                scale.toPtr());
+                center.toPtr(), color.toPtr(), scale.toPtr());
     }
 
-    // Clearing screen with a color
+    /**
+     * Clears the entire frame buffer to {@code color}. Call once per frame, typically at the top of your render loop.
+     */
     public final void clear(Pixel color) {
         methods.clear().invoke(color.toPtr());
     }
 
-    // Setting decal mode
-    public final void setDecalMode(int mode) {
-        methods.setDecalMode().invoke(mode);
+    /**
+     * Sets the blending mode used for subsequent decal draws.
+     */
+    public final void setDecalMode(DecalMode mode) {
+        methods.setDecalMode().invoke(mode.ordinal());
     }
 
-    // Setting decal structure
-    public final void setDecalStructure(int structure) {
-        methods.setDecalStructure().invoke(structure);
+    /**
+     * Sets the vertex structure (position‑only, position+uv, etc.) that the following decal calls will assume.
+     */
+    public final void setDecalStructure(DecalStructure structure) {
+        methods.setDecalStructure().invoke(structure.ordinal());
     }
 }
