@@ -2,6 +2,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.kurodev.jpixelgameengine.impl.PointerClass;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -125,6 +126,11 @@ public class NativeFunction<T> {
      * @param toObj Mapper function to turn memory segment into the desired type. Usually a specialized constructor.
      * @param args  Method arguments.
      * @return T
+     * @see org.kurodev.jpixelgameengine.pos.IntVector2D
+     * @see org.kurodev.jpixelgameengine.pos.FloatVector2D
+     * @see org.kurodev.jpixelgameengine.pos.DoubleVector2D
+     * @see org.kurodev.jpixelgameengine.pos.LongVector2D
+     * @see org.kurodev.jpixelgameengine.gfx.Pixel
      */
     @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {

@@ -7,10 +7,12 @@ import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.pos.FloatVector2D;
+import org.kurodev.jpixelgameengine.pos.Vector2D;
 
 import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
+    private static final Vector2D<Float> SPRITE_SIZE = Vector2D.ofFloat(64);
     private boolean run = true;
     private Sprite sprite;
     private Decal decal;
@@ -21,8 +23,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     public boolean onUserCreate() {
-        getUIManager().setEnabled(false);
-        getUIManager().registerComponent(new OlcButton(50, 50, 200, 50, () -> System.out.println("CLICKED")));
         sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
         decal = new Decal(sprite);
         setPixelMode(PixelMode.NORMAL);
@@ -40,7 +40,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         }
         if (sprite != null) {
             drawRect(50, 50, 64, 64, Pixel.RED);
-            drawDecal(FloatVector2D.ZERO, decal, FloatVector2D.ONE, Pixel.WHITE);
+            drawPartialDecal(Vector2D.ofFloat(50, 50), decal, FloatVector2D.ZERO, SPRITE_SIZE, FloatVector2D.ONE, Pixel.WHITE);
         }
         return run;
     }
@@ -52,6 +52,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     protected boolean onConsoleCommand(String command) {
+        consoleWrite(command);
         if ("unload".equals(command)) {
             sprite = null;
             decal = null;

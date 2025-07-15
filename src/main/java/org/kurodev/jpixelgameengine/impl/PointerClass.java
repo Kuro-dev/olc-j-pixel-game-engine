@@ -24,9 +24,8 @@ public abstract class PointerClass {
      */
     public final MemorySegment toPtr() {
         if (ptr == null) {
-            arena = Arena.ofAuto();
+            this.arena = Arena.ofAuto();
             ptr = arena.allocate(getLayout());
-            log.info("Converting {} to pointer.", this);
         }
         return toPtr(ptr);
     }

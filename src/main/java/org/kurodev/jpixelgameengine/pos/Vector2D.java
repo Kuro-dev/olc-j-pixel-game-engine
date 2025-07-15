@@ -8,19 +8,35 @@ import org.kurodev.jpixelgameengine.impl.PointerClass;
 @EqualsAndHashCode(callSuper = false)
 public abstract class Vector2D<T extends Number> extends PointerClass {
 
-    static Vector2D<Integer> ofInt(int x, int y) {
+    public static Vector2D<Integer> ofInt(int n) {
+        return ofInt(n, n);
+    }
+
+    public static Vector2D<Integer> ofInt(int x, int y) {
         return new IntVector2D(x, y);
     }
 
-    static Vector2D<Long> ofLong(long x, long y) {
+    public static Vector2D<Long> ofLong(long n) {
+        return ofLong(n, n);
+    }
+
+    public static Vector2D<Long> ofLong(long x, long y) {
         return new LongVector2D(x, y);
     }
 
-    static Vector2D<Float> ofFloat(float x, float y) {
+    public static Vector2D<Float> ofFloat(float n) {
+        return ofFloat(n, n);
+    }
+
+    public static Vector2D<Float> ofFloat(float x, float y) {
         return new FloatVector2D(x, y);
     }
 
-    static Vector2D<Double> ofDouble(double x, double y) {
+    public static Vector2D<Double> ofDouble(double n) {
+        return ofDouble(n, n);
+    }
+
+    public static Vector2D<Double> ofDouble(double x, double y) {
         return new DoubleVector2D(x, y);
     }
 

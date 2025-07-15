@@ -1,16 +1,17 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.sprite.FlipMode;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
-import org.kurodev.jpixelgameengine.impl.ui.UIManager;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.input.MouseKey;
+import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
@@ -20,10 +21,9 @@ import java.lang.invoke.MethodHandle;
 /**
  * Due to how FFM works this class must be inherited by a Named (NOT ANONYMOUS) class. Otherwise, it will fail.
  */
+@Slf4j
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class PixelGameEngine {
-    private final UIManager uiManager;
-
     static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private final Arena arena;
@@ -39,7 +39,6 @@ public abstract class PixelGameEngine {
         this.arena = Arena.ofAuto();
         methods = new OlcMethods();
         init(width, height);
-        uiManager = new UIManager(this);
     }
 
     private void init(int width, int height) throws Throwable {
@@ -79,14 +78,10 @@ public abstract class PixelGameEngine {
                     case INSTANCE_ALREADY_EXISTS -> System.out.println("Pixelgame engine instance already exists");
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                log.error("Failed to initialise Pixel Game Engine", t);
             }
         });
         engineThread.start();
-    }
-
-    public final UIManager getUIManager() {
-        return uiManager;
     }
 
     /**
@@ -97,21 +92,13 @@ public abstract class PixelGameEngine {
     @NativeCallCandidate
     public abstract boolean onUserCreate();
 
-    @NativeCallCandidate
-    public final boolean onUserUpdateIntl(float delta) {
-        boolean result = onUserUpdate(delta);
-        if (uiManager.isEnabled()) {
-            uiManager.draw();
-        }
-        return result;
-    }
-
     /**
      * Called every frame, and provides you with a time per frame value
      *
      * @param delta time since last frame
      * @return True if the app should keep running
      */
+    @NativeCallCandidate
     public abstract boolean onUserUpdate(float delta);
 
     /**
@@ -124,7 +111,7 @@ public abstract class PixelGameEngine {
 
 
     @NativeCallCandidate
-    protected final boolean onConsoleCommand(MemorySegment command) {
+    final boolean onConsoleCommand(MemorySegment command) {
         return onConsoleCommand(Util.cString(command));
     }
 
@@ -169,6 +156,14 @@ public abstract class PixelGameEngine {
             throw new RuntimeException("Failed to start Pixel Game Engine");
         }
 
+    }
+
+    public final void consoleWriteln(String text) {
+        consoleWrite(text + "\n");
+    }
+
+    public final void consoleWrite(String text) {
+        methods.printToConsole().invoke(arena.allocateFrom(text));
     }
 
     /**
@@ -436,7 +431,43 @@ public abstract class PixelGameEngine {
         methods.setPixelMode().invoke(mode.ordinal());
     }
 
+    public final void drawDecal(Vector2D<Float> pos, Decal decal) {
+        drawDecal(pos, decal, FloatVector2D.ONE, Pixel.WHITE);
+    }
+
+    /**
+     * // Draws a whole decal, with optional scale and tinting
+     *
+     * @param pos   Position in screen/window
+     * @param decal Decal
+     * @param scale Scaling option
+     * @param tint  Tint
+     */
     public final void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
         methods.drawDecal().invoke(pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
+    }
+
+    /**
+     * @param pos        Position to draw at in the screen.
+     * @param decal      The decal object
+     * @param sourcePos  The position within the decal to start drawing
+     * @param sourceSize The Size (Width/Height) of the rectangle to draw
+     */
+    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize) {
+        drawPartialDecal(pos, decal, sourcePos, sourceSize, FloatVector2D.ONE, Pixel.WHITE);
+    }
+
+    /**
+     * Draws a region of a decal, with optional scale and tinting
+     *
+     * @param pos        Position to draw at in the screen.
+     * @param decal      The decal object
+     * @param sourcePos  The position within the decal to start drawing
+     * @param sourceSize The Size (Width/Height) of the rectangle to draw
+     * @param scale      The scale to multiply the size with
+     * @param tint       Tint of the Decal
+     */
+    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
+        methods.drawPartialDecal().invoke(pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 }

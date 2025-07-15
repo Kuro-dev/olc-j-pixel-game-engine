@@ -292,14 +292,26 @@ extern "C"
         return d->vUVScale;
     }
 
+      void printToConsole(char *text)
+    {
+        instance->ConsoleOut() << text;
+    }
+
     // Draws a whole decal, with optional scale and tinting
-    void drawDecal(const olc::vf2d& pos, olc::Decal* decal, const olc::vf2d& scale, const olc::Pixel& tint)
+    void drawDecal(olc::vf2d pos, olc::Decal *decal, olc::vf2d scale, olc::Pixel tint)
     {
         instance->DrawDecal(pos, decal, scale, olc::Pixel(tint));
     }
+
+    void drawPartialDecal(const olc::vf2d pos, olc::Decal *decal, const olc::vf2d source_pos, const olc::vf2d source_size, const olc::vf2d scale, const olc::Pixel tint)
+    {
+        instance->DrawPartialDecal(pos, decal, source_pos, source_size, scale, tint);
+    };
+
+  
+
 /*
     // Draws a region of a decal, with optional scale and tinting
-    void DrawPartialDecal(const olc::vf2d &pos, olc::Decal *decal, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::vf2d &scale = {1.0f, 1.0f}, const olc::Pixel &tint = olc::WHITE);
     void DrawPartialDecal(const olc::vf2d &pos, const olc::vf2d &size, olc::Decal *decal, const olc::vf2d &source_pos, const olc::vf2d &source_size, const olc::Pixel &tint = olc::WHITE);
     // Draws fully user controlled 4 vertices, pos(pixels), uv(pixels), colours
     void DrawExplicitDecal(olc::Decal *decal, const olc::vf2d *pos, const olc::vf2d *uv, const olc::Pixel *col, uint32_t elements = 4);

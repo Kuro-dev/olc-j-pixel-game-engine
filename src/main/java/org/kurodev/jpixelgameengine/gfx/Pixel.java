@@ -8,12 +8,7 @@ import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
 
 public class Pixel extends PointerClass {
-    public static final StructLayout LAYOUT = MemoryLayout.structLayout(
-            ValueLayout.JAVA_BYTE.withName("r"),
-            ValueLayout.JAVA_BYTE.withName("g"),
-            ValueLayout.JAVA_BYTE.withName("b"),
-            ValueLayout.JAVA_BYTE.withName("a")
-    );
+    public static final StructLayout LAYOUT = MemoryLayout.structLayout(ValueLayout.JAVA_BYTE.withName("r"), ValueLayout.JAVA_BYTE.withName("g"), ValueLayout.JAVA_BYTE.withName("b"), ValueLayout.JAVA_BYTE.withName("a"));
 
     public static final Pixel BLACK = new Pixel(0, 0, 0);
     public static final Pixel WHITE = new Pixel(255, 255, 255);
@@ -25,6 +20,13 @@ public class Pixel extends PointerClass {
     private final int g;
     private final int b;
     private final int a;
+
+    public Pixel(MemorySegment segment) {
+        this.r = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("r")));
+        this.g = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("g")));
+        this.b = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("b")));
+        this.a = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("a")));
+    }
 
     public Pixel(int r, int g, int b, int a) {
         this.r = r;

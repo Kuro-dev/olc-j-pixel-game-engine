@@ -4276,7 +4276,6 @@ namespace olc
 			{
 				if (bConsoleShow)
 				{
-					std::cout << ">" + sTextEntryString + "\n";
 					if (OnConsoleCommand(sTextEntryString))
 					{
 						sCommandHistory.push_back(sTextEntryString);
