@@ -52,7 +52,14 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     protected boolean onConsoleCommand(String command) {
-        consoleWrite(command);
+        consoleWriteln(">" + command);
+        if ("gc".equals(command)) {
+            System.gc();
+            System.gc();
+            System.gc();
+            System.gc();
+            System.gc();
+        }
         if ("unload".equals(command)) {
             sprite = null;
             decal = null;

@@ -20,13 +20,15 @@ import org.kurodev.jpixelgameengine.pos.IntVector2D;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
 import java.lang.foreign.*;
+import java.lang.ref.Cleaner;
 
 /**
  * Due to how FFM works this class must be inherited by a Named (NOT ANONYMOUS) class. Otherwise, it will fail.
  */
 @Slf4j
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-public abstract class PixelGameEngine {
+public abstract class PixelGameEngine implements Cleaner.Cleanable {
+    private static final NativeFunction<Void> GAME_ENGINE_DESTROY = new NativeFunction<>("gameEngine_destroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
     private static final NativeFunction<MemorySegment> NATIVE_CONSTRUCTOR = new NativeFunction<>("createGameEngineInstance",
             FunctionDescriptor.of(
                     ValueLayout.ADDRESS,
@@ -40,7 +42,7 @@ public abstract class PixelGameEngine {
     static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private final Arena arena;
-    private final MemorySegment olcPtr;
+    private final MemorySegment instancePtr;
 
     private final OlcMethods methods;
 
@@ -58,15 +60,21 @@ public abstract class PixelGameEngine {
         var onUserDestroyStub = EngineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
         var onConsoleCommandStub = EngineInitialiser.createOnConsoleCommandStub(LINKER, arena, this);
         var onTextEntryCompleteStub = EngineInitialiser.createTextEntryCompleteStub(LINKER, arena, this);
-        olcPtr = NATIVE_CONSTRUCTOR.invoke(onUserCreateStub, onUserUpdateStub, onUserDestroyStub, onConsoleCommandStub, onTextEntryCompleteStub);
+        instancePtr = NATIVE_CONSTRUCTOR.invoke(onUserCreateStub, onUserUpdateStub, onUserDestroyStub, onConsoleCommandStub, onTextEntryCompleteStub);
         methods = new OlcMethods();
         init(width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow);
     }
 
     private void init(int width, int height, int pixelWidth, int pixelHeight, boolean fullScreen, boolean vSync, boolean cohesion, boolean realWindow) {
-        System.out.println("Initializing PixelGameEngine...");
-        var result = PixelgameEngineReturnCode.fromCode(methods.construct().invoke(olcPtr, width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow));
+        log.info("Initializing PixelGameEngine...");
+        var result = PixelgameEngineReturnCode.fromCode(methods.construct().invoke(instancePtr, width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow));
         log.info("PixelGameEngineReturnCode: {}", result);
+    }
+
+    @Override
+    public final void clean() {
+        log.info("Cleaning up PixelGameEngine...");
+        GAME_ENGINE_DESTROY.invoke(instancePtr);
     }
 
     /**
@@ -91,6 +99,7 @@ public abstract class PixelGameEngine {
      */
     @NativeCallCandidate
     public boolean onUserDestroy() {
+        clean();
         return true;
     }
 
@@ -134,9 +143,9 @@ public abstract class PixelGameEngine {
     @SneakyThrows
     public final void start() {
         NativeFunction<Integer> fn = new NativeFunction<>("start", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
-        int returnCode = fn.invoke(olcPtr);
+        int returnCode = fn.invoke(instancePtr);
         if (returnCode == 1) {
-            System.out.println("Successfully started Pixel Game Engine");
+            log.info("Successfully started Pixel Game Engine");
         } else {
             throw new RuntimeException("Failed to start Pixel Game Engine");
         }
@@ -147,14 +156,14 @@ public abstract class PixelGameEngine {
     }
 
     public final void consoleWrite(String text) {
-        methods.printToConsole().invoke(olcPtr, arena.allocateFrom(text));
+        methods.printToConsole().invoke(instancePtr, arena.allocateFrom(text));
     }
 
     /**
      * @return Whether the application window is focused
      */
     public final boolean isFocussed() {
-        return methods.isFocused().invoke(olcPtr);
+        return methods.isFocused().invoke(instancePtr);
     }
 
     /**
@@ -177,19 +186,19 @@ public abstract class PixelGameEngine {
      * @return True if the drawing was successful, false otherwise
      */
     public final boolean draw(int x, int y, Pixel p) {
-        return methods.draw().invoke(olcPtr, x, y, p.getRGBA());
+        return methods.draw().invoke(instancePtr, x, y, p.getRGBA());
     }
 
     public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
-        methods.drawLine().invoke(olcPtr, x1, y1, x2, y2, p.getRGBA(), pattern);
+        methods.drawLine().invoke(instancePtr, x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
     public final void drawRect(int x, int y, int width, int height, Pixel p) {
-        methods.drawRect().invoke(olcPtr, x, y, width, height, p.getRGBA());
+        methods.drawRect().invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
     public final void fillRect(int x, int y, int width, int height, Pixel p) {
-        methods.fillRect().invoke(olcPtr, x, y, width, height, p.getRGBA());
+        methods.fillRect().invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
     /**
@@ -199,7 +208,7 @@ public abstract class PixelGameEngine {
      * @return the state of the given key at this current Frame
      */
     public final HWButton getKey(KeyBoardKey k) {
-        return methods.getKey().invokeObj(HWButton::new, olcPtr, k.ordinal());
+        return methods.getKey().invokeObj(HWButton::new, instancePtr, k.ordinal());
     }
 
     /**
@@ -209,14 +218,14 @@ public abstract class PixelGameEngine {
      * @return the state of the given mouse key at this current Frame
      */
     public final HWButton getKey(MouseKey k) {
-        return methods.getMouseBtn().invokeObj(HWButton::new, olcPtr, k.ordinal());
+        return methods.getMouseBtn().invokeObj(HWButton::new, instancePtr, k.ordinal());
     }
 
     /**
      * @return Position of the mouse
      */
     public final Vector2D<Integer> getMousePos() {
-        return methods.getMousePos().invokeObj(IntVector2D::new, olcPtr);
+        return methods.getMousePos().invokeObj(IntVector2D::new, instancePtr);
     }
 
     /**
@@ -224,7 +233,7 @@ public abstract class PixelGameEngine {
      */
     @SneakyThrows
     public final Vector2D<Integer> getWindowMousePos() {
-        return methods.getWindowMousePos().invokeObj(IntVector2D::new, olcPtr);
+        return methods.getWindowMousePos().invokeObj(IntVector2D::new, instancePtr);
     }
 
     /**
@@ -234,7 +243,7 @@ public abstract class PixelGameEngine {
      * or 0 if there is no scrolling activity
      */
     public final int getMouseWheel() {
-        return methods.getMouseWheel().invoke(olcPtr);
+        return methods.getMouseWheel().invoke(instancePtr);
     }
 
     /**
@@ -244,7 +253,7 @@ public abstract class PixelGameEngine {
      * @param height the new height of the screen in pixels
      */
     public final void setScreenSize(int width, int height) {
-        methods.setScreenSize().invoke(olcPtr, width, height);
+        methods.setScreenSize().invoke(instancePtr, width, height);
     }
 
     /**
@@ -270,7 +279,7 @@ public abstract class PixelGameEngine {
      */
     public final void drawString(int x, int y, String text, Pixel color, int scale) {
         MemorySegment cString = arena.allocateFrom(text);
-        methods.drawString().invoke(olcPtr, x, y, cString, color.getRGBA(), scale);
+        methods.drawString().invoke(instancePtr, x, y, cString, color.getRGBA(), scale);
     }
 
     /**
@@ -282,7 +291,7 @@ public abstract class PixelGameEngine {
      * @param color  the color of the circle
      */
     public final void drawCircle(int x, int y, int radius, Pixel color) {
-        methods.drawCircle().invoke(olcPtr, x, y, radius, color.getRGBA(), 0xFF);
+        methods.drawCircle().invoke(instancePtr, x, y, radius, color.getRGBA(), 0xFF);
     }
 
     /**
@@ -304,7 +313,7 @@ public abstract class PixelGameEngine {
      */
     //TODO:maybe replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
     public final void drawCircle(int x, int y, int radius, Pixel color, int mask) {
-        methods.drawCircle().invoke(olcPtr, x, y, radius, color.getRGBA(), mask);
+        methods.drawCircle().invoke(instancePtr, x, y, radius, color.getRGBA(), mask);
     }
 
     /**
@@ -316,7 +325,7 @@ public abstract class PixelGameEngine {
      * @param color  the fill color of the circle
      */
     public final void fillCircle(int x, int y, int radius, Pixel color) {
-        methods.fillCircle().invoke(olcPtr, x, y, radius, color.getRGBA());
+        methods.fillCircle().invoke(instancePtr, x, y, radius, color.getRGBA());
     }
 
     public final Vector2D<Integer> getScreenPixelSize() {
@@ -332,15 +341,15 @@ public abstract class PixelGameEngine {
      * @param suspendTime whether the Application should halt while console is opened
      */
     public final void consoleShow(KeyBoardKey closeKey, boolean suspendTime) {
-        methods.consoleShow().invoke(olcPtr, closeKey.ordinal(), suspendTime);
+        methods.consoleShow().invoke(instancePtr, closeKey.ordinal(), suspendTime);
     }
 
     public final void consoleClear() {
-        methods.consoleClear().invoke(olcPtr);
+        methods.consoleClear().invoke(instancePtr);
     }
 
     public final boolean isConsoleShowing() {
-        return methods.isConsoleShowing().invoke(olcPtr);
+        return methods.isConsoleShowing().invoke(instancePtr);
     }
 
     /**
@@ -365,7 +374,7 @@ public abstract class PixelGameEngine {
      * @param initialText The initial text that should be inserted upon entering
      */
     public final void textEntryEnable(boolean enable, String initialText) {
-        methods.textEntryEnable().invoke(olcPtr, enable, arena.allocateFrom(initialText));
+        methods.textEntryEnable().invoke(instancePtr, enable, arena.allocateFrom(initialText));
     }
 
     public final String textEntryGetString() {
@@ -373,15 +382,15 @@ public abstract class PixelGameEngine {
     }
 
     public final int textEntryGetCursor() {
-        return methods.textEntryGetCursor().invoke(olcPtr);
+        return methods.textEntryGetCursor().invoke(instancePtr);
     }
 
     public final boolean isTextEntryEnabled() {
-        return methods.isTextEntryEnabled().invoke(olcPtr);
+        return methods.isTextEntryEnabled().invoke(instancePtr);
     }
 
     public final void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
-        methods.drawSprite().invoke(olcPtr, x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
+        methods.drawSprite().invoke(instancePtr, x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
     }
 
     /**
@@ -403,11 +412,11 @@ public abstract class PixelGameEngine {
      * @param mode   Optional Flip mode to mirror the sprite.
      */
     public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale, FlipMode mode) {
-        methods.drawPartialSprite().invoke(olcPtr, x, y, sprite.getSpritePtr(), scale, ox, oy, w, h, (byte) mode.ordinal());
+        methods.drawPartialSprite().invoke(instancePtr, x, y, sprite.getSpritePtr(), scale, ox, oy, w, h, (byte) mode.ordinal());
     }
 
     public final void setPixelMode(PixelMode mode) {
-        methods.setPixelMode().invoke(olcPtr, mode.ordinal());
+        methods.setPixelMode().invoke(instancePtr, mode.ordinal());
     }
 
     public final void drawDecal(Vector2D<Float> pos, Decal decal) {
@@ -423,7 +432,7 @@ public abstract class PixelGameEngine {
      * @param tint  Tint
      */
     public final void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
-        methods.drawDecal().invoke(olcPtr, pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
+        methods.drawDecal().invoke(instancePtr, pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
     }
 
     /**
@@ -447,7 +456,7 @@ public abstract class PixelGameEngine {
      * @param tint       Tint of the Decal
      */
     public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
-        methods.drawPartialDecal().invoke(olcPtr, pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
+        methods.drawPartialDecal().invoke(instancePtr, pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
     /**
@@ -467,7 +476,7 @@ public abstract class PixelGameEngine {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
-        methods.drawExplicitDecal().invoke(olcPtr, decal.getPtr(), posArray, uvArray, colorArray, positions.length);
+        methods.drawExplicitDecal().invoke(instancePtr, decal.getPtr(), posArray, uvArray, colorArray, positions.length);
     }
 
     /**
@@ -481,7 +490,7 @@ public abstract class PixelGameEngine {
      */
     public final void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
-        methods.drawWarpedDecal().invoke(olcPtr, decal.getPtr(), posArray, tint.toPtr());
+        methods.drawWarpedDecal().invoke(instancePtr, decal.getPtr(), posArray, tint.toPtr());
     }
 
     /**
@@ -497,7 +506,7 @@ public abstract class PixelGameEngine {
                                              Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
                                              Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
-        methods.drawPartialWarpedDecal().invoke(olcPtr, decal.getPtr(), posArray,
+        methods.drawPartialWarpedDecal().invoke(instancePtr, decal.getPtr(), posArray,
                 sourcePos.toPtr(), sourceSize.toPtr(),
                 tint.toPtr());
     }
@@ -515,7 +524,7 @@ public abstract class PixelGameEngine {
     public final void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
                                        Vector2D<Float> center, Vector2D<Float> scale,
                                        Pixel tint) {
-        methods.drawRotatedDecal().invoke(olcPtr, pos.toPtr(), decal.getPtr(), angle,
+        methods.drawRotatedDecal().invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
@@ -535,7 +544,7 @@ public abstract class PixelGameEngine {
                                               Vector2D<Float> center, Vector2D<Float> sourcePos,
                                               Vector2D<Float> sourceSize, Vector2D<Float> scale,
                                               Pixel tint) {
-        methods.drawPartialRotatedDecal().invoke(olcPtr, pos.toPtr(), decal.getPtr(), angle,
+        methods.drawPartialRotatedDecal().invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), sourcePos.toPtr(),
                 sourceSize.toPtr(), scale.toPtr(),
                 tint.toPtr());
@@ -552,7 +561,7 @@ public abstract class PixelGameEngine {
     public final void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
                                       Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
-        methods.drawStringDecal().invoke(olcPtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
+        methods.drawStringDecal().invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
 
     /**
@@ -562,21 +571,21 @@ public abstract class PixelGameEngine {
     public final void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
                                           Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
-        methods.drawStringPropDecal().invoke(olcPtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
+        methods.drawStringPropDecal().invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
 
     /**
      * Draws an un‑filled axis‑aligned rectangle.
      */
     public final void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
-        methods.drawRectDecal().invoke(olcPtr, pos.toPtr(), size.toPtr(), color.toPtr());
+        methods.drawRectDecal().invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
     /**
      * Draws a filled axis‑aligned rectangle.
      */
     public final void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
-        methods.fillRectDecal().invoke(olcPtr, pos.toPtr(), size.toPtr(), color.toPtr());
+        methods.fillRectDecal().invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
     /**
@@ -586,7 +595,7 @@ public abstract class PixelGameEngine {
     public final void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
                                             Pixel colorTL, Pixel colorBL,
                                             Pixel colorBR, Pixel colorTR) {
-        methods.gradientFillRectDecal().invoke(olcPtr, pos.toPtr(), size.toPtr(),
+        methods.gradientFillRectDecal().invoke(instancePtr, pos.toPtr(), size.toPtr(),
                 colorTL.toPtr(), colorBL.toPtr(),
                 colorBR.toPtr(), colorTR.toPtr());
     }
@@ -596,7 +605,7 @@ public abstract class PixelGameEngine {
      */
     public final void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                         Vector2D<Float> p2, Pixel color) {
-        methods.fillTriangleDecal().invoke(olcPtr, p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
+        methods.fillTriangleDecal().invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
     }
 
     /**
@@ -605,7 +614,7 @@ public abstract class PixelGameEngine {
     public final void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                             Vector2D<Float> p2, Pixel c0, Pixel c1,
                                             Pixel c2) {
-        methods.gradientTriangleDecal().invoke(olcPtr, p0.toPtr(), p1.toPtr(), p2.toPtr(),
+        methods.gradientTriangleDecal().invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(),
                 c0.toPtr(), c1.toPtr(), c2.toPtr());
     }
 
@@ -621,7 +630,7 @@ public abstract class PixelGameEngine {
                                        Vector2D<Float>[] uvs, Pixel tint) {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
-        methods.drawPolygonDecal().invoke(olcPtr, decal.getPtr(), posArray, uvArray, tint.toPtr());
+        methods.drawPolygonDecal().invoke(instancePtr, decal.getPtr(), posArray, uvArray, tint.toPtr());
     }
 
     /**
@@ -633,7 +642,7 @@ public abstract class PixelGameEngine {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
-        methods.drawPolygonDecalWithDepth().invoke(olcPtr, decal.getPtr(), posArray,
+        methods.drawPolygonDecalWithDepth().invoke(instancePtr, decal.getPtr(), posArray,
                 depthArray, uvArray, tint.toPtr());
     }
 
@@ -645,7 +654,7 @@ public abstract class PixelGameEngine {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
-        methods.drawPolygonDecalWithColors().invoke(olcPtr, decal.getPtr(), posArray,
+        methods.drawPolygonDecalWithColors().invoke(instancePtr, decal.getPtr(), posArray,
                 uvArray, colorArray);
     }
 
@@ -658,7 +667,7 @@ public abstract class PixelGameEngine {
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
-        methods.drawPolygonDecalWithColorsAndTint().invoke(olcPtr, decal.getPtr(), posArray,
+        methods.drawPolygonDecalWithColorsAndTint().invoke(instancePtr, decal.getPtr(), posArray,
                 uvArray, colorArray, tint.toPtr());
     }
 
@@ -672,7 +681,7 @@ public abstract class PixelGameEngine {
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
         MemorySegment colorArray = MemUtil.toArrayPtr(arena, colors);
-        methods.drawPolygonDecalWithDepthAndColorsAndTint().invoke(olcPtr, decal.getPtr(), posArray,
+        methods.drawPolygonDecalWithDepthAndColorsAndTint().invoke(instancePtr, decal.getPtr(), posArray,
                 depthArray, uvArray,
                 colorArray, tint.toPtr());
     }
@@ -681,7 +690,7 @@ public abstract class PixelGameEngine {
      * Draws a single anti‑aliased line between {@code pos1} and {@code pos2}.
      */
     public final void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
-        methods.drawLineDecal().invoke(olcPtr, pos1.toPtr(), pos2.toPtr(), color.toPtr());
+        methods.drawLineDecal().invoke(instancePtr, pos1.toPtr(), pos2.toPtr(), color.toPtr());
     }
 
     /**
@@ -693,7 +702,7 @@ public abstract class PixelGameEngine {
                                              Vector2D<Float> center, Pixel color,
                                              Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
-        methods.drawRotatedStringDecal().invoke(olcPtr, pos.toPtr(), cString, angle,
+        methods.drawRotatedStringDecal().invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
     }
 
@@ -704,7 +713,7 @@ public abstract class PixelGameEngine {
                                                  Vector2D<Float> center, Pixel color,
                                                  Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
-        methods.drawRotatedStringPropDecal().invoke(olcPtr, pos.toPtr(), cString, angle,
+        methods.drawRotatedStringPropDecal().invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
     }
 
@@ -712,20 +721,20 @@ public abstract class PixelGameEngine {
      * Clears the entire frame buffer to {@code color}. Call once per frame, typically at the top of your render loop.
      */
     public final void clear(Pixel color) {
-        methods.clear().invoke(olcPtr, color.toPtr());
+        methods.clear().invoke(instancePtr, color.toPtr());
     }
 
     /**
      * Sets the blending mode used for subsequent decal draws.
      */
     public final void setDecalMode(DecalMode mode) {
-        methods.setDecalMode().invoke(olcPtr, mode.ordinal());
+        methods.setDecalMode().invoke(instancePtr, mode.ordinal());
     }
 
     /**
      * Sets the vertex structure (position‑only, position+uv, etc.) that the following decal calls will assume.
      */
     public final void setDecalStructure(DecalStructure structure) {
-        methods.setDecalStructure().invoke(olcPtr, structure.ordinal());
+        methods.setDecalStructure().invoke(instancePtr, structure.ordinal());
     }
 }

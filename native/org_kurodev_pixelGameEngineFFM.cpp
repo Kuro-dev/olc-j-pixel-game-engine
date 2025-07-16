@@ -91,9 +91,6 @@ extern "C"
                                          OnConsoleCommandCallback onConsoleCommand,
                                          OnTextEntryCompleteCallback onTextEntryComplete)
     {
-
-        std::cout << "Instantiating new Game Engine instance" << std::endl;
-
         GameEngine *instance = new GameEngine(onCreate, onUpdate, onDestroy, onConsoleCommand, onTextEntryComplete);
         // Verify callbacks were stored
         return instance;
@@ -106,7 +103,6 @@ extern "C"
 
     int start(GameEngine *instance)
     {
-        std::cout << "Starting pixelgame engine" << std::endl;
         return instance->Start();
     }
 
