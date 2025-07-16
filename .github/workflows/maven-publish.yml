@@ -3,7 +3,7 @@ name: Build and Release JAR from pom.xml
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'pom.xml'
 
