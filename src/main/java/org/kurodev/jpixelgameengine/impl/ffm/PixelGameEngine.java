@@ -2,6 +2,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.kurodev.NativeLoader;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
@@ -19,6 +20,7 @@ import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
+import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.ref.Cleaner;
 
@@ -28,6 +30,14 @@ import java.lang.ref.Cleaner;
 @Slf4j
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class PixelGameEngine implements Cleaner.Cleanable {
+    static {
+        try {
+            NativeLoader.loadLibraries();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static final NativeFunction<Void> GAME_ENGINE_DESTROY = new NativeFunction<>("gameEngine_destroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
     private static final NativeFunction<MemorySegment> NATIVE_CONSTRUCTOR = new NativeFunction<>("createGameEngineInstance",
             FunctionDescriptor.of(
