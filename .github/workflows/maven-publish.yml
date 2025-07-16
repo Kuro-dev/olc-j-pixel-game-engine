@@ -49,6 +49,6 @@ jobs:
           files: |
             target/*.jar
             target/*.javadoc.jar
-            source/lib/*
+            /lib/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
