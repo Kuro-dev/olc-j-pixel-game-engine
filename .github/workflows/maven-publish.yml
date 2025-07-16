@@ -49,6 +49,7 @@ jobs:
           files: |
             target/*.jar
             target/*.javadoc.jar
-            /lib/*
+            lib/*so
+            lib/*dll
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
