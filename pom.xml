@@ -6,7 +6,7 @@
 
     <groupId>org.kurodev</groupId>
     <artifactId>olc-j-pixel-game-engine</artifactId>
-    <version>1.0.1-PRE-RELEASE_1</version>
+    <version>1.0.1-PRE-RELEASE</version>
 
     <properties>
         <maven.compiler.source>24</maven.compiler.source>
