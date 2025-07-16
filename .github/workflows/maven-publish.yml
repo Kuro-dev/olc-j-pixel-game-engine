@@ -1,6 +1,8 @@
 name: Build and Release JAR from pom.xml
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - master
