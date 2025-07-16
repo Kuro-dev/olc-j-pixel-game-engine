@@ -18,7 +18,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
     private Decal decal;
 
     public PixelGameEngineImpl(int width, int height) {
-        super(width, height);
+        super(width, height, 1, 1);
     }
 
     @Override

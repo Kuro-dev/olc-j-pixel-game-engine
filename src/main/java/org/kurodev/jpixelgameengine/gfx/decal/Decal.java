@@ -17,8 +17,8 @@ import java.lang.ref.Cleaner;
 @Getter
 public class Decal implements Cleaner.Cleanable {
     private static final Cleaner CLEANER = Cleaner.create();
-    private static final NativeFunction<MemorySegment> CREATE_DECAL = new NativeFunction<>("create_decal", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
-    private static final NativeFunction<Void> DESTROY_DECAL = new NativeFunction<>("destroy_decal", ValueLayout.ADDRESS);
+    private static final NativeFunction<MemorySegment> CREATE_DECAL = new NativeFunction<>("decal_create", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+    private static final NativeFunction<Void> DESTROY_DECAL = new NativeFunction<>("decal_destroy", ValueLayout.ADDRESS);
     private static final NativeFunction<Vector2D<Float>> UV_SCALE = new NativeFunction<>("decal_vUVScale", FunctionDescriptor.of(ValueLayout.ADDRESS, FloatVector2D.LAYOUT));
     private final MemorySegment ptr;
     private final Sprite sprite;

@@ -3,6 +3,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
+import org.kurodev.jpixelgameengine.impl.PixelgameEngineReturnCode;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
@@ -14,19 +15,38 @@ import java.lang.foreign.ValueLayout;
 
 /**
  * Cache for fast access to frequently used methods to reduce the need for library lookups.
+ * All the methods described here need an Engine Instance to function.
  */
 @Getter
 @Accessors(fluent = true)
 public class OlcMethods {
 
-
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
-        return new NativeFunction<T>(name, FunctionDescriptor.of(returnVal, args));
+        MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];
+        argsActual[0] = ValueLayout.ADDRESS;
+        System.arraycopy(args, 0, argsActual, 1, args.length);
+
+        return new NativeFunction<T>(name, FunctionDescriptor.of(returnVal, argsActual));
     }
 
     private <T> NativeFunction<T> createVoidFn(String name, MemoryLayout... args) {
-        return new NativeFunction<T>(name, FunctionDescriptor.ofVoid(args));
+        MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];
+        argsActual[0] = ValueLayout.ADDRESS;
+        System.arraycopy(args, 0, argsActual, 1, args.length);
+        return new NativeFunction<T>(name, FunctionDescriptor.ofVoid(argsActual));
     }
+
+    private final NativeFunction<Integer> construct = createFn("engine_construct",
+            ValueLayout.JAVA_INT, //r-code
+            ValueLayout.JAVA_INT, // width
+            ValueLayout.JAVA_INT, // height
+            ValueLayout.JAVA_INT, // pixel_w
+            ValueLayout.JAVA_INT, // pixel_h
+            ValueLayout.JAVA_BOOLEAN, // full_screen,
+            ValueLayout.JAVA_BOOLEAN, //  bool vsync,
+            ValueLayout.JAVA_BOOLEAN, // bool cohesion,
+            ValueLayout.JAVA_BOOLEAN  // bool realwindow
+    );
 
     /**
      * (int x, int y, int rgba)

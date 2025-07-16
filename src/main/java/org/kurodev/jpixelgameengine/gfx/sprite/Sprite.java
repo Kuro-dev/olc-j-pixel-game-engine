@@ -14,11 +14,11 @@ import java.nio.file.Path;
 @Slf4j
 public class Sprite implements Cleaner.Cleanable {
     private static final Cleaner CLEANER = Cleaner.create();
-    private static final NativeFunction<MemorySegment> CREATE_SPRITE = new NativeFunction<>("create_sprite", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
-    private static final NativeFunction<Void> DESTROY_SPRITE = new NativeFunction<>("destroy_sprite", ValueLayout.ADDRESS);
+    private static final NativeFunction<MemorySegment> CREATE_SPRITE = new NativeFunction<>("sprite_create", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+    private static final NativeFunction<Void> DESTROY_SPRITE = new NativeFunction<>("sprite_destroy", ValueLayout.ADDRESS);
 
-    private static final NativeFunction<Integer> SPRITE_WIDTH = new NativeFunction<>("sprite_width",ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
-    private static final NativeFunction<Integer> SPRITE_HEIGHT = new NativeFunction<>("sprite_height",ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
+    private static final NativeFunction<Integer> SPRITE_WIDTH = new NativeFunction<>("sprite_width", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
+    private static final NativeFunction<Integer> SPRITE_HEIGHT = new NativeFunction<>("sprite_height", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
     private final Arena arena;
     /**
      * MemoryAddress of this sprite. Should never be needed
@@ -29,6 +29,7 @@ public class Sprite implements Cleaner.Cleanable {
     private final Path spritePath;
 
     public Sprite(Path spritePath) {
+        log.info("Loading sprite {}", spritePath);
         this.spritePath = spritePath;
         arena = Arena.ofAuto();
         spritePtr = CREATE_SPRITE.invokeExact(memorySegment -> memorySegment, arena.allocateFrom(spritePath.toAbsolutePath().toString()));

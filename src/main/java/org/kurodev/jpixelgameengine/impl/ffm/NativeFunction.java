@@ -2,7 +2,6 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.kurodev.jpixelgameengine.impl.PointerClass;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
