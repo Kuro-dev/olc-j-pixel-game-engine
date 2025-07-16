@@ -29,39 +29,22 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Check if tag already exists
-        id: tag_check
-        run: |
-          VERSION=${{ steps.get_version.outputs.version }}
-          echo "Checking for tag v$VERSION"
-          if git ls-remote --tags origin | grep -q "refs/tags/v$VERSION$"; then
-            echo "EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "EXISTS=false" >> $GITHUB_ENV
-          fi
-        env:
-          VERSION: ${{ steps.get_version.outputs.version }}
-
-      - name: Cancel if version tag already exists
-        if: env.EXISTS == 'true'
-        run: exit 0
-
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Create GitHub tag
+      - name: Create GitHub tag (ignore failure if tag exists)
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git tag v$VERSION
-          git push origin v$VERSION
+          git tag v$VERSION || echo "Tag v$VERSION already exists, skipping tag creation"
+          git push origin v$VERSION || echo "Tag v$VERSION already pushed, skipping push"
         env:
           VERSION: ${{ steps.get_version.outputs.version }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
           tag_name: v${{ env.VERSION }}
           files: |
             target/*.jar
