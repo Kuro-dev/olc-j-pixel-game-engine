@@ -12,7 +12,8 @@ import java.lang.ref.Cleaner;
 import java.nio.file.Path;
 
 @Slf4j
-public class Sprite implements Cleaner.Cleanable {
+public class Sprite {
+    //TODO Check if the Cleaner is actually getting triggered at some point or if the reference is still too hard.
     private static final Cleaner CLEANER = Cleaner.create();
     private static final NativeFunction<MemorySegment> CREATE_SPRITE = new NativeFunction<>("sprite_create", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
     private static final NativeFunction<Void> DESTROY_SPRITE = new NativeFunction<>("sprite_destroy", ValueLayout.ADDRESS);
@@ -33,14 +34,11 @@ public class Sprite implements Cleaner.Cleanable {
         this.spritePath = spritePath;
         arena = Arena.ofAuto();
         spritePtr = CREATE_SPRITE.invokeExact(memorySegment -> memorySegment, arena.allocateFrom(spritePath.toAbsolutePath().toString()));
-        CLEANER.register(this, new OlcReferenceCleaner(this));
-    }
-
-    @Override
-    public void clean() {
-        log.info("Unloading sprite {}", spritePath);
-        DESTROY_SPRITE.invoke(this.spritePtr);
-        arena.close();
+        CLEANER.register(this, new OlcReferenceCleaner(() -> {
+            log.info("Unloading sprite {}", spritePath);
+            DESTROY_SPRITE.invoke(spritePtr);
+            arena.close();
+        }));
     }
 
     public int getHeight() {

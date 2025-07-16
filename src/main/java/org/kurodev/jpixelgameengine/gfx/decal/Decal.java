@@ -15,7 +15,8 @@ import java.lang.ref.Cleaner;
 
 @Slf4j
 @Getter
-public class Decal implements Cleaner.Cleanable {
+public class Decal {
+    //TODO Check if the Cleaner is actually getting triggered at some point or if the reference is still too hard.
     private static final Cleaner CLEANER = Cleaner.create();
     private static final NativeFunction<MemorySegment> CREATE_DECAL = new NativeFunction<>("decal_create", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
     private static final NativeFunction<Void> DESTROY_DECAL = new NativeFunction<>("decal_destroy", ValueLayout.ADDRESS);
@@ -26,7 +27,10 @@ public class Decal implements Cleaner.Cleanable {
     public Decal(Sprite sprite) {
         ptr = CREATE_DECAL.invokeExact(m -> m, sprite.getSpritePtr());
         this.sprite = sprite;
-        CLEANER.register(this, new OlcReferenceCleaner(this));
+        CLEANER.register(this, new OlcReferenceCleaner(() -> {
+            log.info("Unloading Decal for {}", sprite.getSpritePath());
+            DESTROY_DECAL.invoke(ptr);
+        }));
     }
 
 
@@ -34,9 +38,4 @@ public class Decal implements Cleaner.Cleanable {
         return UV_SCALE.invokeObj(FloatVector2D::new, ptr);
     }
 
-    @Override
-    public void clean() {
-        log.info("Unloading Decal for {}", sprite.getSpritePath());
-        DESTROY_DECAL.invoke(ptr);
-    }
 }
