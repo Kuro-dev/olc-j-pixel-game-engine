@@ -1,0 +1,36 @@
+name: Build and Release JAR
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers only on tags like v1.0.0, v2.1, etc.
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '24'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: |
+            target/*.jar
+            target/*.javadoc.jar
+            source/lib/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
