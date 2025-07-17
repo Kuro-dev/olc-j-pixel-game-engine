@@ -49,7 +49,7 @@ jobs:
           body: |
             🧩 **Maven Dependency (via JitPack)**
             The binaries (.dll / .so) files should be downloaded automatically on first startup,
-            if that doesn't work, however just create a folder called "lib" and copy the needed file there.
+            if that doesn't work, however, just create a folder called "lib" and copy the needed file there.
             To use this library via [JitPack](https://jitpack.io), add the following to your `pom.xml`:
         
             ```xml
