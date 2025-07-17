@@ -1,9 +1,6 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
-import lombok.Getter;
-import lombok.experimental.Accessors;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
-import org.kurodev.jpixelgameengine.impl.PixelgameEngineReturnCode;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
@@ -17,8 +14,6 @@ import java.lang.foreign.ValueLayout;
  * Cache for fast access to frequently used methods to reduce the need for library lookups.
  * All the methods described here need an Engine Instance to function.
  */
-@Getter
-@Accessors(fluent = true)
 public class OlcMethods {
 
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
@@ -36,7 +31,7 @@ public class OlcMethods {
         return new NativeFunction<T>(name, FunctionDescriptor.ofVoid(argsActual));
     }
 
-    private final NativeFunction<Integer> construct = createFn("engine_construct",
+    final NativeFunction<Integer> construct = createFn("engine_construct",
             ValueLayout.JAVA_INT, //r-code
             ValueLayout.JAVA_INT, // width
             ValueLayout.JAVA_INT, // height
@@ -51,43 +46,43 @@ public class OlcMethods {
     /**
      * (int x, int y, int rgba)
      */
-    private final NativeFunction<Boolean> draw = createFn("draw",
+    final NativeFunction<Boolean> draw = createFn("draw",
             ValueLayout.JAVA_BOOLEAN, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Boolean> isFocused = createFn("isFocused", ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Boolean> isFocused = createFn("isFocused", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<HWButton> getKey = createFn("getKey", HWButton.LAYOUT, ValueLayout.JAVA_INT);
+    final NativeFunction<HWButton> getKey = createFn("getKey", HWButton.LAYOUT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<HWButton> getMouseBtn = createFn("getMouse", HWButton.LAYOUT, ValueLayout.JAVA_INT);
+    final NativeFunction<HWButton> getMouseBtn = createFn("getMouse", HWButton.LAYOUT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Vector2D<Integer>> getMousePos = createFn("getMousePos", IntVector2D.LAYOUT);
+    final NativeFunction<Vector2D<Integer>> getMousePos = createFn("getMousePos", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Vector2D<Integer>> getWindowMousePos = createFn("getWindowMouse", IntVector2D.LAYOUT);
+    final NativeFunction<Vector2D<Integer>> getWindowMousePos = createFn("getWindowMouse", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Integer> getMouseWheel = createFn("getMouseWheel", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getMouseWheel = createFn("getMouseWheel", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> setScreenSize = createVoidFn("setScreenSize", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Void> setScreenSize = createVoidFn("setScreenSize", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawString = createVoidFn("drawString",
+    final NativeFunction<Void> drawString = createVoidFn("drawString",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.ADDRESS,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawCircle = createVoidFn("drawCircle",
+    final NativeFunction<Void> drawCircle = createVoidFn("drawCircle",
             ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> fillCircle = createVoidFn("fillCircle",
+    final NativeFunction<Void> fillCircle = createVoidFn("fillCircle",
             ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> consoleClear = createVoidFn("consoleClear");
+    final NativeFunction<Void> consoleClear = createVoidFn("consoleClear");
 
-    private final NativeFunction<Void> consoleShow = createVoidFn("consoleShow", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Void> consoleShow = createVoidFn("consoleShow", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<Void> drawLine = createVoidFn("drawLine",
+    final NativeFunction<Void> drawLine = createVoidFn("drawLine",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
@@ -95,29 +90,29 @@ public class OlcMethods {
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawRect = createVoidFn("drawRect",
+    final NativeFunction<Void> drawRect = createVoidFn("drawRect",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> fillRect = createVoidFn("fillRect",
+    final NativeFunction<Void> fillRect = createVoidFn("fillRect",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> textEntryEnable = createVoidFn("textEntryEnable", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS);
+    final NativeFunction<Void> textEntryEnable = createVoidFn("textEntryEnable", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS);
 
-    private final NativeFunction<String> textEntryGetString = createFn("textEntryGetString", ValueLayout.ADDRESS);
+    final NativeFunction<String> textEntryGetString = createFn("textEntryGetString", ValueLayout.ADDRESS);
 
-    private final NativeFunction<Integer> textEntryGetCursor = createFn("textEntryGetCursor", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> textEntryGetCursor = createFn("textEntryGetCursor", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
 
-    private final NativeFunction<Void> drawSprite = createVoidFn("drawSprite",
+    final NativeFunction<Void> drawSprite = createVoidFn("drawSprite",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.ADDRESS,
@@ -125,7 +120,7 @@ public class OlcMethods {
             ValueLayout.JAVA_BYTE
     );
 
-    private final NativeFunction<Void> drawPartialSprite = createVoidFn("drawPartialSprite",
+    final NativeFunction<Void> drawPartialSprite = createVoidFn("drawPartialSprite",
             ValueLayout.JAVA_INT,
             ValueLayout.JAVA_INT,
             ValueLayout.ADDRESS,
@@ -137,26 +132,26 @@ public class OlcMethods {
             ValueLayout.JAVA_BYTE
     );
 
-    private final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", IntVector2D.LAYOUT);
+    final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", IntVector2D.LAYOUT);
+    final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", IntVector2D.LAYOUT);
 
-    private final NativeFunction<Void> setPixelMode = createVoidFn("setPixelMode", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> setPixelMode = createVoidFn("setPixelMode", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> printToConsole = createVoidFn("printToConsole", ValueLayout.ADDRESS);
+    final NativeFunction<Void> printToConsole = createVoidFn("printToConsole", ValueLayout.ADDRESS);
 
-    private final NativeFunction<Void> setDecalMode = createVoidFn("setDecalMode", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> setDecalMode = createVoidFn("setDecalMode", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> setDecalStructure = createVoidFn("setDecalStructure", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> setDecalStructure = createVoidFn("setDecalStructure", ValueLayout.JAVA_INT);
 
-    private final NativeFunction<Void> drawDecal = createVoidFn("drawDecal",
+    final NativeFunction<Void> drawDecal = createVoidFn("drawDecal",
             FloatVector2D.LAYOUT,
             ValueLayout.ADDRESS,
             FloatVector2D.LAYOUT,
             Pixel.LAYOUT
     );
 
-    private final NativeFunction<Void> drawPartialDecal = createVoidFn("drawPartialDecal",
+    final NativeFunction<Void> drawPartialDecal = createVoidFn("drawPartialDecal",
             FloatVector2D.LAYOUT,
             ValueLayout.ADDRESS,
             FloatVector2D.LAYOUT,
@@ -166,7 +161,7 @@ public class OlcMethods {
     );
 
     // Additional fields based on the provided C++ function signatures
-    private final NativeFunction<Void> drawExplicitDecal = createVoidFn("DrawExplicitDecal",
+    final NativeFunction<Void> drawExplicitDecal = createVoidFn("DrawExplicitDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const olc::vf2d *pos (array)
             ValueLayout.ADDRESS, // const olc::vf2d *uv (array)
@@ -174,13 +169,13 @@ public class OlcMethods {
             ValueLayout.JAVA_INT // uint32_t elements
     );
 
-    private final NativeFunction<Void> drawWarpedDecal = createVoidFn("DrawWarpedDecal",
+    final NativeFunction<Void> drawWarpedDecal = createVoidFn("DrawWarpedDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const olc::vf2d (&pos)[4] or const olc::vf2d *pos or const std::array<olc::vf2d, 4> &pos
             Pixel.LAYOUT // const olc::Pixel &tint
     );
 
-    private final NativeFunction<Void> drawPartialWarpedDecal = createVoidFn("DrawPartialWarpedDecal",
+    final NativeFunction<Void> drawPartialWarpedDecal = createVoidFn("DrawPartialWarpedDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const olc::vf2d (&pos)[4] or const olc::vf2d *pos or const std::array<olc::vf2d, 4> &pos
             FloatVector2D.LAYOUT, // const olc::vf2d &source_pos
@@ -188,7 +183,7 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel &tint
     );
 
-    private final NativeFunction<Void> drawRotatedDecal = createVoidFn("DrawRotatedDecal",
+    final NativeFunction<Void> drawRotatedDecal = createVoidFn("DrawRotatedDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.JAVA_FLOAT, // const float fAngle
@@ -197,7 +192,7 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel &tint
     );
 
-    private final NativeFunction<Void> drawPartialRotatedDecal = createVoidFn("DrawPartialRotatedDecal",
+    final NativeFunction<Void> drawPartialRotatedDecal = createVoidFn("DrawPartialRotatedDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.JAVA_FLOAT, // const float fAngle
@@ -208,33 +203,33 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel &tint
     );
 
-    private final NativeFunction<Void> drawStringDecal = createVoidFn("DrawStringDecal",
+    final NativeFunction<Void> drawStringDecal = createVoidFn("DrawStringDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // const std::string &sText (char pointer)
             Pixel.LAYOUT, // const Pixel col
             FloatVector2D.LAYOUT // const olc::vf2d &scale
     );
 
-    private final NativeFunction<Void> drawStringPropDecal = createVoidFn("DrawStringPropDecal",
+    final NativeFunction<Void> drawStringPropDecal = createVoidFn("DrawStringPropDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // const std::string &sText (char pointer)
             Pixel.LAYOUT, // const Pixel col
             FloatVector2D.LAYOUT // const olc::vf2d &scale
     );
 
-    private final NativeFunction<Void> drawRectDecal = createVoidFn("DrawRectDecal",
+    final NativeFunction<Void> drawRectDecal = createVoidFn("DrawRectDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             FloatVector2D.LAYOUT, // const olc::vf2d &size
             Pixel.LAYOUT // const olc::Pixel col
     );
 
-    private final NativeFunction<Void> fillRectDecal = createVoidFn("FillRectDecal",
+    final NativeFunction<Void> fillRectDecal = createVoidFn("FillRectDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             FloatVector2D.LAYOUT, // const olc::vf2d &size
             Pixel.LAYOUT // const olc::Pixel col
     );
 
-    private final NativeFunction<Void> gradientFillRectDecal = createVoidFn("GradientFillRectDecal",
+    final NativeFunction<Void> gradientFillRectDecal = createVoidFn("GradientFillRectDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             FloatVector2D.LAYOUT, // const olc::vf2d &size
             Pixel.LAYOUT, // const olc::Pixel colTL
@@ -243,14 +238,14 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel colTR
     );
 
-    private final NativeFunction<Void> fillTriangleDecal = createVoidFn("FillTriangleDecal",
+    final NativeFunction<Void> fillTriangleDecal = createVoidFn("FillTriangleDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &p0
             FloatVector2D.LAYOUT, // const olc::vf2d &p1
             FloatVector2D.LAYOUT, // const olc::vf2d &p2
             Pixel.LAYOUT // const olc::Pixel col
     );
 
-    private final NativeFunction<Void> gradientTriangleDecal = createVoidFn("GradientTriangleDecal",
+    final NativeFunction<Void> gradientTriangleDecal = createVoidFn("GradientTriangleDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &p0
             FloatVector2D.LAYOUT, // const olc::vf2d &p1
             FloatVector2D.LAYOUT, // const olc::vf2d &p2
@@ -259,14 +254,14 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel c2
     );
 
-    private final NativeFunction<Void> drawPolygonDecal = createVoidFn("DrawPolygonDecal",
+    final NativeFunction<Void> drawPolygonDecal = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos (array/pointer)
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv (array/pointer)
             Pixel.LAYOUT // const olc::Pixel tint (for the single tint case)
     );
 
-    private final NativeFunction<Void> drawPolygonDecalWithDepth = createVoidFn("DrawPolygonDecal",
+    final NativeFunction<Void> drawPolygonDecalWithDepth = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<float> &depth
@@ -274,14 +269,14 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel tint
     );
 
-    private final NativeFunction<Void> drawPolygonDecalWithColors = createVoidFn("DrawPolygonDecal",
+    final NativeFunction<Void> drawPolygonDecalWithColors = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
             ValueLayout.ADDRESS // const std::vector<olc::Pixel> &tint (array/pointer)
     );
 
-    private final NativeFunction<Void> drawPolygonDecalWithColorsAndTint = createVoidFn("DrawPolygonDecal",
+    final NativeFunction<Void> drawPolygonDecalWithColorsAndTint = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
@@ -289,7 +284,7 @@ public class OlcMethods {
             Pixel.LAYOUT // const olc::Pixel tint
     );
 
-    private final NativeFunction<Void> drawPolygonDecalWithDepthAndColorsAndTint = createVoidFn("DrawPolygonDecal",
+    final NativeFunction<Void> drawPolygonDecalWithDepthAndColorsAndTint = createVoidFn("DrawPolygonDecal",
             ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<float> &depth
@@ -299,13 +294,13 @@ public class OlcMethods {
     );
 
 
-    private final NativeFunction<Void> drawLineDecal = createVoidFn("DrawLineDecal",
+    final NativeFunction<Void> drawLineDecal = createVoidFn("DrawLineDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos1
             FloatVector2D.LAYOUT, // const olc::vf2d &pos2
             Pixel.LAYOUT // Pixel p
     );
 
-    private final NativeFunction<Void> drawRotatedStringDecal = createVoidFn("DrawRotatedStringDecal",
+    final NativeFunction<Void> drawRotatedStringDecal = createVoidFn("DrawRotatedStringDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // const std::string &sText (char pointer)
             ValueLayout.JAVA_FLOAT, // const float fAngle
@@ -314,7 +309,7 @@ public class OlcMethods {
             FloatVector2D.LAYOUT // const olc::vf2d &scale
     );
 
-    private final NativeFunction<Void> drawRotatedStringPropDecal = createVoidFn("DrawRotatedStringPropDecal",
+    final NativeFunction<Void> drawRotatedStringPropDecal = createVoidFn("DrawRotatedStringPropDecal",
             FloatVector2D.LAYOUT, // const olc::vf2d &pos
             ValueLayout.ADDRESS, // const std::string &sText (char pointer)
             ValueLayout.JAVA_FLOAT, // const float fAngle
@@ -323,7 +318,7 @@ public class OlcMethods {
             FloatVector2D.LAYOUT // const olc::vf2d &scale
     );
 
-    private final NativeFunction<Void> clear = createVoidFn("Clear",
+    final NativeFunction<Void> clear = createVoidFn("Clear",
             Pixel.LAYOUT // Pixel p
     );
 }

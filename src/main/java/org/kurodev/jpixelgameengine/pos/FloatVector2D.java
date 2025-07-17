@@ -6,9 +6,22 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
+import java.util.Objects;
 
 @NativeCallCandidate
 public class FloatVector2D extends Vector2D<Float> {
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FloatVector2D that = (FloatVector2D) o;
+        return Float.compare(x, that.x) == 0 && Float.compare(y, that.y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
     public static final FloatVector2D ZERO = new FloatVector2D(0.0f, 0.0f);
     public static final FloatVector2D ONE = new FloatVector2D(1.0f, 1.0f);
 

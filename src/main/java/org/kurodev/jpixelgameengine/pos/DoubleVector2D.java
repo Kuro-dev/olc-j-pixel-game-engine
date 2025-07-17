@@ -4,15 +4,15 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
+import java.util.Objects;
 
 public class DoubleVector2D extends Vector2D<Double> {
-    private final double x;
-    private final double y;
-
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
             ValueLayout.JAVA_DOUBLE.withName("x"),
             ValueLayout.JAVA_DOUBLE.withName("y")
     );
+    private final double x;
+    private final double y;
 
     // Constructor from a MemorySegment
     public DoubleVector2D(MemorySegment segment) {
@@ -83,6 +83,18 @@ public class DoubleVector2D extends Vector2D<Double> {
     @Override
     public Double dot(Vector2D<Double> v) {
         return this.x * v.getX() + this.y * v.getY();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        DoubleVector2D that = (DoubleVector2D) o;
+        return Double.compare(x, that.x) == 0 && Double.compare(y, that.y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 
     @Override

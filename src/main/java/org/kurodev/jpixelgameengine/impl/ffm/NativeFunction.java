@@ -1,7 +1,7 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -18,8 +18,8 @@ import java.util.function.Function;
  * @param <T> Return type of this function
  */
 @SuppressWarnings("unchecked")
-@Slf4j
 public class NativeFunction<T> {
+    private static final Logger log = LoggerFactory.getLogger(NativeFunction.class);
     private final String symbolName;
     private final FunctionDescriptor descriptor;
     private Arena arena = null;
@@ -83,10 +83,13 @@ public class NativeFunction<T> {
      * @see #invokeObj(Function)
      * @see #invokeObj(Function, Object...)
      */
-    @SneakyThrows
     public T invoke() {
         ensureInitialized();
-        return (T) cachedHandle.invoke();
+        try {
+            return (T) cachedHandle.invoke();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -98,10 +101,13 @@ public class NativeFunction<T> {
      * @see #invokeObj(Function)
      * @see #invokeObj(Function, Object...)
      */
-    @SneakyThrows
     public T invoke(Object... args) {
         ensureInitialized();
-        return (T) cachedHandle.invokeWithArguments(args);
+        try {
+            return (T) cachedHandle.invokeWithArguments(args);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -111,10 +117,14 @@ public class NativeFunction<T> {
      * @param toObj Mapper function to turn memory segment into the desired type. Usually a specialized constructor.
      * @return T
      */
-    @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj) {
         ensureInitialized();
-        var seg = (MemorySegment) cachedHandle.invoke(arena);
+        MemorySegment seg = null;
+        try {
+            seg = (MemorySegment) cachedHandle.invoke(arena);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
         return toObj.apply(seg);
     }
 
@@ -131,7 +141,6 @@ public class NativeFunction<T> {
      * @see org.kurodev.jpixelgameengine.pos.LongVector2D
      * @see org.kurodev.jpixelgameengine.gfx.Pixel
      */
-    @SneakyThrows
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {
         ensureInitialized();
 
@@ -150,14 +159,22 @@ public class NativeFunction<T> {
         invokeArgs[0] = arena;
         System.arraycopy(args, 0, invokeArgs, 1, args.length);
 
-        MemorySegment seg = (MemorySegment) adapted.invokeWithArguments(invokeArgs);
+        MemorySegment seg = null;
+        try {
+            seg = (MemorySegment) adapted.invokeWithArguments(invokeArgs);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
         return toObj.apply(seg);
     }
 
 
-    @SneakyThrows
     public T invokeExact(Function<MemorySegment, T> toObj, Object... args) {
         ensureInitialized();
-        return toObj.apply((MemorySegment) cachedHandle.invokeWithArguments(args));
+        try {
+            return toObj.apply((MemorySegment) cachedHandle.invokeWithArguments(args));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 }

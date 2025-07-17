@@ -1,7 +1,5 @@
 package org.kurodev.jpixelgameengine.impl;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
@@ -10,7 +8,6 @@ import java.lang.foreign.MemorySegment;
  * Wrapper class to turn a java class into a struct instance.
  * Will reuse the same reference
  */
-@Slf4j
 public abstract class PointerClass {
     @SuppressWarnings("FieldCanBeLocal")
     private Arena arena;

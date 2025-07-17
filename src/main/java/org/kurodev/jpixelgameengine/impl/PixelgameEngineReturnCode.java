@@ -1,8 +1,5 @@
 package org.kurodev.jpixelgameengine.impl;
 
-import lombok.Getter;
-
-@Getter
 public enum PixelgameEngineReturnCode {
     FAIL(0), OK(1), NO_FILE(-1);
 
@@ -21,4 +18,7 @@ public enum PixelgameEngineReturnCode {
         };
     }
 
+    public int getCode() {
+        return code;
+    }
 }

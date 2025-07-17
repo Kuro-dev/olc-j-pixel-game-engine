@@ -1,6 +1,7 @@
 package org.kurodev.jpixelgameengine.pos;
 
 import java.lang.foreign.*;
+import java.util.Objects;
 
 public class LongVector2D extends Vector2D<Long> {
     private final long x;
@@ -80,6 +81,18 @@ public class LongVector2D extends Vector2D<Long> {
     @Override
     public Long dot(Vector2D<Long> v) {
         return this.x * v.getX() + this.y * v.getY();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        LongVector2D that = (LongVector2D) o;
+        return x == that.x && y == that.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 
     @Override

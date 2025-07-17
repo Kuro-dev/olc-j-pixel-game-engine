@@ -1,11 +1,9 @@
 package org.kurodev.jpixelgameengine.pos;
 
-import lombok.EqualsAndHashCode;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.impl.PointerClass;
 
 @NativeCallCandidate
-@EqualsAndHashCode(callSuper = false)
 public abstract class Vector2D<T extends Number> extends PointerClass {
 
     public static Vector2D<Integer> ofInt(int n) {
