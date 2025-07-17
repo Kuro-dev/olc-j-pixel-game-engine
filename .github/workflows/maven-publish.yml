@@ -46,7 +46,27 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          body: put the library files (.so and .dll) into ./lib/ execution directory.
+          body: |
+            🧩 **Maven Dependency (via JitPack)**
+
+            To use this library via [JitPack](https://jitpack.io), add the following to your `pom.xml`:
+
+            ```xml
+            <repositories>
+              <repository>
+                <id>jitpack.io</id>
+                <url>https://jitpack.io</url>
+              </repository>
+            </repositories>
+
+            <dependency>
+              <groupId>com.github.kuro-dev</groupId>
+              <artifactId>olc-j-pixel-game-engine</artifactId>
+              <version>${{ env.VERSION }}</version>
+            </dependency>
+            ```
+
+            📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` files.
           name: Release v${{ env.VERSION }}
           tag_name: v${{ env.VERSION }}
           files: |
