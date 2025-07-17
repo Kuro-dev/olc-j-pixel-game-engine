@@ -10,28 +10,17 @@ import java.util.Objects;
 
 @NativeCallCandidate
 public class FloatVector2D extends Vector2D<Float> {
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        FloatVector2D that = (FloatVector2D) o;
-        return Float.compare(x, that.x) == 0 && Float.compare(y, that.y) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
-
     public static final FloatVector2D ZERO = new FloatVector2D(0.0f, 0.0f);
     public static final FloatVector2D ONE = new FloatVector2D(1.0f, 1.0f);
-
-    private final float x;
-    private final float y;
+    public static final FloatVector2D TWO = new FloatVector2D(2.0f, 2.0f);
 
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
             ValueLayout.JAVA_FLOAT.withName("x"),
             ValueLayout.JAVA_FLOAT.withName("y")
     );
+
+    private final float x;
+    private final float y;
 
     // Constructor from a MemorySegment
     public FloatVector2D(MemorySegment segment) {
@@ -47,6 +36,18 @@ public class FloatVector2D extends Vector2D<Float> {
     public FloatVector2D(float x, float y) {
         this.x = x;
         this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FloatVector2D that = (FloatVector2D) o;
+        return Float.compare(x, that.x) == 0 && Float.compare(y, that.y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 
     @Override

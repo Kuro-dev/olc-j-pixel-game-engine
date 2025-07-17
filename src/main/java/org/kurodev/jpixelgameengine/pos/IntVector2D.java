@@ -14,6 +14,9 @@ public class IntVector2D extends Vector2D<Integer> {
             ValueLayout.JAVA_INT.withName("x"),
             ValueLayout.JAVA_INT.withName("y")
     );
+    public static final Vector2D<Integer> ZERO = Vector2D.ofInt(0);
+    static final Vector2D<Integer> ONE = Vector2D.ofInt(1);
+
     private final int x;
     private final int y;
 

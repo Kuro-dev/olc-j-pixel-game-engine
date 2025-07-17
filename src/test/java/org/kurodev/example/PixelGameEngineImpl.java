@@ -2,6 +2,8 @@ package org.kurodev.example;
 
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
+import org.kurodev.jpixelgameengine.gfx.animation.Animation;
+import org.kurodev.jpixelgameengine.gfx.animation.SpriteSheetDecal;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
@@ -16,6 +18,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
     private boolean run = true;
     private Sprite sprite;
     private Decal decal;
+    private Animation animation;
 
     public PixelGameEngineImpl(int width, int height) {
         super(width, height, 1, 1);
@@ -25,6 +28,8 @@ public class PixelGameEngineImpl extends PixelGameEngine {
     public boolean onUserCreate() {
         sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
         decal = new Decal(sprite);
+        SpriteSheetDecal ani = new SpriteSheetDecal(decal, Vector2D.ofFloat(64));
+        this.animation = ani.animateTimeBased(Vector2D.ofInt(0, 8 * 64), 24, .2, true);
         setPixelMode(PixelMode.NORMAL);
         return true;
     }
@@ -38,10 +43,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             consoleShow(KeyBoardKey.TAB, true);
 //            textEntryEnable(true, "Example");
         }
-        if (sprite != null) {
-            drawRect(50, 50, 64, 64, Pixel.RED);
-            drawPartialDecal(Vector2D.ofFloat(50, 50), decal, FloatVector2D.ZERO, SPRITE_SIZE, FloatVector2D.ONE, Pixel.WHITE);
-        }
+        animation.draw(delta, this, FloatVector2D.ZERO, FloatVector2D.TWO, Pixel.WHITE);
         return run;
     }
 
@@ -53,13 +55,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
     @Override
     protected boolean onConsoleCommand(String command) {
         consoleWriteln(">" + command);
-        if ("gc".equals(command)) {
-            System.gc();
-            System.gc();
-            System.gc();
-            System.gc();
-            System.gc();
-        }
         if ("unload".equals(command)) {
             sprite = null;
             decal = null;
