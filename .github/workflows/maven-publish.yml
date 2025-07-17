@@ -69,8 +69,8 @@ jobs:
             ```
 
             📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` files.
-          name: Release v${{ env.VERSION }}
-          tag_name: v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
           files: |
             target/*.jar
             target/*.javadoc.jar
