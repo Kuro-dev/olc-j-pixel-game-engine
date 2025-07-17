@@ -33,7 +33,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     static {
         try {
             NativeLoader.loadLibraries();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
