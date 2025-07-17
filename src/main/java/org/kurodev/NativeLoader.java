@@ -29,7 +29,7 @@ public class NativeLoader {
             System.out.println("[NativeLoader] Library not found, attempting to download...");
             downloadLibraryFromGitHubRelease(mappedName, libPath);
         }
-        Thread.sleep(500); //wait for the file to be written to the filesystem
+        Thread.sleep(500);
         System.load(libPath.toAbsolutePath().toString());
     }
 
@@ -39,7 +39,6 @@ public class NativeLoader {
 
     private static void downloadLibraryFromGitHubRelease(String fileName, Path targetPath) throws IOException, InterruptedException {
         try (HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()) {
-            // Step 1: Get latest release
             HttpRequest releaseRequest = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/latest"))
                     .header("Accept", "application/vnd.github+json")
@@ -50,7 +49,6 @@ public class NativeLoader {
                 throw new IOException("Failed to fetch GitHub release: " + releaseResponse.body());
             }
 
-            // Step 2: Parse JSON to find correct asset URL (basic parsing to avoid using external libs)
             String body = releaseResponse.body();
             String assetUrl = findAssetDownloadUrl(body, fileName);
 
@@ -59,7 +57,6 @@ public class NativeLoader {
                     .uri(URI.create(assetUrl))
                     .header("Accept", "application/octet-stream")
                     .build();
-            // Step 3: Download the file
 
             HttpResponse<InputStream> fileResponse = client.send(fileRequest, HttpResponse.BodyHandlers.ofInputStream());
             if (fileResponse.statusCode() != 200) {
