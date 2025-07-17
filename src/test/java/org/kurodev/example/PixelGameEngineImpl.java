@@ -43,7 +43,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             consoleShow(KeyBoardKey.TAB, true);
 //            textEntryEnable(true, "Example");
         }
-        animation.draw(delta, this, FloatVector2D.ZERO, FloatVector2D.TWO, Pixel.WHITE);
+        animation.draw(delta, this, FloatVector2D.ZERO, Vector2D.ofFloat(4, 4), Pixel.WHITE);
         return run;
     }
 
