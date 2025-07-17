@@ -59,12 +59,13 @@ jobs:
                 <url>https://jitpack.io</url>
               </repository>
             </repositories>
-
-            <dependency>
-              <groupId>com.github.kuro-dev</groupId>
-              <artifactId>olc-j-pixel-game-engine</artifactId>
-              <version>${{ env.VERSION }}</version>
-            </dependency>
+            <dependencies>
+              <dependency>
+                <groupId>com.github.kuro-dev</groupId>
+                <artifactId>olc-j-pixel-game-engine</artifactId>
+                <version>${{ env.VERSION }}</version>
+              </dependency>
+            </dependencies>
             ```
 
             📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` files.
