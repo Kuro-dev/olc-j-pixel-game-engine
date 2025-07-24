@@ -8,6 +8,15 @@
 extern "C"
 {
 #endif
+#ifndef VERSION
+#define VERSION "unknown"
+#endif
+
+#ifdef _WIN32
+    #define EXPORT __declspec(dllexport)
+#else
+    #define EXPORT __attribute__((visibility("default")))
+#endif
 
     // Callback types
     typedef bool (*UserCreateCallback)(void);
@@ -80,6 +89,11 @@ extern "C"
         }
     };
 
+    const char *get_library_version()
+    {
+        return VERSION;
+    }
+
     void gameEngine_destroy(GameEngine *instance)
     {
         delete instance;
@@ -92,7 +106,7 @@ extern "C"
                                          OnTextEntryCompleteCallback onTextEntryComplete)
     {
         GameEngine *instance = new GameEngine(onCreate, onUpdate, onDestroy, onConsoleCommand, onTextEntryComplete);
-        // Verify callbacks were stored
+        std::cout << "C version: " << get_library_version() << std::endl;
         return instance;
     }
 

@@ -1,25 +1,34 @@
 package org.kurodev;
 
+import org.kurodev.jpixelgameengine.impl.ffm.NativeFunction;
+import org.kurodev.jpixelgameengine.impl.ffm.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.foreign.ValueLayout;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NativeLoader {
-    static {
-        System.setProperty("jdk.incubator.foreign", "permit");
-    }
-
+    private static final NativeFunction<String> GET_LIBRARY_VERSION = new NativeFunction<>("get_library_version", ValueLayout.ADDRESS);
     private static final String OWNER = "Kuro-dev";
     private static final String REPO = "olc-j-pixel-game-engine";
     private static final Path LIB_DIR = Path.of("lib");
+    private static final Logger log = LoggerFactory.getLogger(NativeLoader.class);
+
+    static {
+        System.setProperty("jdk.incubator.foreign", "permit");
+    }
 
     public static void loadLibrary(String name) throws IOException, InterruptedException {
         String mappedName = System.mapLibraryName("org_kurodev_" + name);
@@ -31,6 +40,12 @@ public class NativeLoader {
         }
         Thread.sleep(500);
         System.load(libPath.toAbsolutePath().toString());
+        String javaVersion = getJavaVersion();
+        String nativeVersion = getLibraryVersion();
+        if (!javaVersion.equals(nativeVersion)) {
+            log.warn("[NativeLoader] Detected outdated Library files. The program might potentially break or behave in unexpected ways.\n" +
+                    "Please Close the program, delete the \"/lib\" folder and restart the program to update.");
+        }
     }
 
     public static void loadLibraries() throws IOException, InterruptedException {
@@ -38,41 +53,50 @@ public class NativeLoader {
     }
 
     private static void downloadLibraryFromGitHubRelease(String fileName, Path targetPath) throws IOException, InterruptedException {
+        String version = getJavaVersion();
         try (HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()) {
-            HttpRequest releaseRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/latest"))
+            String releaseBody;
+            HttpRequest versionRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/tags/" + version))
                     .header("Accept", "application/vnd.github+json")
                     .build();
 
-            HttpResponse<String> releaseResponse = client.send(releaseRequest, HttpResponse.BodyHandlers.ofString());
-            if (releaseResponse.statusCode() != 200) {
-                throw new IOException("Failed to fetch GitHub release: " + releaseResponse.body());
+            HttpResponse<String> versionResponse = client.send(versionRequest, HttpResponse.BodyHandlers.ofString());
+            if (versionResponse.statusCode() == 200) {
+                releaseBody = versionResponse.body();
+                System.out.println("[NativeLoader] Found release for version: " + version);
+            } else if (versionResponse.statusCode() == 404) {
+                System.out.println("[NativeLoader] Release for version " + version + " not found, falling back to latest release...");
+                HttpRequest latestRequest = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/latest"))
+                        .header("Accept", "application/vnd.github+json")
+                        .build();
+                HttpResponse<String> latestResponse = client.send(latestRequest, HttpResponse.BodyHandlers.ofString());
+                if (latestResponse.statusCode() != 200) {
+                    throw new IOException("Failed to fetch latest GitHub release: " + latestResponse.body());
+                }
+                releaseBody = latestResponse.body();
+            } else {
+                throw new IOException("Failed to fetch release for version " + version + ": HTTP " + versionResponse.statusCode());
             }
-
-            String body = releaseResponse.body();
-            String assetUrl = findAssetDownloadUrl(body, fileName);
-
+            String assetUrl = findAssetDownloadUrl(releaseBody, fileName);
             HttpRequest fileRequest = HttpRequest.newBuilder()
                     .GET()
                     .uri(URI.create(assetUrl))
                     .header("Accept", "application/octet-stream")
                     .build();
-
             HttpResponse<InputStream> fileResponse = client.send(fileRequest, HttpResponse.BodyHandlers.ofInputStream());
             if (fileResponse.statusCode() != 200) {
                 throw new IOException("Failed to download file: HTTP " + fileResponse.statusCode());
             }
             Files.createDirectories(LIB_DIR);
-            try (InputStream in = fileResponse.body()) {
-                OutputStream out = Files.newOutputStream(targetPath);
+            try (InputStream in = fileResponse.body(); OutputStream out = Files.newOutputStream(targetPath)) {
                 in.transferTo(out);
-                out.close();
             }
-
             System.out.println("[NativeLoader] Downloaded: " + fileName);
         }
-
     }
+
 
     @SuppressWarnings("RegExpRedundantEscape")
     private static String findAssetDownloadUrl(String json, String fileName) {
@@ -87,5 +111,22 @@ public class NativeLoader {
         }
 
         throw new RuntimeException("Failed to fetch file: " + fileName + ".\n Please download it from https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/latest");
+    }
+
+    public static String getJavaVersion() {
+        try (InputStream input = NativeLoader.class.getResourceAsStream("/version.properties")) {
+            Properties prop = new Properties();
+            if (input != null) {
+                prop.load(input);
+                return prop.getProperty("version");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return "unknown";
+    }
+
+    public static String getLibraryVersion() {
+        return GET_LIBRARY_VERSION.invokeObj(Util::cString);
     }
 }
