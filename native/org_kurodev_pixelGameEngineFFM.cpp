@@ -106,7 +106,6 @@ extern "C"
                                          OnTextEntryCompleteCallback onTextEntryComplete)
     {
         GameEngine *instance = new GameEngine(onCreate, onUpdate, onDestroy, onConsoleCommand, onTextEntryComplete);
-        std::cout << "C version: " << get_library_version() << std::endl;
         return instance;
     }
 

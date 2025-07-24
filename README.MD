@@ -96,3 +96,8 @@ I personally use IntelliJ, but other IDEs should have the same features.
 
 ![IJ--set-flag.png](/readme-res/intelliJ-set-flag.png)
 
+# Release steps:
+
+1. update version in pom.xml
+2. run `docker build -o . .`
+3. commit and push

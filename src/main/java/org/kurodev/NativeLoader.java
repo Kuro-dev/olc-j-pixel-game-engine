@@ -40,8 +40,11 @@ public class NativeLoader {
         }
         Thread.sleep(500);
         System.load(libPath.toAbsolutePath().toString());
+
         String javaVersion = getJavaVersion();
         String nativeVersion = getLibraryVersion();
+        log.info("java version: {}", javaVersion);
+        log.info("native version: {}", nativeVersion);
         if (!javaVersion.equals(nativeVersion)) {
             log.warn("[NativeLoader] Detected outdated Library files. The program might potentially break or behave in unexpected ways.\n" +
                     "Please Close the program, delete the \"/lib\" folder and restart the program to update.");
@@ -127,6 +130,6 @@ public class NativeLoader {
     }
 
     public static String getLibraryVersion() {
-        return GET_LIBRARY_VERSION.invokeObj(Util::cString);
+        return GET_LIBRARY_VERSION.invokeExact(Util::cString);
     }
 }
