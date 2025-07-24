@@ -116,6 +116,9 @@ public class NativeLoader {
         throw new RuntimeException("Failed to fetch file: " + fileName + ".\n Please download it from https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases/latest");
     }
 
+    /**
+     * Retrieves the version of this release.
+     */
     public static String getJavaVersion() {
         try (InputStream input = NativeLoader.class.getResourceAsStream("/version.properties")) {
             Properties prop = new Properties();
@@ -129,6 +132,9 @@ public class NativeLoader {
         return "unknown";
     }
 
+    /**
+     * Retrieves the version of this release for the native library.
+     */
     public static String getLibraryVersion() {
         return GET_LIBRARY_VERSION.invokeExact(Util::cString);
     }

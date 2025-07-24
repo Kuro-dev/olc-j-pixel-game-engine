@@ -53,7 +53,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     private final Arena arena;
     private final MemorySegment instancePtr;
     private final OlcMethods methods;
-    private EngineInitialiser engineInitialiser = new EngineInitialiser();
+    private final EngineInitialiser engineInitialiser = new EngineInitialiser();
 
     public PixelGameEngine(int width, int height, int pixelWidth, int pixelHeight) {
         this(width, height, pixelWidth, pixelHeight, false, false, false, false);
