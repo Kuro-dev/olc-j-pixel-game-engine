@@ -769,4 +769,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public Vector2D<Integer> getWindowSize() {
         return methods.getWindowSize.invokeObj(IntVector2D::new, instancePtr);
     }
+
+    /**
+     * @return the current framerate
+     */
+    public int getFramerate() {
+        return methods.getFramerate.invoke(instancePtr);
+    }
 }
