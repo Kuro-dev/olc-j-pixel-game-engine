@@ -13,9 +13,9 @@ extern "C"
 #endif
 
 #ifdef _WIN32
-    #define EXPORT __declspec(dllexport)
+#define EXPORT __declspec(dllexport)
 #else
-    #define EXPORT __attribute__((visibility("default")))
+#define EXPORT __attribute__((visibility("default")))
 #endif
 
     // Callback types
@@ -189,6 +189,7 @@ extern "C"
     {
         instance->SetScreenSize(w, h);
     }
+
     void consoleShow(GameEngine *instance, olc::Key closeKey, bool suspendTime)
     {
         instance->ConsoleShow(closeKey, suspendTime);
@@ -420,6 +421,27 @@ extern "C"
     {
         instance->Clear(p);
     }
+
+    void resize(GameEngine *instance, const olc::vi2d vPos, const olc::vi2d vSize)
+    {
+        instance->SetWindowSize(vPos, vSize);
+    }
+
+    olc::vi2d getWindowSize(GameEngine *instance)
+    {
+        return instance->GetWindowSize();
+    }
+    // Gets Actual Window position
+    olc::vi2d getWindowPos(GameEngine *instance)
+    {
+        return instance->GetWindowPos();
+    };
+
+    int32_t getFps(GameEngine *instance)
+    {
+        return instance->GetFPS();
+    }
+
 #ifdef __cplusplus
 }
 #endif

@@ -53,7 +53,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     private final Arena arena;
     private final MemorySegment instancePtr;
     private final OlcMethods methods;
-    private final EngineInitialiser engineInitialiser = new EngineInitialiser();
+    private final engineInitializer engineInitializer = new engineInitializer();
 
     public PixelGameEngine(int width, int height, int pixelWidth, int pixelHeight) {
         this(width, height, pixelWidth, pixelHeight, false, false, false, false);
@@ -64,11 +64,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public PixelGameEngine(int width, int height, int pixelWidth, int pixelHeight, boolean fullScreen, boolean vSync, boolean cohesion, boolean realWindow) {
         this.arena = Arena.ofAuto();
         try {
-            MemorySegment onUserCreateStub = engineInitialiser.createOnUserCreateStub(LINKER, arena, this);
-            var onUserUpdateStub = engineInitialiser.createOnUserUpdateStub(LINKER, arena, this);
-            var onUserDestroyStub = engineInitialiser.createOnUserDestroyStub(LINKER, arena, this);
-            var onConsoleCommandStub = engineInitialiser.createOnConsoleCommandStub(LINKER, arena, this);
-            var onTextEntryCompleteStub = engineInitialiser.createTextEntryCompleteStub(LINKER, arena, this);
+            MemorySegment onUserCreateStub = engineInitializer.createOnUserCreateStub(LINKER, arena, this);
+            var onUserUpdateStub = engineInitializer.createOnUserUpdateStub(LINKER, arena, this);
+            var onUserDestroyStub = engineInitializer.createOnUserDestroyStub(LINKER, arena, this);
+            var onConsoleCommandStub = engineInitializer.createOnConsoleCommandStub(LINKER, arena, this);
+            var onTextEntryCompleteStub = engineInitializer.createTextEntryCompleteStub(LINKER, arena, this);
             instancePtr = NATIVE_CONSTRUCTOR.invoke(onUserCreateStub, onUserUpdateStub, onUserDestroyStub, onConsoleCommandStub, onTextEntryCompleteStub);
             methods = new OlcMethods();
             init(width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow);
@@ -746,5 +746,27 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void setDecalStructure(DecalStructure structure) {
         methods.setDecalStructure.invoke(instancePtr, structure.ordinal());
+    }
+
+    /**
+     * @param pos  Position of the top left corner on the screen
+     * @param size Width and Height of the window
+     */
+    public void resize(Vector2D<Integer> pos, Vector2D<Integer> size) {
+        methods.resize.invoke(instancePtr, pos.toPtr(), size.toPtr());
+    }
+
+    /**
+     * @return The position of the top left corner of the window.
+     */
+    public Vector2D<Integer> getWindowPos() {
+        return methods.getWindowPos.invokeObj(IntVector2D::new, instancePtr);
+    }
+
+    /**
+     * @return The size of the window.
+     */
+    public Vector2D<Integer> getWindowSize() {
+        return methods.getWindowSize.invokeObj(IntVector2D::new, instancePtr);
     }
 }

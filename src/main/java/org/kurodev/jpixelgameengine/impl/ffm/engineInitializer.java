@@ -6,7 +6,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class EngineInitialiser {
+public class engineInitializer {
     //just store them so they don't get garbage collected
     private MemorySegment onUserCreateStub;
     private MemorySegment onUserUpdateStub;

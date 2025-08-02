@@ -126,4 +126,9 @@ public class FloatVector2D extends Vector2D<Float> {
                 y);
         return seg;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%f, %f)", x, y);
+    }
 }

@@ -3,6 +3,7 @@ package org.kurodev.jpixelgameengine.impl.ffm;
 public enum NativeStatusCode {
     SUCCESS(0),
     FAIL(1),
+    NO_FILE(-1),
     INSTANCE_ALREADY_EXISTS(2),
     ;
 

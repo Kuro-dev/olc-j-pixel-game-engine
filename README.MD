@@ -21,8 +21,8 @@ Supported features so far:
 - [x] Drawing Sprites including partial sprites
 - [x] Drawing Decals including partial Decals and Polygons or other shapes.
 - [x] Console and Textinput modes
-- [ ] Set windows Size during runtime
-- [ ] Get FPS and other information
+- [x] Set windows Size during runtime
+- [x] Get FPS and other information
 - [ ] Layer Support
 - [ ] HW3D Rendering support
 - [ ] Possibly other features I don't know about

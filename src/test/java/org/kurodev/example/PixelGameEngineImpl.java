@@ -14,7 +14,6 @@ import org.kurodev.jpixelgameengine.pos.Vector2D;
 import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
-    private static final Vector2D<Float> SPRITE_SIZE = Vector2D.ofFloat(64);
     private boolean run = true;
     private Sprite sprite;
     private Decal decal;
@@ -39,9 +38,16 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         if (!isFocussed()) {
             return true;
         }
+        var fKey = getKey(KeyBoardKey.F);
+        Vector2D<Integer> pos = getWindowPos();
+        if (fKey.isPressed()) {
+            resize(pos, Vector2D.ofInt(500, 500));
+        } else if (fKey.isReleased()) {
+            resize(pos, Vector2D.ofInt(600, 600));
+        }
+
         if (getKey(KeyBoardKey.TAB).isPressed()) {
             consoleShow(KeyBoardKey.TAB, true);
-//            textEntryEnable(true, "Example");
         }
         animation.draw(delta, this, FloatVector2D.ZERO, Vector2D.ofFloat(4, 4), Pixel.WHITE);
         return run;
@@ -59,8 +65,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             sprite = null;
             decal = null;
             clear(Pixel.BLACK);
-            System.gc();
-            System.gc();
             return false;
         }
         if ("reload".equals(command)) {

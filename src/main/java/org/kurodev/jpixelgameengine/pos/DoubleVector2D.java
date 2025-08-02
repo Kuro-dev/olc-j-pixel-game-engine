@@ -118,4 +118,9 @@ public class DoubleVector2D extends Vector2D<Double> {
                 y);
         return seg;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%.3f, %.3f)", x, y);
+    }
 }
