@@ -442,6 +442,11 @@ extern "C"
         return instance->GetFPS();
     }
 
+    void setWindowTitle(GameEngine *instance, const char *title)
+    {
+        instance->sAppName = std::string(title);
+    }
+
 #ifdef __cplusplus
 }
 #endif

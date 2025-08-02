@@ -188,6 +188,8 @@ public class OlcMethods {
 
     final NativeFunction<Integer> getFramerate = createFn("getFps", ValueLayout.JAVA_INT);
 
+    final NativeFunction<Void> setWindowTitle = createVoidFn("setWindowTitle", ValueLayout.ADDRESS);
+
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
         MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];
         argsActual[0] = ValueLayout.ADDRESS;

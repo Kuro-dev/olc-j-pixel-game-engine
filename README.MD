@@ -10,7 +10,7 @@ Feel free to reach out, especially for alternative OS support!
 Supported features so far:
 
 - [x] Creating a window
-- [ ] Set application name
+- [x] Set application name
 - [x] Basic drawing
 - [ ] Some more advanced drawing methods
 - [x] Support Windows platforms

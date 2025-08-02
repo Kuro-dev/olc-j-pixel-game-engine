@@ -770,6 +770,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.getWindowSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
+    public void setWindowTitle(String title) {
+        methods.setWindowTitle.invoke(instancePtr, arena.allocateFrom(title));
+    }
+
     /**
      * @return the current framerate
      */
