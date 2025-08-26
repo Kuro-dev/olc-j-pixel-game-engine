@@ -190,6 +190,8 @@ public class OlcMethods {
 
     final NativeFunction<Void> setWindowTitle = createVoidFn("setWindowTitle", ValueLayout.ADDRESS);
 
+    final NativeFunction<Void> gradientLineDecal = createVoidFn("GradientLineDecal", FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, Pixel.LAYOUT, Pixel.LAYOUT);
+
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
         MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];
         argsActual[0] = ValueLayout.ADDRESS;

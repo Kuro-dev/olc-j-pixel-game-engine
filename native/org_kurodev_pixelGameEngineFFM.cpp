@@ -359,6 +359,34 @@ extern "C"
         instance->GradientFillRectDecal(pos, size, colTL, colBL, colBR, colTR);
     }
 
+    void GradientLineDecal(olc::PixelGameEngine *instance,
+                           const olc::vf2d start, const olc::vf2d end,
+                           const olc::Pixel colStart, const olc::Pixel colEnd)
+    {
+        olc::vf2d delta = end - start;
+        float steps = std::max(fabs(delta.x), fabs(delta.y));
+
+        if (steps == 0.0f)
+        {
+            instance->Draw(start, colStart);
+            return;
+        }
+
+        olc::vf2d step = delta / steps;
+
+        for (int i = 0; i <= steps; i++)
+        {
+            float t = i / steps; // Interpolation factor
+            olc::Pixel col;
+            col.r = (uint8_t)(colStart.r * (1.0f - t) + colEnd.r * t);
+            col.g = (uint8_t)(colStart.g * (1.0f - t) + colEnd.g * t);
+            col.b = (uint8_t)(colStart.b * (1.0f - t) + colEnd.b * t);
+            col.a = (uint8_t)(colStart.a * (1.0f - t) + colEnd.a * t);
+
+            instance->Draw(start + step * (float)i, col);
+        }
+    }
+
     // Draws a single shaded filled triangle as a decal
     void FillTriangleDecal(GameEngine *instance, const olc::vf2d p0, const olc::vf2d p1, const olc::vf2d p2, const olc::Pixel col)
     {

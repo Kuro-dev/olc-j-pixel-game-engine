@@ -12,7 +12,7 @@ Supported features so far:
 - [x] Creating a window
 - [x] Set application name
 - [x] Basic drawing
-- [ ] Some more advanced drawing methods
+- [x] Some more advanced drawing methods
 - [x] Support Windows platforms
 - [x] Support Linux platforms (Tested on ubuntu)
 - [ ] Support macOS (I do not own one, and don't know how to compile for it. Help is welcome)
