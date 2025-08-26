@@ -67,5 +67,17 @@ public abstract class Vector2D<T extends Number> extends PointerClass {
         return "(" + getX() + ", " + getY() + ")";
     }
 
+    public Vector2D<Float> toFloatVector() {
+        return Vector2D.ofFloat(getX().floatValue(), getY().floatValue());
+    }
+    public Vector2D<Double> toDoubleVector() {
+        return Vector2D.ofDouble(getX().doubleValue(), getY().doubleValue());
+    }
+    public Vector2D<Integer> toIntVector() {
+        return Vector2D.ofInt(getX().intValue(), getY().intValue());
+    }
+    public Vector2D<Long> toLongVector() {
+        return Vector2D.ofLong(getX().longValue(), getY().longValue());
+    }
 
 }

@@ -124,4 +124,8 @@ public class IntVector2D extends Vector2D<Integer> {
         return seg;
     }
 
+    @Override
+    public Vector2D<Integer> toIntVector() {
+        return this;
+    }
 }

@@ -1,16 +1,18 @@
 package org.kurodev.jpixelgameengine.pos;
 
-import java.lang.foreign.*;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
 import java.util.Objects;
 
 public class LongVector2D extends Vector2D<Long> {
-    private final long x;
-    private final long y;
-
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
             ValueLayout.JAVA_LONG.withName("x"),
             ValueLayout.JAVA_LONG.withName("y")
     );
+    private final long x;
+    private final long y;
 
     // Constructor from a MemorySegment
     public LongVector2D(MemorySegment segment) {
@@ -115,5 +117,10 @@ public class LongVector2D extends Vector2D<Long> {
                 LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("y")),
                 y);
         return seg;
+    }
+
+    @Override
+    public Vector2D<Long> toLongVector() {
+        return this;
     }
 }

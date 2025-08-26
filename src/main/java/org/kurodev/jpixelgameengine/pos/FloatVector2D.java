@@ -128,6 +128,11 @@ public class FloatVector2D extends Vector2D<Float> {
     }
 
     @Override
+    public Vector2D<Float> toFloatVector() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return String.format("(%f, %f)", x, y);
     }
