@@ -610,8 +610,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
                 colorBR.toPtr(), colorTR.toPtr());
     }
 
-    public final void gradientLineDecal(Vector2D<Float> posA, Vector2D<Float> posB, Pixel startColor, Pixel endColor) {
-        methods.gradientLineDecal.invoke(instancePtr, posA.toPtr(), posB.toPtr(), startColor.toPtr(), endColor.toPtr());
+    public final void gradientLineDecal(Vector2D<Float> posA, Vector2D<Float> posB, Pixel startColor, Pixel endColor, int thickness) {
+        methods.gradientLineDecal.invoke(instancePtr, posA.toPtr(), posB.toPtr(), startColor.toPtr(), endColor.toPtr(), thickness);
     }
 
     /**

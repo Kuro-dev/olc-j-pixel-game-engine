@@ -353,50 +353,57 @@ extern "C"
         instance->FillRectDecal(pos, size, col);
     }
 
-    // Draws a corner shaded rectangle as a decal
-    void GradientFillRectDecal(GameEngine *instance, const olc::vf2d pos, const olc::vf2d size, const olc::Pixel colTL, const olc::Pixel colBL, const olc::Pixel colBR, const olc::Pixel colTR)
-    {
-        instance->GradientFillRectDecal(pos, size, colTL, colBL, colBR, colTR);
-    }
-
-    void GradientLineDecal(olc::PixelGameEngine *instance,
-                           const olc::vf2d start, const olc::vf2d end,
-                           const olc::Pixel colStart, const olc::Pixel colEnd)
-    {
-        olc::vf2d delta = end - start;
-        float steps = std::max(fabs(delta.x), fabs(delta.y));
-
-        if (steps == 0.0f)
-        {
-            instance->Draw(start, colStart);
-            return;
-        }
-
-        olc::vf2d step = delta / steps;
-
-        for (int i = 0; i <= steps; i++)
-        {
-            float t = i / steps; // Interpolation factor
-            olc::Pixel col;
-            col.r = (uint8_t)(colStart.r * (1.0f - t) + colEnd.r * t);
-            col.g = (uint8_t)(colStart.g * (1.0f - t) + colEnd.g * t);
-            col.b = (uint8_t)(colStart.b * (1.0f - t) + colEnd.b * t);
-            col.a = (uint8_t)(colStart.a * (1.0f - t) + colEnd.a * t);
-
-            instance->Draw(start + step * (float)i, col);
-        }
-    }
-
     // Draws a single shaded filled triangle as a decal
     void FillTriangleDecal(GameEngine *instance, const olc::vf2d p0, const olc::vf2d p1, const olc::vf2d p2, const olc::Pixel col)
     {
         instance->FillTriangleDecal(p0, p1, p2, col);
     }
 
+    // Draws a corner shaded rectangle as a decal
+    void GradientFillRectDecal(GameEngine *instance, const olc::vf2d pos, const olc::vf2d size, const olc::Pixel colTL, const olc::Pixel colBL, const olc::Pixel colBR, const olc::Pixel colTR)
+    {
+        instance->GradientFillRectDecal(pos, size, colTL, colBL, colBR, colTR);
+    }
+
     // Draws a corner shaded triangle as a decal
     void GradientTriangleDecal(GameEngine *instance, const olc::vf2d p0, const olc::vf2d p1, const olc::vf2d p2, const olc::Pixel c0, const olc::Pixel c1, const olc::Pixel c2)
     {
         instance->GradientTriangleDecal(p0, p1, p2, c0, c1, c2);
+    }
+
+    void GradientLineDecal(olc::PixelGameEngine *instance,
+                           const olc::vf2d start, const olc::vf2d end,
+                           const olc::Pixel colStart, const olc::Pixel colEnd,
+                           int thickness)
+    {
+        olc::vf2d delta = end - start;
+        float length = delta.mag();
+
+        if (length <= 1.0f)
+        {
+            instance->FillCircle(start, thickness / 2.0f, colStart);
+            return;
+        }
+
+        // Calculate perpendicular vector for thickness
+        olc::vf2d dir = delta.norm();
+        olc::vf2d perp = {-dir.y, dir.x};
+
+        float halfThickness = thickness * 0.5f;
+
+        // Calculate the four corners
+        olc::vf2d corners[4] = {
+            start + perp * halfThickness, // Top-left
+            end + perp * halfThickness,   // Top-right
+            end - perp * halfThickness,   // Bottom-right
+            start - perp * halfThickness  // Bottom-left
+        };
+
+        // Split into two triangles and draw with gradient
+        instance->GradientTriangleDecal(corners[0], corners[1], corners[3],
+                                        colStart, colEnd, colStart);
+        instance->GradientTriangleDecal(corners[1], corners[2], corners[3],
+                                        colEnd, colEnd, colStart);
     }
 
     // Draws an arbitrary convex textured polygon using GPU

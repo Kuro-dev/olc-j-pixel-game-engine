@@ -50,7 +50,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
             consoleShow(KeyBoardKey.TAB, true);
         }
         animation.draw(delta, this, FloatVector2D.ZERO, Vector2D.ofFloat(4, 4), Pixel.WHITE);
-        gradientLineDecal(Vector2D.ofFloat(50, 50), Vector2D.ofFloat(100, 100), Pixel.BLUE, Pixel.RED);
+        gradientLineDecal(Vector2D.ofFloat(50, 50), Vector2D.ofFloat(300, 300), Pixel.BLUE, Pixel.RED,50);
         return run;
     }
 
