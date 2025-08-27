@@ -444,7 +444,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param sourcePos  The position within the decal to start drawing
      * @param sourceSize The Size (Width/Height) of the rectangle to draw
      */
-    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize) {
+    public final void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize) {
         drawPartialDecal(pos, decal, sourcePos, sourceSize, FloatVector2D.ONE, Pixel.WHITE);
     }
 
@@ -458,7 +458,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale      The scale to multiply the size with
      * @param tint       Tint of the Decal
      */
-    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
+    public final void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
         methods.drawPartialDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
@@ -749,32 +749,32 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param pos  Position of the top left corner on the screen
      * @param size Width and Height of the window
      */
-    public void resize(Vector2D<Integer> pos, Vector2D<Integer> size) {
+    public final void resize(Vector2D<Integer> pos, Vector2D<Integer> size) {
         methods.resize.invoke(instancePtr, pos.toPtr(), size.toPtr());
     }
 
     /**
      * @return The position of the top left corner of the window.
      */
-    public Vector2D<Integer> getWindowPos() {
+    public final Vector2D<Integer> getWindowPos() {
         return methods.getWindowPos.invokeObj(IntVector2D::new, instancePtr);
     }
 
     /**
      * @return The size of the window.
      */
-    public Vector2D<Integer> getWindowSize() {
+    public final Vector2D<Integer> getWindowSize() {
         return methods.getWindowSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
-    public void setWindowTitle(String title) {
+    public final void setWindowTitle(String title) {
         methods.setWindowTitle.invoke(instancePtr, arena.allocateFrom(title));
     }
 
     /**
      * @return the current framerate
      */
-    public int getFramerate() {
+    public final int getFramerate() {
         return methods.getFramerate.invoke(instancePtr);
     }
 }
