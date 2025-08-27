@@ -48,8 +48,7 @@ jobs:
           docker build -o . .
 
           mkdir -p lib
-          cp ./lib/liborg_kurodev_pixelGameEngineFFM.so lib/
-          cp ./lib/org_kurodev_pixelGameEngineFFM.dll lib/
+          mv ./lib/* lib/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
