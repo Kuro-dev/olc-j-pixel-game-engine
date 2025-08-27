@@ -65,7 +65,8 @@ jobs:
               </repository>
             </repositories>
             ```
-            📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` and `.dylib` files.
+            📁 This release includes:
+             - compiled `.jar`, `.javadoc.jar`
           name: Release ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           files: |
@@ -102,6 +103,9 @@ jobs:
           tag_name: ${{ needs.build-and-release.outputs.VERSION }}
           files: |
             lib/*.dylib
+          append_body: true
+          body: |
+            MacOS .dylib file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -124,7 +128,10 @@ jobs:
           tag_name: ${{ needs.build-and-release.outputs.VERSION }}
           files: |
             lib/*.so
-            lib/.dll
-
+            lib/*.dll
+          append_body: true
+          body: |
+            Windows .dll file
+            Linux .so file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
