@@ -7,7 +7,8 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -21,6 +22,7 @@ jobs:
 
       - name: Get version from pom.xml
         id: get_version
+
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -69,6 +71,7 @@ jobs:
             target/*.javadoc.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   compile-macos-libraries:
     runs-on: macos-latest
     needs: build-and-release
@@ -76,7 +79,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Build macOS dylib
         run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          VERSION=${{ needs.build-and-release.outputs.VERSION }}
           mkdir -p lib
           
           BREW_PREFIX=$(brew --prefix)
@@ -94,8 +97,8 @@ jobs:
       - name: Upload macOS dylib to release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
+          name: Release v${{ needs.build-and-release.outputs.VERSION }}
+          tag_name: v${{ needs.build-and-release.outputs.VERSION }}
           files: lib/*.dylib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -113,8 +116,8 @@ jobs:
       - name: Upload Linux & Windows libraries to release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
+          name: Release v${{ needs.build-and-release.outputs.VERSION }}
+          tag_name: v${{ needs.build-and-release.outputs.VERSION }}
           files: lib/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
