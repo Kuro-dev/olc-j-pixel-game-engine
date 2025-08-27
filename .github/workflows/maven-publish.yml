@@ -103,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docker-libs
-          path: lib/*.so,lib/*.dll
+          path: lib/*
 
   upload-libs:
     runs-on: ubuntu-latest
