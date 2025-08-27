@@ -42,7 +42,16 @@ jobs:
           git push origin v$VERSION || echo "Tag v$VERSION already pushed, skipping push"
         env:
           VERSION: ${{ steps.get_version.outputs.version }}
+      - name: Build native libraries via Docker
+        run: |
+          # Build Linux and Windows shared libraries
+          docker build --target linux-builder -o ./lib-linux .
+          docker build --target windows-builder -o ./lib-windows .
 
+          # Merge the outputs into a single lib/ folder
+          mkdir -p lib
+          cp ./lib-linux/liborg_kurodev_pixelGameEngineFFM.so lib/
+          cp ./lib-windows/org_kurodev_pixelGameEngineFFM.dll lib/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -51,14 +60,8 @@ jobs:
             The binaries (.dll / .so) files should be downloaded automatically on first startup,
             if that doesn't work, however, just create a folder called "lib" and copy the needed file there.
             To use this library via [JitPack](https://jitpack.io), add the following to your `pom.xml`:
-        
+            
             ```xml
-            <repositories>
-              <repository>
-                <id>jitpack.io</id>
-                <url>https://jitpack.io</url>
-              </repository>
-            </repositories>
             <dependencies>
               <dependency>
                 <groupId>com.github.kuro-dev</groupId>
@@ -66,6 +69,12 @@ jobs:
                 <version>${{ env.VERSION }}</version>
               </dependency>
             </dependencies>
+            <repositories>
+              <repository>
+                <id>jitpack.io</id>
+                <url>https://jitpack.io</url>
+              </repository>
+            </repositories>
             ```
 
             📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` files.
