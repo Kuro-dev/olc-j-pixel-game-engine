@@ -95,9 +95,11 @@ jobs:
           -lpng \
           -o lib/liborg_kurodev_pixelGameEngineFFM.dylib \
           -framework Cocoa -framework OpenGL
-
       - name: Upload macOS dylib
-        run: gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/*.dylib --clobber=false
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            lib/*.dylib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -114,6 +116,10 @@ jobs:
           docker build -o . .
 
       - name: Upload Linux & Windows libraries to release
-        run: gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/* --clobber=false
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            lib/*.so
+            lib/*.dll
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
