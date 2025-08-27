@@ -1,0 +1,35 @@
+name: build-native-libs.yml
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  macos-dylib:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build macOS dylib
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          mkdir -p lib
+          clang++ -dynamiclib -std=c++17 -fPIC \
+            -DOLC_PGE_APPLICATION -DOLC_PLATFORM_GLUT \
+            -DVERSION="\"$VERSION\"" \
+            native/org_kurodev_pixelGameEngineFFM.cpp \
+            -o lib/liborg_kurodev_pixelGameEngineFFM.dylib \
+            -framework Cocoa -framework OpenGL
+      - name: Build native libraries via Docker
+        run: |
+          # Build Linux and Windows shared libraries
+          mkdir -p lib
+          docker build -o . .
+
+      - name: Upload dylib to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            lib/*.so
+            lib/*.dll
+            lib/*.dylib
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

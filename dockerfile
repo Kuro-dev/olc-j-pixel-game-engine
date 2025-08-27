@@ -1,4 +1,3 @@
-# --- Stage 0: Extract version from pom.xml using Maven
 FROM maven:3.9.6-eclipse-temurin-21 AS maven-version
 WORKDIR /project
 COPY pom.xml ./
