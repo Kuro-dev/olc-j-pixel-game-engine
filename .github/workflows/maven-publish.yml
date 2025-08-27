@@ -98,10 +98,11 @@ jobs:
             -framework Cocoa -framework OpenGL
 
       - name: Upload macOS dylib to release
-        run: |
-          gh auth setup-git
-          sleep 5  # allow release to propagate
-          gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/*.dylib --clobber=false --repo $GITHUB_REPOSITORY
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-and-release.outputs.VERSION }}
+          files: |
+            lib/*.dylib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -119,9 +120,12 @@ jobs:
           docker build -o . .
 
       - name: Upload Linux & Windows libraries to release
-        run: |
-          gh auth setup-git
-          sleep 5  # allow release to propagate
-          gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/* --clobber=false --repo $GITHUB_REPOSITORY
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-and-release.outputs.VERSION }}
+          files: |
+            lib/*.so
+            lib/.dll
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
