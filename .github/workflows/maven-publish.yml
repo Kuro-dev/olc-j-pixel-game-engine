@@ -77,6 +77,8 @@ jobs:
     needs: build-and-release
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Build macOS dylib
         run: |
           VERSION=${{ needs.build-and-release.outputs.VERSION }}
@@ -104,6 +106,8 @@ jobs:
     needs: build-and-release
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Build Linux & Windows libraries via Docker
         run: |
           mkdir -p lib
