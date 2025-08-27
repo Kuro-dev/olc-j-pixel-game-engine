@@ -23,12 +23,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.foreign.*;
 import java.lang.ref.Cleaner;
 
+import static org.kurodev.jpixelgameengine.impl.ffm.NativeFunction.LINKER;
+
 /**
  * Due to how FFM works this class must be inherited by a Named (NOT ANONYMOUS) class. Otherwise, it will fail.
  */
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class PixelGameEngine implements Cleaner.Cleanable {
-    static final Linker LINKER = Linker.nativeLinker();
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private static final Logger log = LoggerFactory.getLogger(PixelGameEngine.class);
     private static final NativeFunction<Void> GAME_ENGINE_DESTROY = new NativeFunction<>("gameEngine_destroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
@@ -41,14 +42,6 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
                     ValueLayout.ADDRESS,
                     ValueLayout.ADDRESS)
     );
-
-    static {
-        try {
-            NativeLoader.loadLibraries();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private final Arena arena;
     private final MemorySegment instancePtr;

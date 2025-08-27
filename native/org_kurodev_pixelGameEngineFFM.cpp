@@ -256,10 +256,22 @@ extern "C"
 
     int32_t sprite_width(olc::Sprite *s) { return s->width; }
     int32_t sprite_height(olc::Sprite *s) { return s->height; }
+    bool sprite_setPixel(olc::Sprite *s, olc::vi2d a, olc::Pixel p) { return s->SetPixel(a, p); }
+    olc::Pixel sprite_getPixel(olc::Sprite *s, olc::vi2d a) { return s->GetPixel(a); }
 
-    olc::Sprite *sprite_create(const char *path)
+    /**
+     * Creates a sprite from a file
+     */
+    olc::Sprite *sprite_createPath(const char *path)
     {
         return new olc::Sprite(std::string(path));
+    }
+    /**
+     * Creates an empty sprite of the given size
+     */
+    olc::Sprite *sprite_createWidthHeight(int32_t w, int32_t h)
+    {
+        return new olc::Sprite(w, h);
     }
 
     olc::Decal *decal_create(olc::Sprite *sprite)
@@ -280,6 +292,16 @@ extern "C"
     olc::vi2d decal_vUVScale(olc::Decal *d)
     {
         return d->vUVScale;
+    }
+
+    void decal_Update(olc::Decal *d)
+    {
+        d->Update();
+    }
+
+    void decal_UpdateSprite(olc::Decal *d)
+    {
+        d->UpdateSprite();
     }
 
     void printToConsole(GameEngine *instance, char *text)

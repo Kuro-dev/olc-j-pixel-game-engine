@@ -6,6 +6,7 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
+import java.util.Objects;
 
 public class Pixel extends PointerClass {
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(ValueLayout.JAVA_BYTE.withName("r"), ValueLayout.JAVA_BYTE.withName("g"), ValueLayout.JAVA_BYTE.withName("b"), ValueLayout.JAVA_BYTE.withName("a"));
@@ -22,10 +23,10 @@ public class Pixel extends PointerClass {
     private final int a;
 
     public Pixel(MemorySegment segment) {
-        this.r = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("r")));
-        this.g = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("g")));
-        this.b = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("b")));
-        this.a = segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("a")));
+        this.r = Byte.toUnsignedInt(segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("r"))));
+        this.g = Byte.toUnsignedInt(segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("g"))));
+        this.b = Byte.toUnsignedInt(segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("b"))));
+        this.a = Byte.toUnsignedInt(segment.get(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("a"))));
     }
 
     public Pixel(int r, int g, int b, int a) {
@@ -81,5 +82,27 @@ public class Pixel extends PointerClass {
         seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("b")), (byte) b);
         seg.set(ValueLayout.JAVA_BYTE, LAYOUT.byteOffset(MemoryLayout.PathElement.groupElement("a")), (byte) a);
         return seg;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Pixel pixel = (Pixel) o;
+        return r == pixel.r && g == pixel.g && b == pixel.b && a == pixel.a;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(r, g, b, a);
+    }
+
+    @Override
+    public String toString() {
+        return "Pixel{" +
+                "r=" + r +
+                ", g=" + g +
+                ", b=" + b +
+                ", a=" + a +
+                '}';
     }
 }

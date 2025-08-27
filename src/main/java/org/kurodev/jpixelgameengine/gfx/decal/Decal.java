@@ -20,6 +20,9 @@ public class Decal {
     private static final NativeFunction<MemorySegment> CREATE_DECAL = new NativeFunction<>("decal_create", ValueLayout.ADDRESS, ValueLayout.ADDRESS);
     private static final NativeFunction<Void> DESTROY_DECAL = new NativeFunction<>("decal_destroy", ValueLayout.ADDRESS);
     private static final NativeFunction<Vector2D<Float>> UV_SCALE = new NativeFunction<>("decal_vUVScale", FunctionDescriptor.of(ValueLayout.ADDRESS, FloatVector2D.LAYOUT));
+    private static final NativeFunction<Void> DECAL_UPDATE = new NativeFunction<>("decal_Update", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+    private static final NativeFunction<Void> DECAL_UPDATE_SPRITE = new NativeFunction<>("decal_UpdateSprite", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
     private final MemorySegment ptr;
     private final Sprite sprite;
 
@@ -27,13 +30,20 @@ public class Decal {
         ptr = CREATE_DECAL.invokeExact(m -> m, sprite.getSpritePtr());
         this.sprite = sprite;
         CLEANER.register(this, new OlcReferenceCleaner(() -> {
-            log.info("Unloading Decal for {}", sprite.getSpritePath());
             DESTROY_DECAL.invoke(ptr);
         }));
     }
 
     public MemorySegment getPtr() {
         return ptr;
+    }
+
+    public void update() {
+        DECAL_UPDATE.invoke(ptr);
+    }
+
+    public void updateSprite() {
+        DECAL_UPDATE_SPRITE.invoke(ptr);
     }
 
     public Vector2D<Float> vUVScale() {

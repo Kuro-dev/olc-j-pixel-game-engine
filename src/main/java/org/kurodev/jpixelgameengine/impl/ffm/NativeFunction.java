@@ -1,5 +1,6 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
+import org.kurodev.NativeLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +20,20 @@ import java.util.function.Function;
  */
 @SuppressWarnings("unchecked")
 public class NativeFunction<T> {
+    static final Linker LINKER = Linker.nativeLinker();
     private static final Logger log = LoggerFactory.getLogger(NativeFunction.class);
+
+    static {
+        try {
+            NativeLoader.loadLibraries();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final String symbolName;
     private final FunctionDescriptor descriptor;
     private Arena arena = null;
-
     private volatile MethodHandle cachedHandle;
 
     public NativeFunction(String name, FunctionDescriptor descriptor) {
@@ -50,7 +60,7 @@ public class NativeFunction<T> {
                             .find(symbolName)
                             .orElseThrow(() -> new RuntimeException("Symbol not found: " + symbolName));
 
-                    this.cachedHandle = PixelGameEngine.LINKER.downcallHandle(symbol, descriptor);
+                    this.cachedHandle = LINKER.downcallHandle(symbol, descriptor);
                 } catch (Throwable e) {
                     throw new RuntimeException("Failed to initialize native function", e);
                 }

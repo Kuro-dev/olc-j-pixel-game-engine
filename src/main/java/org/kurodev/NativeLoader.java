@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NativeLoader {
+
     private static final NativeFunction<String> GET_LIBRARY_VERSION = new NativeFunction<>("get_library_version", ValueLayout.ADDRESS);
     private static final String OWNER = "Kuro-dev";
     private static final String REPO = "olc-j-pixel-game-engine";
