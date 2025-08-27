@@ -15,9 +15,6 @@ import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
     private boolean run = true;
-    private Sprite sprite;
-    private Decal decal;
-    private Animation animation;
 
     public PixelGameEngineImpl(int width, int height) {
         super(width, height, 1, 1);
@@ -25,10 +22,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
 
     @Override
     public boolean onUserCreate() {
-        sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
-        decal = new Decal(sprite);
-        SpriteSheetDecal ani = new SpriteSheetDecal(decal, Vector2D.ofFloat(64));
-        this.animation = ani.animateTimeBased(Vector2D.ofInt(0, 8 * 64), 24, .2, true);
         setPixelMode(PixelMode.NORMAL);
         return true;
     }
@@ -49,7 +42,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         if (getKey(KeyBoardKey.TAB).isPressed()) {
             consoleShow(KeyBoardKey.TAB, true);
         }
-        animation.draw(delta, this, FloatVector2D.ZERO, Vector2D.ofFloat(4, 4), Pixel.WHITE);
         gradientLineDecal(Vector2D.ofFloat(50, 50), Vector2D.ofFloat(300, 300), Pixel.BLUE, Pixel.RED,50);
         return run;
     }
@@ -62,17 +54,6 @@ public class PixelGameEngineImpl extends PixelGameEngine {
     @Override
     protected boolean onConsoleCommand(String command) {
         consoleWriteln(">" + command);
-        if ("unload".equals(command)) {
-            sprite = null;
-            decal = null;
-            clear(Pixel.BLACK);
-            return false;
-        }
-        if ("reload".equals(command)) {
-            sprite = new Sprite(Path.of("./sprites/Char 1/Character 1.png"));
-            decal = new Decal(sprite);
-            return false;
-        }
         if ("quit".equals(command) || "exit".equals(command)) {
             run = false;
             return false;
