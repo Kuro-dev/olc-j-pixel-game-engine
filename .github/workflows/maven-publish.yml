@@ -94,12 +94,8 @@ jobs:
           -o lib/liborg_kurodev_pixelGameEngineFFM.dylib \
           -framework Cocoa -framework OpenGL
 
-      - name: Upload macOS dylib to release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Release v${{ needs.build-and-release.outputs.VERSION }}
-          tag_name: v${{ needs.build-and-release.outputs.VERSION }}
-          files: lib/*.dylib
+      - name: Upload macOS dylib
+        run: gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/*.dylib --clobber=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -114,10 +110,6 @@ jobs:
           docker build -o . .
 
       - name: Upload Linux & Windows libraries to release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Release v${{ needs.build-and-release.outputs.VERSION }}
-          tag_name: v${{ needs.build-and-release.outputs.VERSION }}
-          files: lib/*
+        run: gh release upload v${{ needs.build-and-release.outputs.VERSION }} lib/* --clobber=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
