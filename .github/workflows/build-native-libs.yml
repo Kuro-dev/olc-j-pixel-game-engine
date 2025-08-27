@@ -1,5 +1,6 @@
 name: build-native-libs.yml
 on:
+  workflow_dispatch:
   release:
     types: [ published ]
 
