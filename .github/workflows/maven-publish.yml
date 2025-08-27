@@ -45,13 +45,11 @@ jobs:
       - name: Build native libraries via Docker
         run: |
           # Build Linux and Windows shared libraries
-          docker build --target linux-builder -o ./lib-linux .
-          docker build --target windows-builder -o ./lib-windows .
+          docker build -o . .
 
-          # Merge the outputs into a single lib/ folder
           mkdir -p lib
-          cp ./lib-linux/liborg_kurodev_pixelGameEngineFFM.so lib/
-          cp ./lib-windows/org_kurodev_pixelGameEngineFFM.dll lib/
+          cp ./lib/liborg_kurodev_pixelGameEngineFFM.so lib/
+          cp ./lib/org_kurodev_pixelGameEngineFFM.dll lib/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
