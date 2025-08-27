@@ -45,10 +45,8 @@ jobs:
       - name: Build native libraries via Docker
         run: |
           # Build Linux and Windows shared libraries
-          docker build -o . .
-
           mkdir -p lib
-          mv ./lib/* lib/
+          docker build -o . .
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

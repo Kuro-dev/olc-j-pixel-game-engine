@@ -32,7 +32,6 @@ RUN VERSION=$(cat /tmp/version.txt) && \
     -o org_kurodev_pixelGameEngineFFM.dll org_kurodev_pixelGameEngineFFM.cpp \
     -static-libstdc++ -static-libgcc -lopengl32 -lwinmm -lgdi32 -ldwmapi -lgdiplus -lshlwapi -pthread
 
-# --- Stage 3: Export
 FROM scratch AS export-stage
 
 COPY --from=linux-builder /src/liborg_kurodev_pixelGameEngineFFM.so ./lib/
