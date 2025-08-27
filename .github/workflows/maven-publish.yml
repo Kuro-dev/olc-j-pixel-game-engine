@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.get_version.outputs.version }}
-      RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v5
