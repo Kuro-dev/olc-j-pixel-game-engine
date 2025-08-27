@@ -5,10 +5,75 @@ on:
     types: [ published ]
 
 jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '24'
+          cache: 'maven'
+
+      - name: Get version from pom.xml
+        id: get_version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Create GitHub tag (If it doesn't exist yet)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag v$VERSION || echo "Tag v$VERSION already exists, skipping tag creation"
+          git push origin v$VERSION || echo "Tag v$VERSION already pushed, skipping push"
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            🧩 **Maven Dependency (via JitPack)**
+            The binary (.dll / .so / .dylib) files should be downloaded automatically on first startup,
+            if that doesn't work, however, just create a folder called "lib" and copy the needed file there.
+            To use this library via [JitPack](https://jitpack.io), add the following to your `pom.xml`:
+            
+            ```xml
+            <dependencies>
+              <dependency>
+                <groupId>com.github.kuro-dev</groupId>
+                <artifactId>olc-j-pixel-game-engine</artifactId>
+                <version>${{ env.VERSION }}</version>
+              </dependency>
+            </dependencies>
+            <repositories>
+              <repository>
+                <id>jitpack.io</id>
+                <url>https://jitpack.io</url>
+              </repository>
+            </repositories>
+            ```
+            📁 This release includes compiled `.jar`, `.javadoc.jar`, and native `.so` / `.dll` and `.dylib` files.
+          name: Release ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          files: |
+            target/*.jar
+            target/*.javadoc.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   macos-build:
     runs-on: macos-latest
+    needs: build-and-release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Build macOS dylib
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -20,21 +85,22 @@ jobs:
             -o lib/liborg_kurodev_pixelGameEngineFFM.dylib \
             -framework Cocoa -framework OpenGL
       - name: Upload macOS dylib artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-lib
           path: lib/*.dylib
   windows-linux-build:
     runs-on: ubuntu-latest
+    needs: build-and-release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Build native libraries via Docker
         run: |
           # Build Linux and Windows shared libraries
           mkdir -p lib
           docker build -o . .
       - name: Upload Docker artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-libs
           path: lib/*.so,lib/*.dll
@@ -44,13 +110,13 @@ jobs:
     needs: [ macos-build, windows-linux-build ]
     steps:
       - name: Download macOS artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
         with:
           name: macos-lib
           path: macos-lib
 
       - name: Download Docker artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
         with:
           name: docker-libs
           path: docker-libs
