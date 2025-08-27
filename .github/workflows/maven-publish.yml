@@ -34,7 +34,7 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Create GitHub tag (ignore failure if tag exists)
+      - name: Create GitHub tag (If it doesn't exist yet)
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
@@ -42,13 +42,17 @@ jobs:
           git push origin v$VERSION || echo "Tag v$VERSION already pushed, skipping push"
         env:
           VERSION: ${{ steps.get_version.outputs.version }}
+
       - name: Build macOS dylib
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           mkdir -p lib
-          clang++ -std=c++17 -fPIC -DOLC_PGE_APPLICATION -DVERSION="\"$VERSION\"" \
-            -dynamiclib -o lib/liborg_kurodev_pixelGameEngineFFM.dylib native/org_kurodev_pixelGameEngineFFM.cpp \
-            -framework Cocoa -framework OpenGL
+          clang++ -dynamiclib -std=c++17 -fPIC -DOLC_PGE_APPLICATION -DOLC_PLATFORM_GLUT \
+          -DVERSION="\"$VERSION\"" \
+          native/org_kurodev_pixelGameEngineFFM.cpp \
+          -o lib/liborg_kurodev_pixelGameEngineFFM.dylib \
+          -framework Cocoa -framework OpenGL
+
       - name: Build native libraries via Docker
         run: |
           # Build Linux and Windows shared libraries
