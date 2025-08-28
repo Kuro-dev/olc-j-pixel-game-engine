@@ -33,8 +33,8 @@ public class NativeFunction<T> {
 
     private final String symbolName;
     private final FunctionDescriptor descriptor;
-    private Arena arena = null;
-    private volatile MethodHandle cachedHandle;
+    protected Arena arena = null;
+    protected volatile MethodHandle cachedHandle;
 
     public NativeFunction(String name, FunctionDescriptor descriptor) {
         this.symbolName = name;
@@ -45,7 +45,7 @@ public class NativeFunction<T> {
         this(symbolName, FunctionDescriptor.of(returnType, args));
     }
 
-    private void ensureInitialized() {
+    protected void ensureInitialized() {
         if (arena == null) {
             arena = Arena.ofAuto();
         }
@@ -153,7 +153,6 @@ public class NativeFunction<T> {
      */
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {
         ensureInitialized();
-
         // Create exact parameter types list
         Class<?>[] ptypes = new Class<?>[args.length + 1];
         ptypes[0] = SegmentAllocator.class;
@@ -177,7 +176,6 @@ public class NativeFunction<T> {
         }
         return toObj.apply(seg);
     }
-
 
     public T invokeExact(Function<MemorySegment, T> toObj, Object... args) {
         ensureInitialized();

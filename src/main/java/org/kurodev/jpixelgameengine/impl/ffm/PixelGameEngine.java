@@ -1,6 +1,5 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
-import org.kurodev.NativeLoader;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
@@ -381,7 +380,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final String textEntryGetString() {
-        return methods.textEntryGetString.invokeObj(Util::cString);
+        return methods.textEntryGetString.invoke(instancePtr);
     }
 
     public final int textEntryGetCursor() {

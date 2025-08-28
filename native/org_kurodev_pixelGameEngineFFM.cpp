@@ -210,9 +210,18 @@ extern "C"
         instance->TextEntryEnable(enable, std::string(initialString));
     }
 
-    const char *textEntryGetString(GameEngine *instance)
+    int32_t textEntryGetString(char *buffer, int32_t bufferSize, GameEngine *instance)
     {
-        return instance->TextEntryGetString().c_str();
+        std::string str = instance->TextEntryGetString();
+        if (buffer == nullptr)
+        {
+            // Return required size (including null terminator)
+            return str.length() + 1;
+        }
+        int32_t copyLen = str.length();
+        std::memcpy(buffer, str.c_str(), copyLen);
+        buffer[copyLen] = '\0'; // Always null-terminate
+        return copyLen + 1;     // Return total size written (or needed)
     }
 
     int32_t textEntryGetCursor(GameEngine *instance)

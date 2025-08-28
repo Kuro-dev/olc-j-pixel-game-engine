@@ -2,16 +2,9 @@ package org.kurodev.example;
 
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
-import org.kurodev.jpixelgameengine.gfx.animation.Animation;
-import org.kurodev.jpixelgameengine.gfx.animation.SpriteSheetDecal;
-import org.kurodev.jpixelgameengine.gfx.decal.Decal;
-import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
-import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
-
-import java.nio.file.Path;
 
 public class PixelGameEngineImpl extends PixelGameEngine {
     private boolean run = true;
@@ -42,7 +35,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         if (getKey(KeyBoardKey.TAB).isPressed()) {
             consoleShow(KeyBoardKey.TAB, true);
         }
-        gradientLineDecal(Vector2D.ofFloat(50, 50), Vector2D.ofFloat(300, 300), Pixel.BLUE, Pixel.RED,50);
+        gradientLineDecal(Vector2D.ofFloat(50, 50), Vector2D.ofFloat(300, 300), Pixel.BLUE, Pixel.RED, 50);
         return run;
     }
 

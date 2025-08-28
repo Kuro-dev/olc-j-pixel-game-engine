@@ -47,7 +47,7 @@ public class OlcMethods {
     final NativeFunction<Void> drawRect = createVoidFn("drawRect", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> fillRect = createVoidFn("fillRect", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> textEntryEnable = createVoidFn("textEntryEnable", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS);
-    final NativeFunction<String> textEntryGetString = createFn("textEntryGetString", ValueLayout.ADDRESS);
+    final NativeFunction<String> textEntryGetString = createStringFn("textEntryGetString");
     final NativeFunction<Integer> textEntryGetCursor = createFn("textEntryGetCursor", ValueLayout.JAVA_INT);
     final NativeFunction<Boolean> isTextEntryEnabled = createFn("isTextEntryEnabled", ValueLayout.JAVA_BOOLEAN);
     final NativeFunction<Void> drawSprite = createVoidFn("drawSprite", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_BYTE);
@@ -205,5 +205,14 @@ public class OlcMethods {
         argsActual[0] = ValueLayout.ADDRESS;
         System.arraycopy(args, 0, argsActual, 1, args.length);
         return new NativeFunction<T>(name, FunctionDescriptor.ofVoid(argsActual));
+    }
+
+    private NativeFunction<String> createStringFn(String name, MemoryLayout... args) {
+        MemoryLayout[] argsActual = new MemoryLayout[args.length + 3];
+        argsActual[0] = ValueLayout.ADDRESS; // Character buffer
+        argsActual[1] = ValueLayout.JAVA_INT;// buffer size
+        argsActual[2] = ValueLayout.ADDRESS; // Engine Pointer
+        System.arraycopy(args, 0, argsActual, 3, args.length);
+        return new NativeStringFunction(name, FunctionDescriptor.of(ValueLayout.JAVA_INT, argsActual));
     }
 }
