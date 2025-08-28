@@ -26,6 +26,7 @@ Supported features so far:
 - [ ] Layer Support
 - [ ] HW3D Rendering support
 - [ ] Possibly other features I don't know about
+- [ ] Proper Unit Tests to check if all OLC functions are declared correctly and if memory is managed properly.
 
 Simple implementation example:
 
