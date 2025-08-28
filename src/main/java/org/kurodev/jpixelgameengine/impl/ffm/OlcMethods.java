@@ -181,16 +181,17 @@ public class OlcMethods {
     );
 
     final NativeFunction<Integer> resize = createVoidFn("resize", IntVector2D.LAYOUT, IntVector2D.LAYOUT);
-
     final NativeFunction<Vector2D<Integer>> getWindowSize = createFn("getWindowSize", IntVector2D.LAYOUT);
-
     final NativeFunction<Vector2D<Integer>> getWindowPos = createFn("getWindowPos", IntVector2D.LAYOUT);
-
     final NativeFunction<Integer> getFramerate = createFn("getFps", ValueLayout.JAVA_INT);
-
     final NativeFunction<Void> setWindowTitle = createVoidFn("setWindowTitle", ValueLayout.ADDRESS);
-
     final NativeFunction<Void> gradientLineDecal = createVoidFn("GradientLineDecal", FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, Pixel.LAYOUT, Pixel.LAYOUT, ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> createLayer = createFn("createLayer", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> enableLayer = createVoidFn("enableLayer", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Void> setLayerOffset = createVoidFn("SetLayerOffset", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_FLOAT, ValueLayout.JAVA_FLOAT);
+    final NativeFunction<Void> setLayerScale = createVoidFn("SetLayerScale", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_FLOAT, ValueLayout.JAVA_FLOAT);
+    final NativeFunction<Void> setLayerTint = createVoidFn("SetLayerTint", Pixel.LAYOUT);
+    final NativeFunction<Void> setLayerCustomRenderFunction = createVoidFn("SetLayerCustomRenderFunction", ValueLayout.JAVA_BYTE, ValueLayout.ADDRESS);
 
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
         MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];

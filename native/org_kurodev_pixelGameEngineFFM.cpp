@@ -513,6 +513,41 @@ extern "C"
         instance->sAppName = std::string(title);
     }
 
+    /**
+     * Creates a layer and returns it's index.
+     */
+    int32_t createLayer(GameEngine *instance)
+    {
+        return instance->CreateLayer();
+    }
+
+    void enableLayer(GameEngine *instance, uint8_t layer, bool b)
+    {
+        return instance->EnableLayer(layer, b);
+    }
+
+    typedef void (*customRenderFn)();
+
+    void SetLayerCustomRenderFunction(GameEngine *instance, uint8_t layer, customRenderFn f)
+    {
+        return instance->SetLayerCustomRenderFunction(layer, f);
+    }
+    
+    void SetLayerOffset(GameEngine *instance, uint8_t layer, float x, float y)
+    {
+        return instance->SetLayerOffset(layer, x, y);
+    }
+    
+    void SetLayerScale(GameEngine *instance, uint8_t layer, float x, float y)
+    {
+        return instance->SetLayerScale(layer, x, y);
+    }
+
+    void SetLayerTint(GameEngine *instance, uint8_t layer, olc::Pixel &tint)
+    {
+        return instance->SetLayerTint(layer, tint);
+    }
+
 #ifdef __cplusplus
 }
 #endif

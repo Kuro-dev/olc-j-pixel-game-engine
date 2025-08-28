@@ -20,7 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.foreign.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.ref.Cleaner;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.kurodev.jpixelgameengine.impl.ffm.NativeFunction.LINKER;
 
@@ -46,6 +51,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     private final MemorySegment instancePtr;
     private final OlcMethods methods;
     private final engineInitializer engineInitializer = new engineInitializer();
+    private final Map<Integer, Runnable> layerRenderFunctions = new HashMap<>();
 
     public PixelGameEngine(int width, int height, int pixelWidth, int pixelHeight) {
         this(width, height, pixelWidth, pixelHeight, false, false, false, false);
@@ -775,5 +781,43 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final int getFramerate() {
         return methods.getFramerate.invoke(instancePtr);
+    }
+
+    public final int createLayer() {
+        return methods.createLayer.invoke(instancePtr);
+    }
+
+    public final void enableLayer(int layer, boolean enable) {
+        methods.enableLayer.invoke(instancePtr, (byte) layer, enable);
+    }
+
+    public final void setLayerOffset(int layer, Vector2D<Float> offset) {
+        this.setLayerOffset((byte) layer, offset.getX(), offset.getY());
+    }
+
+    public final void setLayerOffset(int layer, float x, float y) {
+        methods.setLayerOffset.invoke(instancePtr, (byte) layer, x, y);
+    }
+
+    public final void setLayerScale(int layer, float x, float y) {
+        methods.setLayerScale.invoke(instancePtr, (byte) layer, x, y);
+    }
+
+    public final void setLayerOffset(int layer, Pixel tint) {
+        methods.setLayerTint.invoke(instancePtr, (byte) layer, tint);
+    }
+
+    public final void setLayerCustomRenderFunction(int layer, Runnable renderFunction) {
+        try {
+            MethodHandle handle = MethodHandles.lookup()
+                    .findVirtual(renderFunction.getClass(), "run", MethodType.methodType(void.class))
+                    .bindTo(renderFunction);
+
+            MemorySegment fn = LINKER.upcallStub(handle, FunctionDescriptor.ofVoid(), arena);
+            methods.setLayerCustomRenderFunction.invoke(instancePtr, (byte) layer, fn);
+            layerRenderFunctions.put(layer, renderFunction); //just store it to avoid garbage collection
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
