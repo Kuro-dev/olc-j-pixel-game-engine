@@ -94,6 +94,8 @@ jobs:
             -Wno-return-type-c-linkage \
             -Wno-inconsistent-missing-override \
             -DGL_SILENCE_DEPRECATION \
+            -Wno-macro-redefined\
+            -include cassert\
             -DOLC_PGE_APPLICATION -DOLC_PLATFORM_GLUT \
             -DVERSION="\"${VERSION}\"" \
             -I${BREW_PREFIX}/include \
