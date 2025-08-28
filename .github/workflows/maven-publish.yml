@@ -93,6 +93,7 @@ jobs:
           clang++ -dynamiclib -std=c++17 -fPIC \
             -Wno-return-type-c-linkage \
             -Wno-inconsistent-missing-override \
+            -DGL_SILENCE_DEPRECATION \
             -DOLC_PGE_APPLICATION -DOLC_PLATFORM_GLUT \
             -DVERSION="\"${VERSION}\"" \
             -I${BREW_PREFIX}/include \
