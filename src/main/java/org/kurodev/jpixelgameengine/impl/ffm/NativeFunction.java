@@ -36,6 +36,12 @@ public class NativeFunction<T> {
     protected Arena arena = null;
     protected volatile MethodHandle cachedHandle;
 
+    public NativeFunction(Arena arena, String symbolName, FunctionDescriptor descriptor) {
+        this.arena = arena;
+        this.symbolName = symbolName;
+        this.descriptor = descriptor;
+    }
+
     public NativeFunction(String name, FunctionDescriptor descriptor) {
         this.symbolName = name;
         this.descriptor = descriptor;
