@@ -15,7 +15,7 @@ Supported features so far:
 - [x] Some more advanced drawing methods
 - [x] Support Windows platforms
 - [x] Support Linux platforms (Tested on ubuntu)
-- [ ] Support macOS (I do not own one, and don't know how to compile for it. Help is welcome)
+- [x] Support macOS (untested)
 - [x] Creating Sprites
 - [x] Creating Decals from sprites
 - [x] Drawing Sprites including partial sprites
