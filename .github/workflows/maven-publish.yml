@@ -75,7 +75,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  compile-macos-libraries:
+  compile-macOS-libraries:
     runs-on: macos-latest
     needs: build-and-release
     steps:
@@ -110,7 +110,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  compile-windows-linux-libraries:
+  compile-linux-libraries:
     runs-on: ubuntu-latest
     needs: build-and-release
     steps:
@@ -118,21 +118,71 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Linux & Windows libraries via Docker
+      - name: Install Linux build dependencies
         run: |
-          mkdir -p lib
-          docker build -o . .
+          sudo apt-get update
+          sudo apt-get install -y \
+            g++ libx11-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev \
+            libxi-dev libxcursor-dev libxinerama-dev libxext-dev libpthread-stubs0-dev \
+            libpng-dev
 
-      - name: Upload Linux & Windows libraries to release
+      - name: Build Linux shared library
+        run: |
+          VERSION=${{ needs.build-and-release.outputs.VERSION }}
+          mkdir -p lib
+          g++ -std=c++17 -fPIC \
+            -DOLC_PGE_APPLICATION \
+            -DVERSION="\"${VERSION}\"" \
+            -shared \
+            -o lib/liborg_kurodev_pixelGameEngineFFM.so \
+            native/org_kurodev_pixelGameEngineFFM.cpp \
+            -lX11 -lGL -lpng -lpthread -ldl
+
+      - name: Upload Linux .so to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.build-and-release.outputs.VERSION }}
-          files: |
-            lib/*.so
-            lib/*.dll
+          files: lib/*.so
           append_body: true
           body: |
-            - Windows .dll file
             - Linux .so file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  compile-windows-libraries:
+    runs-on: ubuntu-latest
+    needs: build-and-release
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install MinGW cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
+
+      - name: Build Windows DLL
+        run: |
+          VERSION=${{ needs.build-and-release.outputs.VERSION }}
+          mkdir -p lib
+          x86_64-w64-mingw32-g++ -std=c++17 \
+            -DOLC_PGE_APPLICATION \
+            -DVERSION="\"${VERSION}\"" \
+            -shared \
+            -o lib/org_kurodev_pixelGameEngineFFM.dll \
+            native/org_kurodev_pixelGameEngineFFM.cpp \
+            -static-libstdc++ -static-libgcc \
+            -lopengl32 -lwinmm -lgdi32 -ldwmapi -lgdiplus -lshlwapi -pthread
+
+      - name: Upload Windows .dll to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-and-release.outputs.VERSION }}
+          files: lib/*.dll
+          append_body: true
+          body: |
+            - Windows .dll file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
