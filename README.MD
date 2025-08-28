@@ -99,5 +99,8 @@ I personally use IntelliJ, but other IDEs should have the same features.
 # Release steps:
 
 1. update version in pom.xml
-2. run `docker build -o . .`
-3. commit and push
+2. ~~run `docker build -o . .`~~
+3. ~~commit and push~~
+4. ...
+5. Let github Actions do the rest.
+6. profit
