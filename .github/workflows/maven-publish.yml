@@ -1,8 +1,11 @@
 name: maven-publish.yml
 on:
   workflow_dispatch:
-  release:
-    types: [ published ]
+  push:
+    branches:
+      - master
+    paths:
+      - "pom.xml"
 
 jobs:
   build-and-release:
