@@ -6,7 +6,7 @@
 
     <groupId>com.github.kuro-dev</groupId>
     <artifactId>olc-j-pixel-game-engine</artifactId>
-    <version>0.1.7</version>
+    <version>0.1.8</version>
     <packaging>jar</packaging>
 
     <name>OLC J-PixelGameEngine</name>

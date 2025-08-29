@@ -23,7 +23,7 @@ Supported features so far:
 - [x] Console and Textinput modes
 - [x] Set windows Size during runtime
 - [x] Get FPS and other information
-- [ ] Layer Support
+- [x] Layer Support
 - [ ] HW3D Rendering support
 - [ ] Possibly other features I don't know about
 - [ ] Proper Unit Tests to check if all OLC functions are declared correctly and if memory is managed properly.
