@@ -10,6 +10,8 @@ import org.kurodev.jpixelgameengine.gfx.sprite.Sprite;
 import org.kurodev.jpixelgameengine.impl.MemUtil;
 import org.kurodev.jpixelgameengine.impl.NativeCallCandidate;
 import org.kurodev.jpixelgameengine.impl.PixelgameEngineReturnCode;
+import org.kurodev.jpixelgameengine.impl.util.RunnableWrapper;
+import org.kurodev.jpixelgameengine.impl.util.Util;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.input.MouseKey;
@@ -803,19 +805,21 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         methods.setLayerScale.invoke(instancePtr, (byte) layer, x, y);
     }
 
-    public final void setLayerOffset(int layer, Pixel tint) {
+    public final void setLayerTint(int layer, Pixel tint) {
         methods.setLayerTint.invoke(instancePtr, (byte) layer, tint);
     }
 
     public final void setLayerCustomRenderFunction(int layer, Runnable renderFunction) {
         try {
+            RunnableWrapper task = new RunnableWrapper(renderFunction);
+
             MethodHandle handle = MethodHandles.lookup()
-                    .findVirtual(renderFunction.getClass(), "run", MethodType.methodType(void.class))
-                    .bindTo(renderFunction);
+                    .findVirtual(RunnableWrapper.class, "run", MethodType.methodType(void.class))
+                    .bindTo(task);
 
             MemorySegment fn = LINKER.upcallStub(handle, FunctionDescriptor.ofVoid(), arena);
             methods.setLayerCustomRenderFunction.invoke(instancePtr, (byte) layer, fn);
-            layerRenderFunctions.put(layer, renderFunction); //just store it to avoid garbage collection
+            layerRenderFunctions.put(layer, task);
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

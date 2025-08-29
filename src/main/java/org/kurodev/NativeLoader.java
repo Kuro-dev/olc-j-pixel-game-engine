@@ -1,7 +1,7 @@
 package org.kurodev;
 
 import org.kurodev.jpixelgameengine.impl.ffm.NativeFunction;
-import org.kurodev.jpixelgameengine.impl.ffm.Util;
+import org.kurodev.jpixelgameengine.impl.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

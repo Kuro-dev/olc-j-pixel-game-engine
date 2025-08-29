@@ -1,4 +1,4 @@
-package org.kurodev.jpixelgameengine.impl.ffm;
+package org.kurodev.jpixelgameengine.impl.util;
 
 import java.lang.foreign.MemorySegment;
 import java.nio.charset.StandardCharsets;
