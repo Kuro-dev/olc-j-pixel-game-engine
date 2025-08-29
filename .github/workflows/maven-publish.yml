@@ -51,7 +51,7 @@ jobs:
             🧩 **Maven Dependency (via JitPack)**
             The binary (.dll / .so / .dylib) files should be downloaded automatically on first startup,
             if that doesn't work, however, just create a folder called "lib" and copy the needed file there.
-            To use this library via [JitPack](https://jitpack.io), add the following to your `pom.xml`:
+            To use this library via [JitPack](https://jitpack.io/#kuro-dev/olc-j-pixel-game-engine), add the following to your `pom.xml`:
             
             ```xml
             <dependencies>
