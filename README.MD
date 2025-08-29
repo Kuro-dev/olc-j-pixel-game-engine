@@ -1,4 +1,7 @@
-# OLC - J - PixelGameEngine
+# <div style="text-align:center">OLC - J - PixelGameEngine</div>
+[![](https://jitpack.io/v/kuro-dev/olc-j-pixel-game-engine.svg)](https://jitpack.io/#kuro-dev/olc-j-pixel-game-engine)
+
+
 A Java port of the [OLC PixelgameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine) by [Javidx9](https://www.youtube.com/javidx9)
 Simply out of love for game development, java and the OLC channel.
 If using the engine to make something, PLEASE reach out, I would love to see what you make with it! :)
