@@ -1,6 +1,7 @@
 # OLC - J - PixelGameEngine
 A Java port of the [OLC PixelgameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine) by [Javidx9](https://www.youtube.com/javidx9)
 Simply out of love for game development, java and the OLC channel.
+If using the engine to make something, PLEASE reach out, I would love to see what you make with it! :)
 
 Uses the new FFM API introduced in Java 22. Rough testing shows no significant performance impact,
 at least the example program (random pixels all around) gives the same amount of FPS in Java as it does in C.
