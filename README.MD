@@ -1,5 +1,5 @@
 # OLC - J - PixelGameEngine
-
+A Java port of the [OLC PixelgameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine) by [Javidx9](https://www.youtube.com/javidx9)
 Simply out of love for game development, java and the OLC channel.
 
 Uses the new FFM API introduced in Java 22. Rough testing shows no significant performance impact,
