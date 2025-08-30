@@ -24,6 +24,7 @@ bin/
 
 /native/build
 /native/build-*
+/native/*.exe
 ### Mac OS ###
 .DS_Store
 .idea

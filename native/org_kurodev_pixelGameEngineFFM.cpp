@@ -2,6 +2,8 @@
 #include <iostream>
 #include <memory>
 #include <functional>
+
+#define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
 #ifdef __cplusplus
@@ -532,12 +534,12 @@ extern "C"
     {
         return instance->SetLayerCustomRenderFunction(layer, f);
     }
-    
+
     void SetLayerOffset(GameEngine *instance, uint8_t layer, float x, float y)
     {
         return instance->SetLayerOffset(layer, x, y);
     }
-    
+
     void SetLayerScale(GameEngine *instance, uint8_t layer, float x, float y)
     {
         return instance->SetLayerScale(layer, x, y);
