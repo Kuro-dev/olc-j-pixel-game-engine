@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build PGE Game",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "experiments.cpp",
+                "-o",
+                "game.exe",
+                "-std=c++17",
+                "-D_DEBUG",
+                "-mconsole",
+                "-lgdi32",
+                "-luser32",
+                "-lopengl32",
+                "-lgdiplus",
+                "-ldwmapi",
+                "-lshlwapi"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
