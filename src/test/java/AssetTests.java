@@ -42,6 +42,24 @@ public class AssetTests extends PixelGameEngine {
     }
 
     @Test
+    public void spriteDrawing() {
+        Sprite s = new Sprite(50, 50);
+        s.setPixel(3, 3, Pixel.BLUE);
+    }
+
+    @Test
+    public void spriteBulkDrawing() {
+        Sprite s = new Sprite(50, 50);
+        Pixel[][] p = new Pixel[50][50];
+        for (int y = 0; y < 50; y++) {
+            for (int x = 0; x < 50; x++) {
+                p[y][x] = Pixel.BLUE;
+            }
+        }
+        s.setPixels(p);
+    }
+
+    @Test
     @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
     void spriteCleanupTest() throws InterruptedException {
         ReferenceQueue<Sprite> queue = new ReferenceQueue<>();

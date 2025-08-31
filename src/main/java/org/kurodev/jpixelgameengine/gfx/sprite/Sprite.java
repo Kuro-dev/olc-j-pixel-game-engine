@@ -21,7 +21,8 @@ public class Sprite {
     private static final NativeFunction<Void> DESTROY_SPRITE = new NativeFunction<>("sprite_destroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
     private static final NativeFunction<Integer> SPRITE_WIDTH = new NativeFunction<>("sprite_width", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
     private static final NativeFunction<Integer> SPRITE_HEIGHT = new NativeFunction<>("sprite_height", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
-    private static final NativeFunction<Boolean> SET_PIXEL = new NativeFunction<>("sprite_setPixel", FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS, IntVector2D.LAYOUT, Pixel.LAYOUT));
+    private static final NativeFunction<Boolean> SET_PIXEL = new NativeFunction<>("sprite_setPixel", FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, Pixel.LAYOUT));
+    private static final NativeFunction<Boolean> SET_PIXEL_BULK = new NativeFunction<>("sprite_bulk_setPixel", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
     private static final NativeFunction<Pixel> GET_PIXEL = new NativeFunction<>("sprite_getPixel", FunctionDescriptor.of(Pixel.LAYOUT, ValueLayout.ADDRESS, IntVector2D.LAYOUT));
     private static final Cleaner SPRITE_CLEANER = Cleaner.create();
     private final Arena arena;
@@ -30,6 +31,8 @@ public class Sprite {
      */
     private final MemorySegment spritePtr;
     private final String name;
+    private final int width;
+    private final int height;
 
     public Sprite(Path spritePath) {
         this.arena = Arena.ofAuto();
@@ -37,6 +40,9 @@ public class Sprite {
         this.name = spritePath.toString();
         spritePtr = CREATE_SPRITE_PATH.invokeExact(Sprite::identity, arena.allocateFrom(spritePath.toAbsolutePath().toString()));
         registerCleaner();
+        height = SPRITE_HEIGHT.invoke(spritePtr);
+        width = SPRITE_WIDTH.invoke(spritePtr);
+
     }
 
     public Sprite(int width, int height, String name) {
@@ -44,6 +50,8 @@ public class Sprite {
         spritePtr = CREATE_SPRITE_WIDTH_HEIGHT.invokeExact(Sprite::identity, width, height);
         this.name = name;
         registerCleaner();
+        this.width = width;
+        this.height = height;
     }
 
     public Sprite(int width, int height) {
@@ -82,7 +90,28 @@ public class Sprite {
     }
 
     public boolean setPixel(Vector2D<Integer> pos, Pixel pixel) {
-        return SET_PIXEL.invoke(spritePtr, pos.toPtr(), pixel.toPtr());
+        return SET_PIXEL.invoke(spritePtr, pos.getX(), pos.getY(), pixel.toPtr());
+    }
+
+    public boolean setPixel(int x, int y, Pixel pixel) {
+        return SET_PIXEL.invoke(spritePtr, x, y, pixel.toPtr());
+    }
+
+    public void setPixels(Pixel[][] pixels) {
+        if (pixels.length != height || pixels[0].length != width) {
+            throw new IllegalArgumentException("Pixel array must match sprite dimensions");
+        }
+        Arena arena = Arena.ofConfined();
+        MemorySegment buffer = arena.allocate(ValueLayout.JAVA_INT, (long) width * height);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int index = y * width + x;
+                buffer.setAtIndex(ValueLayout.JAVA_INT, index, pixels[y][x].getRGBA());
+            }
+        }
+        SET_PIXEL_BULK.invoke(spritePtr, buffer);
+        arena.close();
     }
 
     public MemorySegment getSpritePtr() {
@@ -90,10 +119,10 @@ public class Sprite {
     }
 
     public int getHeight() {
-        return SPRITE_HEIGHT.invoke(spritePtr);
+        return height;
     }
 
     public int getWidth() {
-        return SPRITE_WIDTH.invoke(spritePtr);
+        return width;
     }
 }

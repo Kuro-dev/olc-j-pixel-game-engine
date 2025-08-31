@@ -267,7 +267,20 @@ extern "C"
 
     int32_t sprite_width(olc::Sprite *s) { return s->width; }
     int32_t sprite_height(olc::Sprite *s) { return s->height; }
-    bool sprite_setPixel(olc::Sprite *s, olc::vi2d a, olc::Pixel p) { return s->SetPixel(a, p); }
+    bool sprite_setPixel(olc::Sprite *s, int32_t x, int32_t y, olc::Pixel p) { return s->SetPixel(x, y, p); }
+    void sprite_bulk_setPixel(olc::Sprite *s, const int32_t *pRgba)
+    {
+        const int32_t w = s->width;
+        const int32_t h = s->height;
+        for (int32_t y = 0; y < h; y++)
+        {
+            for (int32_t x = 0; x < w; x++)
+            {
+                s->SetPixel(x, y, olc::Pixel(pRgba[y * w + x]));
+            }
+        }
+    }
+
     olc::Pixel sprite_getPixel(olc::Sprite *s, olc::vi2d a) { return s->GetPixel(a); }
 
     /**
