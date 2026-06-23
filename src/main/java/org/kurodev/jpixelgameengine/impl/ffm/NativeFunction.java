@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodType;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -134,14 +132,7 @@ public class NativeFunction<T> {
      * @return T
      */
     public T invokeObj(Function<MemorySegment, T> toObj) {
-        ensureInitialized();
-        MemorySegment seg = null;
-        try {
-            seg = (MemorySegment) cachedHandle.invoke(arena);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-        return toObj.apply(seg);
+        return invokeObj(toObj, new Object[0]);
     }
 
     /**
@@ -159,24 +150,13 @@ public class NativeFunction<T> {
      */
     public T invokeObj(Function<MemorySegment, T> toObj, Object... args) {
         ensureInitialized();
-        // Create exact parameter types list
-        Class<?>[] ptypes = new Class<?>[args.length + 1];
-        ptypes[0] = SegmentAllocator.class;
-        Arrays.fill(ptypes, 1, ptypes.length, Object.class);
-
-        // Methodhandle needs to be adapted to include the MemorySegment and the types of the arguments.
-        // otherwise will throw classCastException
-        MethodHandle adapted = cachedHandle.asType(
-                MethodType.methodType(MemorySegment.class, ptypes)
-        );
-
         Object[] invokeArgs = new Object[args.length + 1];
-        invokeArgs[0] = arena;
+        invokeArgs[0] = (SegmentAllocator) arena;
         System.arraycopy(args, 0, invokeArgs, 1, args.length);
 
-        MemorySegment seg = null;
+        MemorySegment seg;
         try {
-            seg = (MemorySegment) adapted.invokeWithArguments(invokeArgs);
+            seg = (MemorySegment) cachedHandle.invokeWithArguments(invokeArgs);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

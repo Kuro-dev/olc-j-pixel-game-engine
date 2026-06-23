@@ -24,6 +24,7 @@ public class PixelGameEngineImpl extends PixelGameEngine {
         if (!isFocussed()) {
             return true;
         }
+        getScreenPixelSize();
         var fKey = getKey(KeyBoardKey.F);
         Vector2D<Integer> pos = getWindowPos();
         if (fKey.isPressed()) {

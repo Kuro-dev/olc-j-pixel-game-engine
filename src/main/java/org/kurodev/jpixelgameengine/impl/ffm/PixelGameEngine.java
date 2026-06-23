@@ -339,11 +339,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final Vector2D<Integer> getScreenPixelSize() {
-        return methods.getScreenPixelSize.invokeObj(IntVector2D::new);
+        return methods.getScreenPixelSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
     public final Vector2D<Integer> getScreenSize() {
-        return methods.getScreenSize.invokeObj(IntVector2D::new);
+        return methods.getScreenSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
     /**
