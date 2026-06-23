@@ -1,6 +1,8 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
 import org.kurodev.jpixelgameengine.gfx.Pixel;
+import org.kurodev.jpixelgameengine.gfx.decal.DecalPatch;
+import org.kurodev.jpixelgameengine.gfx.sprite.SpritePatch;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.pos.FloatVector2D;
 import org.kurodev.jpixelgameengine.pos.IntVector2D;
@@ -8,6 +10,7 @@ import org.kurodev.jpixelgameengine.pos.Vector2D;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
 /**
@@ -36,16 +39,42 @@ public class OlcMethods {
     final NativeFunction<Vector2D<Integer>> getMousePos = createFn("getMousePos", IntVector2D.LAYOUT);
     final NativeFunction<Vector2D<Integer>> getWindowMousePos = createFn("getWindowMouse", IntVector2D.LAYOUT);
     final NativeFunction<Integer> getMouseWheel = createFn("getMouseWheel", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getMouseX = createFn("getMouseX", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getMouseY = createFn("getMouseY", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getKeyMapCount = createFn("getKeyMapCount", ValueLayout.JAVA_INT);
+    final NativeFunction<Long> getKeyMapNativeKeyAt = createFn("getKeyMapNativeKeyAt", ValueLayout.JAVA_LONG, ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getKeyMapEngineKeyAt = createFn("getKeyMapEngineKeyAt", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> setScreenSize = createVoidFn("setScreenSize", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> showWindowFrame = createFn("showWindowFrame", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Integer> screenWidth = createFn("screenWidth", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> screenHeight = createFn("screenHeight", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getDrawTargetWidth = createFn("getDrawTargetWidth", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getDrawTargetHeight = createFn("getDrawTargetHeight", ValueLayout.JAVA_INT);
+    final NativeFunction<MemorySegment> getDrawTarget = createFn("getDrawTarget", ValueLayout.ADDRESS);
+    final NativeFunction<Void> setDrawTargetSprite = createVoidFn("setDrawTargetSprite", ValueLayout.ADDRESS);
+    final NativeFunction<Void> setDrawTargetLayer = createVoidFn("setDrawTargetLayer", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Float> getElapsedTime = createFn("getElapsedTime", ValueLayout.JAVA_FLOAT);
+    final NativeFunction<Vector2D<Integer>> getPixelSize = createFn("getPixelSize", IntVector2D.LAYOUT);
+    final NativeFunction<Integer> getDroppedFilesCount = createFn("getDroppedFilesCount", ValueLayout.JAVA_INT);
+    final NativeFunction<String> getDroppedFile = createStringFn("getDroppedFile", ValueLayout.JAVA_INT);
+    final NativeFunction<Vector2D<Integer>> getDroppedFilesPoint = createFn("getDroppedFilesPoint", IntVector2D.LAYOUT);
     final NativeFunction<Void> drawString = createVoidFn("drawString", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Void> drawStringProp = createVoidFn("drawStringProp", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Vector2D<Integer>> getTextSize = createFn("getTextSize", IntVector2D.LAYOUT, ValueLayout.ADDRESS);
+    final NativeFunction<Vector2D<Integer>> getTextSizeProp = createFn("getTextSizeProp", IntVector2D.LAYOUT, ValueLayout.ADDRESS);
     final NativeFunction<Void> drawCircle = createVoidFn("drawCircle", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> fillCircle = createVoidFn("fillCircle", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> consoleClear = createVoidFn("consoleClear");
+    final NativeFunction<Void> consoleCaptureStdOut = createVoidFn("consoleCaptureStdOut", ValueLayout.JAVA_BOOLEAN);
     final NativeFunction<Void> consoleShow = createVoidFn("consoleShow", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN);
     final NativeFunction<Boolean> isConsoleShowing = createFn("isConsoleShowing", ValueLayout.JAVA_BOOLEAN);
     final NativeFunction<Void> drawLine = createVoidFn("drawLine", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> drawRect = createVoidFn("drawRect", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
     final NativeFunction<Void> fillRect = createVoidFn("fillRect", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Void> drawTriangle = createVoidFn("drawTriangle", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Void> fillTriangle = createVoidFn("fillTriangle", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Void> fillTexturedTriangle = createVoidFn("fillTexturedTriangle", ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
+    final NativeFunction<Void> fillTexturedPolygon = createVoidFn("fillTexturedPolygon", ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT);
     final NativeFunction<Void> textEntryEnable = createVoidFn("textEntryEnable", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS);
     final NativeFunction<String> textEntryGetString = createStringFn("textEntryGetString");
     final NativeFunction<Integer> textEntryGetCursor = createFn("textEntryGetCursor", ValueLayout.JAVA_INT);
@@ -55,11 +84,15 @@ public class OlcMethods {
     final NativeFunction<Vector2D<Integer>> getScreenPixelSize = createFn("getScreenPixelSize", IntVector2D.LAYOUT);
     final NativeFunction<Vector2D<Integer>> getScreenSize = createFn("getScreenSize", IntVector2D.LAYOUT);
     final NativeFunction<Void> setPixelMode = createVoidFn("setPixelMode", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getPixelMode = createFn("getPixelMode", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> setPixelModeCustom = createVoidFn("setPixelModeCustom", ValueLayout.ADDRESS);
+    final NativeFunction<Void> setPixelBlend = createVoidFn("setPixelBlend", ValueLayout.JAVA_FLOAT);
     final NativeFunction<Void> printToConsole = createVoidFn("printToConsole", ValueLayout.ADDRESS);
     final NativeFunction<Void> setDecalMode = createVoidFn("setDecalMode", ValueLayout.JAVA_INT);
     final NativeFunction<Void> setDecalStructure = createVoidFn("setDecalStructure", ValueLayout.JAVA_INT);
     final NativeFunction<Void> drawDecal = createVoidFn("drawDecal", FloatVector2D.LAYOUT, ValueLayout.ADDRESS, FloatVector2D.LAYOUT, Pixel.LAYOUT);
     final NativeFunction<Void> drawPartialDecal = createVoidFn("drawPartialDecal", FloatVector2D.LAYOUT, ValueLayout.ADDRESS, FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, Pixel.LAYOUT);
+    final NativeFunction<Void> drawPartialDecalSized = createVoidFn("drawPartialDecalSized", FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, ValueLayout.ADDRESS, FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, Pixel.LAYOUT);
     // Additional fields based on the provided C++ function signatures
     final NativeFunction<Void> drawExplicitDecal = createVoidFn("DrawExplicitDecal", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const olc::vf2d *pos (array)
@@ -133,30 +166,35 @@ public class OlcMethods {
     final NativeFunction<Void> drawPolygonDecal = createVoidFn("DrawPolygonDecal", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos (array/pointer)
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv (array/pointer)
+            ValueLayout.JAVA_INT,
             Pixel.LAYOUT // const olc::Pixel tint (for the single tint case)
     );
-    final NativeFunction<Void> drawPolygonDecalWithDepth = createVoidFn("DrawPolygonDecal", ValueLayout.ADDRESS, // olc::Decal *decal
+    final NativeFunction<Void> drawPolygonDecalWithDepth = createVoidFn("DrawPolygonDecalWithDepth", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<float> &depth
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
+            ValueLayout.JAVA_INT,
             Pixel.LAYOUT // const olc::Pixel tint
     );
-    final NativeFunction<Void> drawPolygonDecalWithColors = createVoidFn("DrawPolygonDecal", ValueLayout.ADDRESS, // olc::Decal *decal
+    final NativeFunction<Void> drawPolygonDecalWithColors = createVoidFn("DrawPolygonDecalWithColors", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
-            ValueLayout.ADDRESS // const std::vector<olc::Pixel> &tint (array/pointer)
+            ValueLayout.ADDRESS, // const std::vector<olc::Pixel> &tint (array/pointer)
+            ValueLayout.JAVA_INT
     );
-    final NativeFunction<Void> drawPolygonDecalWithColorsAndTint = createVoidFn("DrawPolygonDecal", ValueLayout.ADDRESS, // olc::Decal *decal
+    final NativeFunction<Void> drawPolygonDecalWithColorsAndTint = createVoidFn("DrawPolygonDecalWithColorsAndTint", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
             ValueLayout.ADDRESS, // const std::vector<olc::Pixel> &colours
+            ValueLayout.JAVA_INT,
             Pixel.LAYOUT // const olc::Pixel tint
     );
-    final NativeFunction<Void> drawPolygonDecalWithDepthAndColorsAndTint = createVoidFn("DrawPolygonDecal", ValueLayout.ADDRESS, // olc::Decal *decal
+    final NativeFunction<Void> drawPolygonDecalWithDepthAndColorsAndTint = createVoidFn("DrawPolygonDecalWithDepthAndColorsAndTint", ValueLayout.ADDRESS, // olc::Decal *decal
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &pos
             ValueLayout.ADDRESS, // const std::vector<float> &depth
             ValueLayout.ADDRESS, // const std::vector<olc::vf2d> &uv
             ValueLayout.ADDRESS, // const std::vector<olc::Pixel> &colours
+            ValueLayout.JAVA_INT,
             Pixel.LAYOUT // const olc::Pixel tint
     );
     final NativeFunction<Void> drawLineDecal = createVoidFn("DrawLineDecal", FloatVector2D.LAYOUT, // const olc::vf2d &pos1
@@ -179,19 +217,45 @@ public class OlcMethods {
     );
     final NativeFunction<Void> clear = createVoidFn("Clear", Pixel.LAYOUT // Pixel p
     );
+    final NativeFunction<Void> clearBuffer = createVoidFn("ClearBuffer", Pixel.LAYOUT, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<MemorySegment> getFontSprite = createFn("GetFontSprite", ValueLayout.ADDRESS);
+    final NativeFunction<Boolean> clipLineToDrawTarget = createFn("ClipLineToDrawTarget", ValueLayout.JAVA_BOOLEAN, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+    final NativeFunction<Void> drawSpritePatch = createVoidFn("DrawSpritePatch", FloatVector2D.LAYOUT, SpritePatch.LAYOUT, FloatVector2D.LAYOUT);
+    final NativeFunction<Void> drawDecalPatch = createVoidFn("DrawDecalPatch", FloatVector2D.LAYOUT, DecalPatch.LAYOUT, FloatVector2D.LAYOUT);
+    final NativeFunction<Void> enablePixelTransfer = createVoidFn("EnablePixelTransfer", ValueLayout.JAVA_BOOLEAN);
 
-    final NativeFunction<Integer> resize = createVoidFn("resize", IntVector2D.LAYOUT, IntVector2D.LAYOUT);
+    final NativeFunction<Void> resize = createVoidFn("resize", IntVector2D.LAYOUT, IntVector2D.LAYOUT);
     final NativeFunction<Vector2D<Integer>> getWindowSize = createFn("getWindowSize", IntVector2D.LAYOUT);
     final NativeFunction<Vector2D<Integer>> getWindowPos = createFn("getWindowPos", IntVector2D.LAYOUT);
     final NativeFunction<Integer> getFramerate = createFn("getFps", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getKeyPressCacheCount = createFn("getKeyPressCacheCount", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getKeyPressCacheAt = createFn("getKeyPressCacheAt", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> convertKeycode = createFn("convertKeycode", ValueLayout.JAVA_INT, ValueLayout.JAVA_INT);
+    final NativeFunction<String> getKeySymbol = createStringFn("getKeySymbol", ValueLayout.JAVA_INT, ValueLayout.JAVA_BOOLEAN, ValueLayout.JAVA_BOOLEAN, ValueLayout.JAVA_BOOLEAN);
     final NativeFunction<Void> setWindowTitle = createVoidFn("setWindowTitle", ValueLayout.ADDRESS);
     final NativeFunction<Void> gradientLineDecal = createVoidFn("GradientLineDecal", FloatVector2D.LAYOUT, FloatVector2D.LAYOUT, Pixel.LAYOUT, Pixel.LAYOUT, ValueLayout.JAVA_INT);
     final NativeFunction<Integer> createLayer = createFn("createLayer", ValueLayout.JAVA_INT);
+    final NativeFunction<Integer> getLayerCount = createFn("getLayerCount", ValueLayout.JAVA_INT);
     final NativeFunction<Void> enableLayer = createVoidFn("enableLayer", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Boolean> isLayerEnabled = createFn("isLayerEnabled", ValueLayout.JAVA_BOOLEAN, ValueLayout.JAVA_BYTE);
+    final NativeFunction<Vector2D<Float>> getLayerOffset = createFn("getLayerOffset", FloatVector2D.LAYOUT, ValueLayout.JAVA_BYTE);
+    final NativeFunction<Vector2D<Float>> getLayerScale = createFn("getLayerScale", FloatVector2D.LAYOUT, ValueLayout.JAVA_BYTE);
+    final NativeFunction<Pixel> getLayerTint = createFn("getLayerTint", Pixel.LAYOUT, ValueLayout.JAVA_BYTE);
     final NativeFunction<Void> setLayerOffset = createVoidFn("SetLayerOffset", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_FLOAT, ValueLayout.JAVA_FLOAT);
     final NativeFunction<Void> setLayerScale = createVoidFn("SetLayerScale", ValueLayout.JAVA_BYTE, ValueLayout.JAVA_FLOAT, ValueLayout.JAVA_FLOAT);
-    final NativeFunction<Void> setLayerTint = createVoidFn("SetLayerTint", Pixel.LAYOUT);
+    final NativeFunction<Void> setLayerTint = createVoidFn("SetLayerTint", ValueLayout.JAVA_BYTE, Pixel.LAYOUT);
     final NativeFunction<Void> setLayerCustomRenderFunction = createVoidFn("SetLayerCustomRenderFunction", ValueLayout.JAVA_BYTE, ValueLayout.ADDRESS);
+    final NativeFunction<Void> advManualRenderEnable = createVoidFn("adv_ManualRenderEnable", ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Void> advHardwareClip = createVoidFn("adv_HardwareClip", ValueLayout.JAVA_BOOLEAN, IntVector2D.LAYOUT, IntVector2D.LAYOUT, ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Void> advFlushLayer = createVoidFn("adv_FlushLayer", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> advFlushLayerDecals = createVoidFn("adv_FlushLayerDecals", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> advFlushLayerGpuTasks = createVoidFn("adv_FlushLayerGPUTasks", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> hw3dProjection = createVoidFn("HW3D_Projection", ValueLayout.ADDRESS);
+    final NativeFunction<Void> hw3dEnableDepthTest = createVoidFn("HW3D_EnableDepthTest", ValueLayout.JAVA_BOOLEAN);
+    final NativeFunction<Void> hw3dSetCullMode = createVoidFn("HW3D_SetCullMode", ValueLayout.JAVA_INT);
+    final NativeFunction<Void> hw3dDrawObject = createVoidFn("HW3D_DrawObject", ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, Pixel.LAYOUT);
+    final NativeFunction<Void> hw3dDrawLine = createVoidFn("HW3D_DrawLine", ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, Pixel.LAYOUT);
+    final NativeFunction<Void> hw3dDrawLineBox = createVoidFn("HW3D_DrawLineBox", ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.ADDRESS, Pixel.LAYOUT);
 
     private <T> NativeFunction<T> createFn(String name, MemoryLayout returnVal, MemoryLayout... args) {
         MemoryLayout[] argsActual = new MemoryLayout[args.length + 1];

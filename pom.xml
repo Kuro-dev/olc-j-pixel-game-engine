@@ -6,7 +6,7 @@
 
     <groupId>com.github.kuro-dev</groupId>
     <artifactId>olc-j-pixel-game-engine</artifactId>
-    <version>0.1.10</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>OLC J-PixelGameEngine</name>
@@ -16,6 +16,7 @@
     <properties>
         <maven.compiler.source>24</maven.compiler.source>
         <maven.compiler.target>24</maven.compiler.target>
+        <java24.home>C:\Users\Kuro\.jdks\openjdk-24.0.1</java24.home>
     </properties>
 
     <dependencies>
@@ -38,6 +39,23 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <fork>true</fork>
+                    <executable>${java24.home}\bin\javac.exe</executable>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <jvm>${java24.home}\bin\java.exe</jvm>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>

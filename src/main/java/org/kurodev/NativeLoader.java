@@ -47,7 +47,7 @@ public class NativeLoader {
         log.info("java version: {}", javaVersion);
         log.info("native version: {}", nativeVersion);
         if (!javaVersion.equals(nativeVersion)) {
-            log.warn("[NativeLoader] Detected outdated Library files. The program might potentially break or behave in unexpected ways.\n" +
+            log.warn("[NativeLoader] Detected differing Library version files. The program might potentially break or behave in unexpected ways.\n" +
                     "Please Close the program, delete the \"/lib\" folder and restart the program to update.");
         }
     }

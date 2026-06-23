@@ -4,7 +4,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
-import java.lang.invoke.VarHandle;
 
 public class MemUtil {
 
@@ -46,8 +45,9 @@ public class MemUtil {
         if (src == null || src.length == 0) return MemorySegment.NULL;
         long bytes = (long) src.length * ValueLayout.JAVA_SHORT.byteSize();
         MemorySegment seg = arena.allocate(bytes, ValueLayout.JAVA_SHORT.byteAlignment());
-        VarHandle vh = ValueLayout.JAVA_SHORT.arrayElementVarHandle();
-        for (int i = 0; i < src.length; i++) vh.set(seg, (long) i, src[i]);
+        for (int i = 0; i < src.length; i++) {
+            seg.setAtIndex(ValueLayout.JAVA_SHORT, i, src[i]);
+        }
         return seg;
     }
 
@@ -56,8 +56,9 @@ public class MemUtil {
         if (src == null || src.length == 0) return MemorySegment.NULL;
         long bytes = (long) src.length * ValueLayout.JAVA_INT.byteSize();
         MemorySegment seg = arena.allocate(bytes, ValueLayout.JAVA_INT.byteAlignment());
-        VarHandle vh = ValueLayout.JAVA_INT.arrayElementVarHandle();
-        for (int i = 0; i < src.length; i++) vh.set(seg, (long) i, src[i]);
+        for (int i = 0; i < src.length; i++) {
+            seg.setAtIndex(ValueLayout.JAVA_INT, i, src[i]);
+        }
         return seg;
     }
 
@@ -66,8 +67,9 @@ public class MemUtil {
         if (src == null || src.length == 0) return MemorySegment.NULL;
         long bytes = (long) src.length * ValueLayout.JAVA_LONG.byteSize();
         MemorySegment seg = arena.allocate(bytes, ValueLayout.JAVA_LONG.byteAlignment());
-        VarHandle vh = ValueLayout.JAVA_LONG.arrayElementVarHandle();
-        for (int i = 0; i < src.length; i++) vh.set(seg, (long) i, src[i]);
+        for (int i = 0; i < src.length; i++) {
+            seg.setAtIndex(ValueLayout.JAVA_LONG, i, src[i]);
+        }
         return seg;
     }
 
@@ -76,8 +78,9 @@ public class MemUtil {
         if (src == null || src.length == 0) return MemorySegment.NULL;
         long bytes = (long) src.length * ValueLayout.JAVA_FLOAT.byteSize();
         MemorySegment seg = arena.allocate(bytes, ValueLayout.JAVA_FLOAT.byteAlignment());
-        VarHandle vh = ValueLayout.JAVA_FLOAT.arrayElementVarHandle();
-        for (int i = 0; i < src.length; i++) vh.set(seg, (long) i, src[i]);
+        for (int i = 0; i < src.length; i++) {
+            seg.setAtIndex(ValueLayout.JAVA_FLOAT, i, src[i]);
+        }
         return seg;
     }
 
@@ -86,8 +89,9 @@ public class MemUtil {
         if (src == null || src.length == 0) return MemorySegment.NULL;
         long bytes = (long) src.length * ValueLayout.JAVA_DOUBLE.byteSize();
         MemorySegment seg = arena.allocate(bytes, ValueLayout.JAVA_DOUBLE.byteAlignment());
-        VarHandle vh = ValueLayout.JAVA_DOUBLE.arrayElementVarHandle();
-        for (int i = 0; i < src.length; i++) vh.set(seg, (long) i, src[i]);
+        for (int i = 0; i < src.length; i++) {
+            seg.setAtIndex(ValueLayout.JAVA_DOUBLE, i, src[i]);
+        }
         return seg;
     }
 }

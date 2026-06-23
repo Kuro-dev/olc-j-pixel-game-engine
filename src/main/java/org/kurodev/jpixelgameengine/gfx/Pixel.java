@@ -14,17 +14,34 @@ public class Pixel extends PointerClass {
     public static final Pixel BLACK = new Pixel(0, 0, 0);
     public static final Pixel WHITE = new Pixel(255, 255, 255);
     public static final Pixel RED = new Pixel(255, 0, 0);
+    public static final Pixel DARK_RED = new Pixel(128, 0, 0);
+    public static final Pixel VERY_DARK_RED = new Pixel(64, 0, 0);
     public static final Pixel GREEN = new Pixel(0, 255, 0);
+    public static final Pixel DARK_GREEN = new Pixel(0, 128, 0);
+    public static final Pixel VERY_DARK_GREEN = new Pixel(0, 64, 0);
     public static final Pixel BLUE = new Pixel(0, 0, 255);
+    public static final Pixel DARK_BLUE = new Pixel(0, 0, 128);
+    public static final Pixel VERY_DARK_BLUE = new Pixel(0, 0, 64);
     public static final Pixel TRANSPARENT = new Pixel(0, 0, 0, 0);
+    public static final Pixel BLANK = TRANSPARENT;
+    public static final Pixel GREY = new Pixel(192, 192, 192);
+    public static final Pixel DARK_GREY = new Pixel(128, 128, 128);
+    public static final Pixel VERY_DARK_GREY = new Pixel(64, 64, 64);
     public static final Pixel LIGHT_GRAY = new Pixel(192, 192, 192);
     public static final Pixel GRAY = new Pixel(128, 128, 128);
     public static final Pixel DARK_GRAY = new Pixel(64, 64, 64);
     public static final Pixel PINK = new Pixel(255, 175, 175);
     public static final Pixel ORANGE = new Pixel(255, 200, 0);
+    public static final Pixel TANGERINE = new Pixel(255, 165, 0);
     public static final Pixel YELLOW = new Pixel(255, 255, 0);
+    public static final Pixel DARK_YELLOW = new Pixel(128, 128, 0);
+    public static final Pixel VERY_DARK_YELLOW = new Pixel(64, 64, 0);
     public static final Pixel MAGENTA = new Pixel(255, 0, 255);
+    public static final Pixel DARK_MAGENTA = new Pixel(128, 0, 128);
+    public static final Pixel VERY_DARK_MAGENTA = new Pixel(64, 0, 64);
     public static final Pixel CYAN = new Pixel(0, 255, 255);
+    public static final Pixel DARK_CYAN = new Pixel(0, 128, 128);
+    public static final Pixel VERY_DARK_CYAN = new Pixel(0, 64, 64);
 
     private final int r;
     private final int g;
@@ -53,10 +70,35 @@ public class Pixel extends PointerClass {
     }
 
     public Pixel(int rgba) {
-        r = (rgba & 0xFF_00_00_00);
-        g = (rgba & 0x00_FF_00_00);
-        b = (rgba & 0x00_00_FF_00);
-        a = (rgba & 0x00_00_00_FF);
+        r = rgba & 0xFF;
+        g = (rgba >>> 8) & 0xFF;
+        b = (rgba >>> 16) & 0xFF;
+        a = (rgba >>> 24) & 0xFF;
+    }
+
+    /**
+     * Creates a pixel from normalized floating-point channels.
+     *
+     * @param red   red channel in the range 0.0 to 1.0
+     * @param green green channel in the range 0.0 to 1.0
+     * @param blue  blue channel in the range 0.0 to 1.0
+     * @param alpha alpha channel in the range 0.0 to 1.0
+     * @return converted pixel
+     */
+    public static Pixel fromFloats(float red, float green, float blue, float alpha) {
+        return new Pixel((int) (red * 255.0f), (int) (green * 255.0f), (int) (blue * 255.0f), (int) (alpha * 255.0f));
+    }
+
+    /**
+     * Linearly interpolates between two pixels.
+     *
+     * @param first  starting color
+     * @param second ending color
+     * @param t      interpolation amount, where 0 returns {@code first} and 1 returns {@code second}
+     * @return interpolated pixel
+     */
+    public static Pixel lerp(Pixel first, Pixel second, float t) {
+        return first.lerp(second, t);
     }
 
     public int getRGBA() {

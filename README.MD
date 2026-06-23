@@ -16,25 +16,26 @@ Supported features so far:
 - [x] Creating a window
 - [x] Set application name
 - [x] Basic drawing
-- [x] Some more advanced drawing methods
+- [x] Advanced software drawing, including circles, triangles, textured triangles, and clipped lines
 - [x] Support Windows platforms
 - [x] Support Linux platforms (Tested on ubuntu)
 - [x] Support macOS (untested)
 - [x] Creating Sprites
 - [x] Creating Decals from sprites
-- [x] Drawing Sprites including partial sprites
-- [x] Drawing Decals including partial Decals and Polygons or other shapes.
-- [x] Console and Textinput modes
-- [x] Set windows Size during runtime
+- [x] Drawing Sprites, partial sprites, and sprite patches
+- [x] Drawing Decals, partial decals, decal patches, warped decals, rotated decals, polygons, and gradient shapes
+- [x] Console and text entry modes
+- [x] Bitmap font and proportional text rendering, including decal-based text rendering
+- [x] Set window size during runtime
 - [x] Get FPS and other information
-- [x] Layer Support
-- [ ] HW3D Rendering support
-- [ ] Possibly other features I don't know about
-- [ ] Proper Unit Tests to check if all OLC functions are declared correctly and if memory is managed properly.
+- [x] Layer support, including custom layer render callbacks and layer transforms
+- [x] HW3D rendering support
+- [x] Window frame controls and pixel transfer controls
+- [x] Proper unit tests to check that the wrapper bindings resolve and memory is managed properly
 
 Simple implementation example:
 
-The engine will attempt to download library files (.dll / .so) if they are not present in `./lib`, so you likely won't
+The engine will attempt to download library files (.dll / .so) if they are not present in `lib`, so you likely won't
 have to worry about it. Just make sure to delete your library files or replace them with the latest release when
 Upgrading versions. Possibly in the future I will add a version check to do this automatically.
 
@@ -44,6 +45,9 @@ import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.HWButton;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
+/**
+ * Must be named class and cannot be anonymous.
+ */
 public class PixelGameEngineImpl extends PixelGameEngine {
     public PixelGameEngineImpl(int width, int height) {
         super(width, height, 1, 1);
