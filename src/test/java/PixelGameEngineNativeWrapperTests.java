@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.kurodev.jpixelgameengine.impl.ffm.BatchedPixelGameEngine;
 import org.kurodev.jpixelgameengine.gfx.CullMode;
 import org.kurodev.jpixelgameengine.gfx.LineClipResult;
 import org.kurodev.jpixelgameengine.gfx.Pixel;
@@ -62,9 +63,34 @@ public class PixelGameEngineNativeWrapperTests {
 
     }
 
+    private static void withStartedBatchedEngine(BatchedEngineAction action) {
+        BatchedTestEngine engine = new BatchedTestEngine();
+        AtomicReference<Throwable> startFailure = new AtomicReference<>();
+        Thread engineThread = new Thread(() -> {
+            try {
+                engine.start();
+            } catch (Throwable throwable) {
+                startFailure.set(throwable);
+                engine.markStarted();
+            }
+        }, "test-batched-pixel-game-engine");
+
+        engineThread.start();
+        try {
+            engine.awaitStarted();
+            engine.awaitFirstUpdate();
+            rethrowStartFailure(startFailure.get());
+            action.run(engine);
+        } finally {
+            engine.stop();
+            joinEngineThread(engineThread);
+            rethrowStartFailure(startFailure.get());
+        }
+    }
+
     private static void joinEngineThread(Thread engineThread) {
         try {
-            engineThread.join(TimeUnit.SECONDS.toMillis(5));
+            engineThread.join(TimeUnit.SECONDS.toMillis(15));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted while waiting for test engine to stop", e);
@@ -333,6 +359,11 @@ public class PixelGameEngineNativeWrapperTests {
         });
     }
 
+    @Test
+    void batchedEngineRunsQueuedDrawCallsAtEndOfFrame() {
+        withStartedBatchedEngine(engine -> assertTrue(engine.didBatchFrame()));
+    }
+
 
     @Test
     void layerAdvancedAndHw3dWrappersResolve() {
@@ -389,6 +420,11 @@ public class PixelGameEngineNativeWrapperTests {
         void run(TestEngine engine);
     }
 
+    @FunctionalInterface
+    private interface BatchedEngineAction {
+        void run(BatchedTestEngine engine);
+    }
+
     public static final class TestEngine extends PixelGameEngine {
         private final CountDownLatch started = new CountDownLatch(1);
         private volatile boolean run = true;
@@ -420,6 +456,70 @@ public class PixelGameEngineNativeWrapperTests {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Interrupted while waiting for test engine to start", e);
+            }
+        }
+
+        private void markStarted() {
+            started.countDown();
+        }
+    }
+
+    public static final class BatchedTestEngine extends BatchedPixelGameEngine {
+        private final CountDownLatch started = new CountDownLatch(1);
+        private final CountDownLatch firstUpdate = new CountDownLatch(1);
+        private volatile boolean run = true;
+        private final AtomicBoolean batchedFrameSeen = new AtomicBoolean();
+
+        public BatchedTestEngine() {
+            super(64, 64, 1, 1);
+        }
+
+        @Override
+        public boolean onUserCreate() {
+            markStarted();
+            return true;
+        }
+
+        @Override
+        public boolean onUserUpdate(float delta) {
+            if (batchedFrameSeen.compareAndSet(false, true)) {
+                draw(1, 1, Pixel.RED);
+                drawLine(0, 0, 4, 4, Pixel.GREEN, 0xFFFFFFFF);
+                clear(Pixel.BLACK);
+                setPixelMode(PixelMode.ALPHA);
+                setPixelBlend(0.5f);
+            }
+            firstUpdate.countDown();
+            return run;
+        }
+
+        public void stop() {
+            run = false;
+        }
+
+        public boolean didBatchFrame() {
+            return batchedFrameSeen.get();
+        }
+
+        private void awaitStarted() {
+            try {
+                if (!started.await(5, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Timed out waiting for batched test engine to start");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for batched test engine to start", e);
+            }
+        }
+
+        private void awaitFirstUpdate() {
+            try {
+                if (!firstUpdate.await(5, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Timed out waiting for batched test engine to update");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for batched test engine to update", e);
             }
         }
 

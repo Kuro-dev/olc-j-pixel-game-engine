@@ -2,11 +2,12 @@ package org.kurodev.example;
 
 import org.kurodev.jpixelgameengine.gfx.Pixel;
 import org.kurodev.jpixelgameengine.gfx.PixelMode;
+import org.kurodev.jpixelgameengine.impl.ffm.BatchedPixelGameEngine;
 import org.kurodev.jpixelgameengine.impl.ffm.PixelGameEngine;
 import org.kurodev.jpixelgameengine.input.KeyBoardKey;
 import org.kurodev.jpixelgameengine.pos.Vector2D;
 
-public class PixelGameEngineImpl extends PixelGameEngine {
+public class PixelGameEngineImpl extends BatchedPixelGameEngine {
     private boolean run = true;
 
     public PixelGameEngineImpl(int width, int height) {

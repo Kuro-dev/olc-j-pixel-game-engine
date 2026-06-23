@@ -1,10 +1,6 @@
 package org.kurodev.jpixelgameengine.impl.ffm;
 
-import org.kurodev.jpixelgameengine.gfx.CullMode;
-import org.kurodev.jpixelgameengine.gfx.LineClipResult;
-import org.kurodev.jpixelgameengine.gfx.Pixel;
-import org.kurodev.jpixelgameengine.gfx.PixelMode;
-import org.kurodev.jpixelgameengine.gfx.PixelModeFunction;
+import org.kurodev.jpixelgameengine.gfx.*;
 import org.kurodev.jpixelgameengine.gfx.decal.Decal;
 import org.kurodev.jpixelgameengine.gfx.decal.DecalMode;
 import org.kurodev.jpixelgameengine.gfx.decal.DecalPatch;
@@ -31,11 +27,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.ref.Cleaner;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.kurodev.jpixelgameengine.impl.ffm.NativeFunction.LINKER;
 
@@ -57,9 +49,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
                     ValueLayout.ADDRESS)
     );
 
-    private final Arena arena;
-    private final MemorySegment instancePtr;
-    private final OlcMethods methods;
+    protected final Arena arena;
+    protected final MemorySegment instancePtr;
+    protected final OlcMethods methods;
     private final engineInitializer engineInitializer = new engineInitializer();
     private final Map<Integer, Runnable> layerRenderFunctions = new HashMap<>();
     private PixelModeFunction customPixelModeFunction;
@@ -87,6 +79,42 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         }
     }
 
+    private static void requireSameLength(Object[] first, Object[] second) {
+        if (first.length != second.length) {
+            throw new IllegalArgumentException("Arrays must have the same length");
+        }
+    }
+
+    private static void requireSameLength(Object[] first, Object[] second, Object[] third) {
+        if (first.length != second.length || first.length != third.length) {
+            throw new IllegalArgumentException("Arrays must have the same length");
+        }
+    }
+
+    private static void requireSameLength(Object[] first, float[] second, Object[] third) {
+        if (first.length != second.length || first.length != third.length) {
+            throw new IllegalArgumentException("Arrays must have the same length");
+        }
+    }
+
+    private static void requireSameLength(Object[] first, float[] second, Object[] third, Object[] fourth) {
+        if (first.length != second.length || first.length != third.length || first.length != fourth.length) {
+            throw new IllegalArgumentException("Arrays must have the same length");
+        }
+    }
+
+    private static void requireLength(Object[] array, int expected, String name) {
+        if (array.length != expected) {
+            throw new IllegalArgumentException(name + " must contain exactly " + expected + " elements");
+        }
+    }
+
+    private static void requireLength(float[] array, int expected, String name) {
+        if (array.length != expected) {
+            throw new IllegalArgumentException(name + " must contain exactly " + expected + " elements");
+        }
+    }
+
     private void init(int width, int height, int pixelWidth, int pixelHeight, boolean fullScreen, boolean vSync, boolean cohesion, boolean realWindow) {
         log.info("Initializing PixelGameEngine...");
         var result = PixelgameEngineReturnCode.fromCode(methods.construct.invoke(instancePtr, width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow));
@@ -94,7 +122,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     @Override
-    public final void clean() {
+    public void clean() {
         log.info("Cleaning up PixelGameEngine...");
         GAME_ENGINE_DESTROY.invoke(instancePtr);
     }
@@ -116,6 +144,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     @NativeCallCandidate
     public abstract boolean onUserUpdate(float delta);
 
+    @NativeCallCandidate
+    protected boolean internalOnUserUpdate(float delta) {
+        return onUserUpdate(delta);
+    }
+
     /**
      * Called once on application termination, so you can be one clean coder
      */
@@ -125,15 +158,13 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return true;
     }
 
-
     @NativeCallCandidate
-    final boolean onConsoleCommand(MemorySegment command) {
+    boolean onConsoleCommand(MemorySegment command) {
         return onConsoleCommand(Util.cString(command));
     }
 
-
     @NativeCallCandidate
-    protected final void onTextEntryComplete(MemorySegment text) {
+    protected void onTextEntryComplete(MemorySegment text) {
         onTextEntryComplete(Util.cString(text));
     }
 
@@ -156,13 +187,12 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     protected void onTextEntryComplete(String text) {
     }
 
-
     /**
      * Starts the engine and opens the window.
      *
      * @implNote Blocks the current Thread until the pixel game engine finishes.
      */
-    public final void start() {
+    public void start() {
         NativeFunction<Integer> fn = new NativeFunction<>("start", ValueLayout.JAVA_INT, ValueLayout.ADDRESS);
         int returnCode = fn.invoke(instancePtr);
         if (returnCode == 1) {
@@ -172,18 +202,18 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         }
     }
 
-    public final void consoleWriteln(String text) {
+    public void consoleWriteln(String text) {
         consoleWrite(text + "\n");
     }
 
-    public final void consoleWrite(String text) {
+    public void consoleWrite(String text) {
         methods.printToConsole.invoke(instancePtr, arena.allocateFrom(text));
     }
 
     /**
      * @return Whether the application window is focused
      */
-    public final boolean isFocussed() {
+    public boolean isFocussed() {
         return methods.isFocused.invoke(instancePtr);
     }
 
@@ -194,7 +224,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param p   Color of the Pixel
      * @return True if the drawing was successful, false otherwise
      */
-    public final boolean draw(Vector2D<Integer> pos, Pixel p) {
+    public boolean draw(Vector2D<Integer> pos, Pixel p) {
         return draw(pos.getX(), pos.getY(), p);
     }
 
@@ -206,58 +236,58 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param p Color of the Pixel
      * @return True if the drawing was successful, false otherwise
      */
-    public final boolean draw(int x, int y, Pixel p) {
+    public boolean draw(int x, int y, Pixel p) {
         return methods.draw.invoke(instancePtr, x, y, p.getRGBA());
     }
 
-    public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
-        methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p.getRGBA(), pattern);
-    }
-
-    public final void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p) {
+    public void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p) {
         drawLine(pos1, pos2, p, 0xFFFFFFFF);
     }
 
-    public final void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p, int pattern) {
+    public void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p, int pattern) {
         drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), p, pattern);
     }
 
-    public final void drawRect(int x, int y, int width, int height, Pixel p) {
+    public void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
+        methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p, pattern);
+    }
+
+    public void drawRect(int x, int y, int width, int height, Pixel p) {
         methods.drawRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
-    public final void drawRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
+    public void drawRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
         drawRect(pos.getX(), pos.getY(), size.getX(), size.getY(), p);
     }
 
-    public final void fillRect(int x, int y, int width, int height, Pixel p) {
+    public void fillRect(int x, int y, int width, int height, Pixel p) {
         methods.fillRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
-    public final void fillRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
+    public void fillRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
         fillRect(pos.getX(), pos.getY(), size.getX(), size.getY(), p);
     }
 
-    public final void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
+    public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         methods.drawTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
-    public final void drawTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
+    public void drawTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
         drawTriangle(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), pos3.getX(), pos3.getY(), p);
     }
 
-    public final void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
+    public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         methods.fillTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
-    public final void fillTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
+    public void fillTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
         fillTriangle(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), pos3.getX(), pos3.getY(), p);
     }
 
     /**
      * Software-rasterizes a textured triangle.
      */
-    public final void fillTexturedTriangle(Vector2D<Float>[] points, Vector2D<Float>[] texture, Pixel[] colors, Sprite sprite) {
+    public void fillTexturedTriangle(Vector2D<Float>[] points, Vector2D<Float>[] texture, Pixel[] colors, Sprite sprite) {
         requireSameLength(points, texture, colors);
         methods.fillTexturedTriangle.invoke(instancePtr, MemUtil.toArrayPtr(arena, points), MemUtil.toArrayPtr(arena, texture),
                 MemUtil.toArrayPtr(arena, colors), points.length, sprite.getSpritePtr());
@@ -266,7 +296,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Software-rasterizes a textured polygon.
      */
-    public final void fillTexturedPolygon(Vector2D<Float>[] points, Vector2D<Float>[] texture, Pixel[] colors, Sprite sprite, DecalStructure structure) {
+    public void fillTexturedPolygon(Vector2D<Float>[] points, Vector2D<Float>[] texture, Pixel[] colors, Sprite sprite, DecalStructure structure) {
         requireSameLength(points, texture, colors);
         methods.fillTexturedPolygon.invoke(instancePtr, MemUtil.toArrayPtr(arena, points), MemUtil.toArrayPtr(arena, texture),
                 MemUtil.toArrayPtr(arena, colors), points.length, sprite.getSpritePtr(), structure.ordinal());
@@ -354,7 +384,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param width  the new width of the screen in pixels
      * @param height the new height of the screen in pixels
      */
-    public final void setScreenSize(int width, int height) {
+    public void setScreenSize(int width, int height) {
         methods.setScreenSize.invoke(instancePtr, width, height);
     }
 
@@ -391,15 +421,15 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Sets a sprite as the active software draw target. Passing {@code null} restores the screen.
      */
-    public final void setDrawTarget(Sprite sprite) {
+    public void setDrawTarget(Sprite sprite) {
         methods.setDrawTargetSprite.invoke(instancePtr, sprite == null ? MemorySegment.NULL : sprite.getSpritePtr());
     }
 
-    public final void setDrawTarget(int layer) {
+    public void setDrawTarget(int layer) {
         setDrawTarget(layer, true);
     }
 
-    public final void setDrawTarget(int layer, boolean dirty) {
+    public void setDrawTarget(int layer, boolean dirty) {
         methods.setDrawTargetLayer.invoke(instancePtr, (byte) layer, dirty);
     }
 
@@ -432,15 +462,15 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param text  the string to be drawn
      * @param color the color of the text
      */
-    public final void drawString(int x, int y, String text, Pixel color) {
+    public void drawString(int x, int y, String text, Pixel color) {
         drawString(x, y, text, color, 1);
     }
 
-    public final void drawString(Vector2D<Integer> pos, String text, Pixel color) {
+    public void drawString(Vector2D<Integer> pos, String text, Pixel color) {
         drawString(pos.getX(), pos.getY(), text, color, 1);
     }
 
-    public final void drawString(Vector2D<Integer> pos, String text, Pixel color, int scale) {
+    public void drawString(Vector2D<Integer> pos, String text, Pixel color, int scale) {
         drawString(pos.getX(), pos.getY(), text, color, scale);
     }
 
@@ -453,27 +483,27 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param color the color of the text
      * @param scale the scaling factor for the text (1 = original size)
      */
-    public final void drawString(int x, int y, String text, Pixel color, int scale) {
+    public void drawString(int x, int y, String text, Pixel color, int scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawString.invoke(instancePtr, x, y, cString, color.getRGBA(), scale);
     }
 
-    public final void drawStringProp(int x, int y, String text, Pixel color) {
+    public void drawStringProp(int x, int y, String text, Pixel color) {
         drawStringProp(x, y, text, color, 1);
     }
 
-    public final void drawStringProp(Vector2D<Integer> pos, String text, Pixel color) {
+    public void drawStringProp(Vector2D<Integer> pos, String text, Pixel color) {
         drawStringProp(pos.getX(), pos.getY(), text, color, 1);
     }
 
     /**
      * Draws proportional text at the specified position.
      */
-    public final void drawStringProp(int x, int y, String text, Pixel color, int scale) {
+    public void drawStringProp(int x, int y, String text, Pixel color, int scale) {
         methods.drawStringProp.invoke(instancePtr, x, y, arena.allocateFrom(text), color.getRGBA(), scale);
     }
 
-    public final void drawStringProp(Vector2D<Integer> pos, String text, Pixel color, int scale) {
+    public void drawStringProp(Vector2D<Integer> pos, String text, Pixel color, int scale) {
         drawStringProp(pos.getX(), pos.getY(), text, color, scale);
     }
 
@@ -493,11 +523,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param radius the radius of the circle
      * @param color  the color of the circle
      */
-    public final void drawCircle(int x, int y, int radius, Pixel color) {
+    public void drawCircle(int x, int y, int radius, Pixel color) {
         methods.drawCircle.invoke(instancePtr, x, y, radius, color.getRGBA(), 0xFF);
     }
 
-    public final void drawCircle(Vector2D<Integer> pos, int radius, Pixel color) {
+    public void drawCircle(Vector2D<Integer> pos, int radius, Pixel color) {
         drawCircle(pos.getX(), pos.getY(), radius, color);
     }
 
@@ -519,11 +549,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param mask   an 8-bit value (0-255) controlling which circle segments are drawn
      */
     //TODO:maybe replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
-    public final void drawCircle(int x, int y, int radius, Pixel color, int mask) {
+    public void drawCircle(int x, int y, int radius, Pixel color, int mask) {
         methods.drawCircle.invoke(instancePtr, x, y, radius, color.getRGBA(), mask);
     }
 
-    public final void drawCircle(Vector2D<Integer> pos, int radius, Pixel color, int mask) {
+    public void drawCircle(Vector2D<Integer> pos, int radius, Pixel color, int mask) {
         drawCircle(pos.getX(), pos.getY(), radius, color, mask);
     }
 
@@ -535,11 +565,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param radius the radius of the circle
      * @param color  the fill color of the circle
      */
-    public final void fillCircle(int x, int y, int radius, Pixel color) {
+    public void fillCircle(int x, int y, int radius, Pixel color) {
         methods.fillCircle.invoke(instancePtr, x, y, radius, color.getRGBA());
     }
 
-    public final void fillCircle(Vector2D<Integer> pos, int radius, Pixel color) {
+    public void fillCircle(Vector2D<Integer> pos, int radius, Pixel color) {
         fillCircle(pos.getX(), pos.getY(), radius, color);
     }
 
@@ -555,19 +585,19 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param closeKey    Button that determines that it's time to close the console again
      * @param suspendTime whether the Application should halt while console is opened
      */
-    public final void consoleShow(KeyBoardKey closeKey, boolean suspendTime) {
+    public void consoleShow(KeyBoardKey closeKey, boolean suspendTime) {
         methods.consoleShow.invoke(instancePtr, closeKey.ordinal(), suspendTime);
     }
 
-    public final void consoleClear() {
+    public void consoleClear() {
         methods.consoleClear.invoke(instancePtr);
     }
 
-    public final void consoleCaptureStdOut(boolean capture) {
+    public void consoleCaptureStdOut(boolean capture) {
         methods.consoleCaptureStdOut.invoke(instancePtr, capture);
     }
 
-    public final boolean isConsoleShowing() {
+    public boolean isConsoleShowing() {
         return methods.isConsoleShowing.invoke(instancePtr);
     }
 
@@ -576,7 +606,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      *
      * @see #textEntryEnable(boolean, String)
      */
-    public final void textEntryEnable(boolean enable) {
+    public void textEntryEnable(boolean enable) {
         textEntryEnable(enable, "");
     }
 
@@ -592,7 +622,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param enable      whether to enter (true) or exit (false) the text entry mode
      * @param initialText The initial text that should be inserted upon entering
      */
-    public final void textEntryEnable(boolean enable, String initialText) {
+    public void textEntryEnable(boolean enable, String initialText) {
         methods.textEntryEnable.invoke(instancePtr, enable, arena.allocateFrom(initialText));
     }
 
@@ -604,30 +634,30 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.textEntryGetCursor.invoke(instancePtr);
     }
 
-    public final boolean isTextEntryEnabled() {
+    public boolean isTextEntryEnabled() {
         return methods.isTextEntryEnabled.invoke(instancePtr);
     }
 
-    public final void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
+    public void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
         methods.drawSprite.invoke(instancePtr, x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
     }
 
-    public final void drawSprite(Vector2D<Integer> pos, Sprite sprite, int scale, FlipMode mode) {
+    public void drawSprite(Vector2D<Integer> pos, Sprite sprite, int scale, FlipMode mode) {
         drawSprite(pos.getX(), pos.getY(), sprite, scale, mode);
     }
 
-    public final void drawSprite(Vector2D<Float> pos, SpritePatch patch) {
+    public void drawSprite(Vector2D<Float> pos, SpritePatch patch) {
         drawSprite(pos, patch, FloatVector2D.ONE);
     }
 
-    public final void drawSprite(Vector2D<Float> pos, SpritePatch patch, Vector2D<Float> scale) {
+    public void drawSprite(Vector2D<Float> pos, SpritePatch patch, Vector2D<Float> scale) {
         methods.drawSpritePatch.invoke(instancePtr, pos.toPtr(), patch.toPtr(), scale.toPtr());
     }
 
     /**
      * @see #drawPartialSprite(int, int, Sprite, int, int, int, int, int, FlipMode)
      */
-    public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale) {
+    public void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale) {
         drawPartialSprite(x, y, sprite, ox, oy, w, h, scale, FlipMode.NONE);
     }
 
@@ -642,28 +672,28 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale  the scale to draw it in
      * @param mode   Optional Flip mode to mirror the sprite.
      */
-    public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale, FlipMode mode) {
+    public void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale, FlipMode mode) {
         methods.drawPartialSprite.invoke(instancePtr, x, y, sprite.getSpritePtr(), ox, oy, w, h, scale, (byte) mode.ordinal());
     }
 
-    public final void drawPartialSprite(Vector2D<Integer> pos, Sprite sprite, Vector2D<Integer> sourcePos, Vector2D<Integer> size, int scale, FlipMode mode) {
+    public void drawPartialSprite(Vector2D<Integer> pos, Sprite sprite, Vector2D<Integer> sourcePos, Vector2D<Integer> size, int scale, FlipMode mode) {
         drawPartialSprite(pos.getX(), pos.getY(), sprite, sourcePos.getX(), sourcePos.getY(), size.getX(), size.getY(), scale, mode);
-    }
-
-    public final void setPixelMode(PixelMode mode) {
-        customPixelModeFunction = null;
-        customPixelModeStub = MemorySegment.NULL;
-        methods.setPixelMode.invoke(instancePtr, mode.ordinal());
     }
 
     public final PixelMode getPixelMode() {
         return PixelMode.values()[methods.getPixelMode.invoke(instancePtr)];
     }
 
+    public void setPixelMode(PixelMode mode) {
+        customPixelModeFunction = null;
+        customPixelModeStub = MemorySegment.NULL;
+        methods.setPixelMode.invoke(instancePtr, mode.ordinal());
+    }
+
     /**
      * Installs a custom software pixel blend function.
      */
-    public final void setPixelMode(PixelModeFunction pixelModeFunction) {
+    public void setPixelMode(PixelModeFunction pixelModeFunction) {
         try {
             this.customPixelModeFunction = pixelModeFunction;
             MethodHandle handle = MethodHandles.lookup()
@@ -685,11 +715,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return result.getRGBA();
     }
 
-    public final void setPixelBlend(float blend) {
+    public void setPixelBlend(float blend) {
         methods.setPixelBlend.invoke(instancePtr, blend);
     }
 
-    public final void drawDecal(Vector2D<Float> pos, Decal decal) {
+    public void drawDecal(Vector2D<Float> pos, Decal decal) {
         drawDecal(pos, decal, FloatVector2D.ONE, Pixel.WHITE);
     }
 
@@ -701,7 +731,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale Scaling option
      * @param tint  Tint
      */
-    public final void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
+    public void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
         methods.drawDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
     }
 
@@ -711,7 +741,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param sourcePos  The position within the decal to start drawing
      * @param sourceSize The Size (Width/Height) of the rectangle to draw
      */
-    public final void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize) {
+    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize) {
         drawPartialDecal(pos, decal, sourcePos, sourceSize, FloatVector2D.ONE, Pixel.WHITE);
     }
 
@@ -725,19 +755,19 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale      The scale to multiply the size with
      * @param tint       Tint of the Decal
      */
-    public final void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
+    public void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
         methods.drawPartialDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
-    public final void drawPartialDecal(Vector2D<Float> pos, Vector2D<Float> size, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Pixel tint) {
+    public void drawPartialDecal(Vector2D<Float> pos, Vector2D<Float> size, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Pixel tint) {
         methods.drawPartialDecalSized.invoke(instancePtr, pos.toPtr(), size.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), tint.toPtr());
     }
 
-    public final void drawDecal(Vector2D<Float> pos, DecalPatch patch) {
+    public void drawDecal(Vector2D<Float> pos, DecalPatch patch) {
         drawDecal(pos, patch, FloatVector2D.ONE);
     }
 
-    public final void drawDecal(Vector2D<Float> pos, DecalPatch patch, Vector2D<Float> scale) {
+    public void drawDecal(Vector2D<Float> pos, DecalPatch patch, Vector2D<Float> scale) {
         methods.drawDecalPatch.invoke(instancePtr, pos.toPtr(), patch.toPtr(), scale.toPtr());
     }
 
@@ -753,8 +783,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param colors    array of {@code Pixel}s providing per‑vertex tinting; if you need a flat tint, pass the same colour for every vertex
      * @throws IllegalArgumentException if the supplied arrays are not all the same length
      */
-    public final void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions,
-                                        Vector2D<Float>[] uvs, Pixel[] colors) {
+    public void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions,
+                                  Vector2D<Float>[] uvs, Pixel[] colors) {
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -771,7 +801,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param positions array of exactly four destination vertices (top‑left, top‑right, bottom‑right, bottom‑left)
      * @param tint      overall colour tint; set to {@code Pixel.WHITE} for no tint
      */
-    public final void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
+    public void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
         requireLength(positions, 4, "positions");
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         methods.drawWarpedDecal.invoke(instancePtr, decal.getPtr(), posArray, tint.toPtr());
@@ -786,9 +816,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param sourceSize width × height in texture space (pixels)
      * @param tint       overall colour tint, applied after the per‑pixel colour is fetched
      */
-    public final void drawPartialWarpedDecal(Decal decal, Vector2D<Float>[] positions,
-                                             Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
-                                             Pixel tint) {
+    public void drawPartialWarpedDecal(Decal decal, Vector2D<Float>[] positions,
+                                       Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
+                                       Pixel tint) {
         requireLength(positions, 4, "positions");
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         methods.drawPartialWarpedDecal.invoke(instancePtr, decal.getPtr(), posArray,
@@ -806,9 +836,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale  scaling factor applied before rotation (1,1 = original size)
      * @param tint   overall tint applied to the decal
      */
-    public final void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
-                                       Vector2D<Float> center, Vector2D<Float> scale,
-                                       Pixel tint) {
+    public void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
+                                 Vector2D<Float> center, Vector2D<Float> scale,
+                                 Pixel tint) {
         methods.drawRotatedDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), scale.toPtr(), tint.toPtr());
     }
@@ -825,10 +855,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale      scaling factors applied before rotation
      * @param tint       overall tint
      */
-    public final void drawPartialRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
-                                              Vector2D<Float> center, Vector2D<Float> sourcePos,
-                                              Vector2D<Float> sourceSize, Vector2D<Float> scale,
-                                              Pixel tint) {
+    public void drawPartialRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
+                                        Vector2D<Float> center, Vector2D<Float> sourcePos,
+                                        Vector2D<Float> sourceSize, Vector2D<Float> scale,
+                                        Pixel tint) {
         methods.drawPartialRotatedDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), sourcePos.toPtr(),
                 sourceSize.toPtr(), scale.toPtr(),
@@ -843,8 +873,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param color tint to apply (per glyph)
      * @param scale font scaling; values &lt;1 shrink, values &gt;1 enlarge
      */
-    public final void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
-                                      Vector2D<Float> scale) {
+    public void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
+                                Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringDecal.invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
@@ -853,8 +883,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Renders proportional (variable‑width) text as a decal.
      * Identical to {@link #drawStringDecal} but uses the proportional font table in the engine.
      */
-    public final void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
-                                          Vector2D<Float> scale) {
+    public void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
+                                    Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringPropDecal.invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
@@ -862,14 +892,14 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Draws an un‑filled axis‑aligned rectangle.
      */
-    public final void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+    public void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
         methods.drawRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
     /**
      * Draws a filled axis‑aligned rectangle.
      */
-    public final void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+    public void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
         methods.fillRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
@@ -877,32 +907,32 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Draws a filled rectangle with a 4‑corner gradient.
      * The engine will smoothly interpolate the colours across the quad.
      */
-    public final void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
-                                            Pixel colorTL, Pixel colorBL,
-                                            Pixel colorBR, Pixel colorTR) {
+    public void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
+                                      Pixel colorTL, Pixel colorBL,
+                                      Pixel colorBR, Pixel colorTR) {
         methods.gradientFillRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(),
                 colorTL.toPtr(), colorBL.toPtr(),
                 colorBR.toPtr(), colorTR.toPtr());
     }
 
-    public final void gradientLineDecal(Vector2D<Float> posA, Vector2D<Float> posB, Pixel startColor, Pixel endColor, int thickness) {
+    public void gradientLineDecal(Vector2D<Float> posA, Vector2D<Float> posB, Pixel startColor, Pixel endColor, int thickness) {
         methods.gradientLineDecal.invoke(instancePtr, posA.toPtr(), posB.toPtr(), startColor.toPtr(), endColor.toPtr(), thickness);
     }
 
     /**
      * Draws a filled triangle.
      */
-    public final void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
-                                        Vector2D<Float> p2, Pixel color) {
+    public void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
+                                  Vector2D<Float> p2, Pixel color) {
         methods.fillTriangleDecal.invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
     }
 
     /**
      * Draws a filled triangle with per‑vertex gradient colours.
      */
-    public final void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
-                                            Vector2D<Float> p2, Pixel c0, Pixel c1,
-                                            Pixel c2) {
+    public void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
+                                      Vector2D<Float> p2, Pixel c0, Pixel c1,
+                                      Pixel c2) {
         methods.gradientTriangleDecal.invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(),
                 c0.toPtr(), c1.toPtr(), c2.toPtr());
     }
@@ -915,8 +945,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param uvs       UV coordinates per vertex
      * @param tint      overall tint applied after texturing
      */
-    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
-                                       Vector2D<Float>[] uvs, Pixel tint) {
+    public void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                 Vector2D<Float>[] uvs, Pixel tint) {
         requireSameLength(positions, uvs);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -926,9 +956,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Same as {@link #drawPolygonDecal(Decal, Vector2D[], Vector2D[], Pixel)} but supplies a per‑vertex depth buffer.
      */
-    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
-                                       float[] depths, Vector2D<Float>[] uvs,
-                                       Pixel tint) {
+    public void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                 float[] depths, Vector2D<Float>[] uvs,
+                                 Pixel tint) {
         requireSameLength(positions, depths, uvs);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
@@ -940,8 +970,8 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Polygon decal with per‑vertex colours (no depth).
      */
-    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
-                                       Vector2D<Float>[] uvs, Pixel[] colors) {
+    public void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                 Vector2D<Float>[] uvs, Pixel[] colors) {
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -953,9 +983,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Polygon decal with per‑vertex colours <em>and</em> an overall tint.
      */
-    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
-                                       Vector2D<Float>[] uvs, Pixel[] colors,
-                                       Pixel tint) {
+    public void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                 Vector2D<Float>[] uvs, Pixel[] colors,
+                                 Pixel tint) {
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -967,9 +997,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Full‑fat polygon draw: per‑vertex depth, colour, plus global tint.
      */
-    public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
-                                       float[] depths, Vector2D<Float>[] uvs,
-                                       Pixel[] colors, Pixel tint) {
+    public void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
+                                 float[] depths, Vector2D<Float>[] uvs,
+                                 Pixel[] colors, Pixel tint) {
         requireSameLength(positions, depths, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
@@ -983,7 +1013,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Draws a single anti‑aliased line between {@code pos1} and {@code pos2}.
      */
-    public final void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
+    public void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
         methods.drawLineDecal.invoke(instancePtr, pos1.toPtr(), pos2.toPtr(), color.toPtr());
     }
 
@@ -992,9 +1022,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * <p>
      * Useful for dial gauges, scrolling credits, and other HUD elements that need orientation.
      */
-    public final void drawRotatedStringDecal(Vector2D<Float> pos, String text, float angle,
-                                             Vector2D<Float> center, Pixel color,
-                                             Vector2D<Float> scale) {
+    public void drawRotatedStringDecal(Vector2D<Float> pos, String text, float angle,
+                                       Vector2D<Float> center, Pixel color,
+                                       Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringDecal.invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
@@ -1003,9 +1033,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Proportional version of {@link #drawRotatedStringDecal}.
      */
-    public final void drawRotatedStringPropDecal(Vector2D<Float> pos, String text, float angle,
-                                                 Vector2D<Float> center, Pixel color,
-                                                 Vector2D<Float> scale) {
+    public void drawRotatedStringPropDecal(Vector2D<Float> pos, String text, float angle,
+                                           Vector2D<Float> center, Pixel color,
+                                           Vector2D<Float> scale) {
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringPropDecal.invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
@@ -1014,15 +1044,15 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     /**
      * Clears the entire frame buffer to {@code color}. Call once per frame, typically at the top of your render loop.
      */
-    public final void clear(Pixel color) {
+    public void clear(Pixel color) {
         methods.clear.invoke(instancePtr, color.toPtr());
     }
 
-    public final void clearBuffer(Pixel color) {
+    public void clearBuffer(Pixel color) {
         clearBuffer(color, true);
     }
 
-    public final void clearBuffer(Pixel color, boolean depth) {
+    public void clearBuffer(Pixel color, boolean depth) {
         methods.clearBuffer.invoke(instancePtr, color.toPtr(), depth);
     }
 
@@ -1042,21 +1072,21 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         }
     }
 
-    public final void enablePixelTransfer(boolean enable) {
+    public void enablePixelTransfer(boolean enable) {
         methods.enablePixelTransfer.invoke(instancePtr, enable);
     }
 
     /**
      * Sets the blending mode used for subsequent decal draws.
      */
-    public final void setDecalMode(DecalMode mode) {
+    public void setDecalMode(DecalMode mode) {
         methods.setDecalMode.invoke(instancePtr, mode.ordinal());
     }
 
     /**
      * Sets the vertex structure (position‑only, position+uv, etc.) that the following decal calls will assume.
      */
-    public final void setDecalStructure(DecalStructure structure) {
+    public void setDecalStructure(DecalStructure structure) {
         methods.setDecalStructure.invoke(instancePtr, structure.ordinal());
     }
 
@@ -1064,7 +1094,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param pos  Position of the top left corner on the screen
      * @param size Width and Height of the window
      */
-    public final void resize(Vector2D<Integer> pos, Vector2D<Integer> size) {
+    public void resize(Vector2D<Integer> pos, Vector2D<Integer> size) {
         methods.resize.invoke(instancePtr, pos.toPtr(), size.toPtr());
     }
 
@@ -1082,7 +1112,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.getWindowSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
-    public final void setWindowTitle(String title) {
+    public void setWindowTitle(String title) {
         methods.setWindowTitle.invoke(instancePtr, arena.allocateFrom(title));
     }
 
@@ -1123,11 +1153,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.getLayerCount.invoke(instancePtr);
     }
 
-    public final void enableLayer(int layer, boolean enable) {
+    public void enableLayer(int layer, boolean enable) {
         methods.enableLayer.invoke(instancePtr, (byte) layer, enable);
     }
 
-    public final boolean isLayerEnabled(int layer) {
+    public boolean isLayerEnabled(int layer) {
         return methods.isLayerEnabled.invoke(instancePtr, (byte) layer);
     }
 
@@ -1143,27 +1173,27 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.getLayerTint.invokeObj(Pixel::new, instancePtr, (byte) layer);
     }
 
-    public final void setLayerOffset(int layer, Vector2D<Float> offset) {
+    public void setLayerOffset(int layer, Vector2D<Float> offset) {
         this.setLayerOffset((byte) layer, offset.getX(), offset.getY());
     }
 
-    public final void setLayerOffset(int layer, float x, float y) {
+    public void setLayerOffset(int layer, float x, float y) {
         methods.setLayerOffset.invoke(instancePtr, (byte) layer, x, y);
     }
 
-    public final void setLayerScale(int layer, float x, float y) {
+    public void setLayerScale(int layer, float x, float y) {
         methods.setLayerScale.invoke(instancePtr, (byte) layer, x, y);
     }
 
-    public final void setLayerScale(int layer, Vector2D<Float> scale) {
+    public void setLayerScale(int layer, Vector2D<Float> scale) {
         setLayerScale(layer, scale.getX(), scale.getY());
     }
 
-    public final void setLayerTint(int layer, Pixel tint) {
+    public void setLayerTint(int layer, Pixel tint) {
         methods.setLayerTint.invoke(instancePtr, (byte) layer, tint.toPtr());
     }
 
-    public final void setLayerCustomRenderFunction(int layer, Runnable renderFunction) {
+    public void setLayerCustomRenderFunction(int layer, Runnable renderFunction) {
         try {
             RunnableWrapper task = new RunnableWrapper(renderFunction);
 
@@ -1179,44 +1209,44 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         }
     }
 
-    public final void advManualRenderEnable(boolean enable) {
+    public void advManualRenderEnable(boolean enable) {
         methods.advManualRenderEnable.invoke(instancePtr, enable);
     }
 
-    public final void advHardwareClip(boolean scale, Vector2D<Integer> viewPos, Vector2D<Integer> viewSize) {
+    public void advHardwareClip(boolean scale, Vector2D<Integer> viewPos, Vector2D<Integer> viewSize) {
         advHardwareClip(scale, viewPos, viewSize, false);
     }
 
-    public final void advHardwareClip(boolean scale, Vector2D<Integer> viewPos, Vector2D<Integer> viewSize, boolean clear) {
+    public void advHardwareClip(boolean scale, Vector2D<Integer> viewPos, Vector2D<Integer> viewSize, boolean clear) {
         methods.advHardwareClip.invoke(instancePtr, scale, viewPos.toPtr(), viewSize.toPtr(), clear);
     }
 
-    public final void advFlushLayer(int layer) {
+    public void advFlushLayer(int layer) {
         methods.advFlushLayer.invoke(instancePtr, layer);
     }
 
-    public final void advFlushLayerDecals(int layer) {
+    public void advFlushLayerDecals(int layer) {
         methods.advFlushLayerDecals.invoke(instancePtr, layer);
     }
 
-    public final void advFlushLayerGpuTasks(int layer) {
+    public void advFlushLayerGpuTasks(int layer) {
         methods.advFlushLayerGpuTasks.invoke(instancePtr, layer);
     }
 
-    public final void hw3dProjection(float[] matrix) {
+    public void hw3dProjection(float[] matrix) {
         requireLength(matrix, 16, "matrix");
         methods.hw3dProjection.invoke(instancePtr, MemUtil.toArrayPtr(arena, matrix));
     }
 
-    public final void hw3dEnableDepthTest(boolean enableDepth) {
+    public void hw3dEnableDepthTest(boolean enableDepth) {
         methods.hw3dEnableDepthTest.invoke(instancePtr, enableDepth);
     }
 
-    public final void hw3dSetCullMode(CullMode mode) {
+    public void hw3dSetCullMode(CullMode mode) {
         methods.hw3dSetCullMode.invoke(instancePtr, mode.ordinal());
     }
 
-    public final void hw3dDrawObject(float[] modelViewMatrix, Decal decal, DecalStructure layout, float[] positions, float[] uvs, Pixel[] colors, Pixel tint) {
+    public void hw3dDrawObject(float[] modelViewMatrix, Decal decal, DecalStructure layout, float[] positions, float[] uvs, Pixel[] colors, Pixel tint) {
         requireLength(modelViewMatrix, 16, "modelViewMatrix");
         if (positions.length % 4 != 0) {
             throw new IllegalArgumentException("positions must contain four floats per vertex");
@@ -1229,53 +1259,31 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
                 MemUtil.toArrayPtr(arena, positions), MemUtil.toArrayPtr(arena, uvs), MemUtil.toArrayPtr(arena, colors), elements, tint.toPtr());
     }
 
-    public final void hw3dDrawLine(float[] modelViewMatrix, float[] pos1, float[] pos2, Pixel color) {
+    public void hw3dDrawLine(float[] modelViewMatrix, float[] pos1, float[] pos2, Pixel color) {
         requireLength(modelViewMatrix, 16, "modelViewMatrix");
         requireLength(pos1, 4, "pos1");
         requireLength(pos2, 4, "pos2");
         methods.hw3dDrawLine.invoke(instancePtr, MemUtil.toArrayPtr(arena, modelViewMatrix), MemUtil.toArrayPtr(arena, pos1), MemUtil.toArrayPtr(arena, pos2), color.toPtr());
     }
 
-    public final void hw3dDrawLineBox(float[] modelViewMatrix, float[] pos, float[] size, Pixel color) {
+    public void hw3dDrawLineBox(float[] modelViewMatrix, float[] pos, float[] size, Pixel color) {
         requireLength(modelViewMatrix, 16, "modelViewMatrix");
         requireLength(pos, 4, "pos");
         requireLength(size, 4, "size");
         methods.hw3dDrawLineBox.invoke(instancePtr, MemUtil.toArrayPtr(arena, modelViewMatrix), MemUtil.toArrayPtr(arena, pos), MemUtil.toArrayPtr(arena, size), color.toPtr());
     }
 
-    private static void requireSameLength(Object[] first, Object[] second) {
-        if (first.length != second.length) {
-            throw new IllegalArgumentException("Arrays must have the same length");
-        }
-    }
-
-    private static void requireSameLength(Object[] first, Object[] second, Object[] third) {
-        if (first.length != second.length || first.length != third.length) {
-            throw new IllegalArgumentException("Arrays must have the same length");
-        }
-    }
-
-    private static void requireSameLength(Object[] first, float[] second, Object[] third) {
-        if (first.length != second.length || first.length != third.length) {
-            throw new IllegalArgumentException("Arrays must have the same length");
-        }
-    }
-
-    private static void requireSameLength(Object[] first, float[] second, Object[] third, Object[] fourth) {
-        if (first.length != second.length || first.length != third.length || first.length != fourth.length) {
-            throw new IllegalArgumentException("Arrays must have the same length");
-        }
-    }
-
-    private static void requireLength(Object[] array, int expected, String name) {
-        if (array.length != expected) {
-            throw new IllegalArgumentException(name + " must contain exactly " + expected + " elements");
-        }
-    }
-
-    private static void requireLength(float[] array, int expected, String name) {
-        if (array.length != expected) {
-            throw new IllegalArgumentException(name + " must contain exactly " + expected + " elements");
+    private record QueuedDrawCommand(
+            int opcode,
+            String text,
+            MemorySegment pointer,
+            int[] args
+    ) {
+        private QueuedDrawCommand {
+            args = args == null ? new int[0] : args.clone();
         }
     }
 }
+
+
+
