@@ -32,6 +32,13 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Get compiler release from pom.xml
+        id: get_java_release
+        run: |
+          JAVA_RELEASE=$(mvn help:evaluate -Dexpression=maven.compiler.release -q -DforceStdout)
+          echo "JAVA_RELEASE=$JAVA_RELEASE" >> $GITHUB_ENV
+          echo "java_release=$JAVA_RELEASE" >> $GITHUB_OUTPUT
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
@@ -54,6 +61,7 @@ jobs:
             .so     -> Linux
             .dylib  -> MacOS
             if that doesn't work, however, just create a folder called "lib" and copy the needed file there.
+            Minimum required Java version: ${{ env.JAVA_RELEASE }}
             To use this library via [JitPack](https://jitpack.io/#kuro-dev/olc-j-pixel-game-engine), add the following to your `pom.xml`:
             
             ```xml
