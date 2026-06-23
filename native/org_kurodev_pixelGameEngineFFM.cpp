@@ -465,7 +465,10 @@ void setPixelBlend(GameEngine *instance, float blend) {
 }
 
 void flushDrawQueue(GameEngine *instance, const DrawCommand *commands, int32_t count) {
+    std::cout << "Flushing commands" << std::endl;
+
     if (instance == nullptr || commands == nullptr || count <= 0) {
+        std::cout << "Something is null or so." << instance << count << std::endl;
         return;
     }
 
@@ -514,7 +517,7 @@ void flushDrawQueue(GameEngine *instance, const DrawCommand *commands, int32_t c
                 break;
             case 12:
                 instance->DrawStringProp(command.args[0], command.args[1], static_cast<const char *>(command.payload),
-                                        olc::Pixel(command.args[2]), static_cast<uint32_t>(command.args[3]));
+                                         olc::Pixel(command.args[2]), static_cast<uint32_t>(command.args[3]));
                 break;
             case 20:
                 instance->SetScreenSize(command.args[0], command.args[1]);
