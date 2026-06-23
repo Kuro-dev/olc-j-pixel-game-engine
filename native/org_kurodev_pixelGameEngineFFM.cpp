@@ -465,8 +465,6 @@ void setPixelBlend(GameEngine *instance, float blend) {
 }
 
 void flushDrawQueue(GameEngine *instance, const DrawCommand *commands, int32_t count) {
-    std::cout << "Flushing commands" << std::endl;
-
     if (instance == nullptr || commands == nullptr || count <= 0) {
         std::cout << "Something is null or so." << instance << count << std::endl;
         return;
