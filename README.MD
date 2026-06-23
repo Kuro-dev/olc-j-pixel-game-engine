@@ -16,6 +16,7 @@ Supported features so far:
 - [x] Creating a window
 - [x] Set application name
 - [x] Basic drawing
+- [x] End-of-update batching for direct screen draw calls and draw-state setters
 - [x] Advanced software drawing, including circles, triangles, textured triangles, and clipped lines
 - [x] Support Windows platforms
 - [x] Support Linux platforms (Tested on ubuntu)

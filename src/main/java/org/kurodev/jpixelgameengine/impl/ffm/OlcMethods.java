@@ -88,6 +88,7 @@ public class OlcMethods {
     final NativeFunction<Void> setPixelModeCustom = createVoidFn("setPixelModeCustom", ValueLayout.ADDRESS);
     final NativeFunction<Void> setPixelBlend = createVoidFn("setPixelBlend", ValueLayout.JAVA_FLOAT);
     final NativeFunction<Void> printToConsole = createVoidFn("printToConsole", ValueLayout.ADDRESS);
+    final NativeFunction<Void> flushDrawQueue = createVoidFn("flushDrawQueue", ValueLayout.ADDRESS, ValueLayout.JAVA_INT);
     final NativeFunction<Void> setDecalMode = createVoidFn("setDecalMode", ValueLayout.JAVA_INT);
     final NativeFunction<Void> setDecalStructure = createVoidFn("setDecalStructure", ValueLayout.JAVA_INT);
     final NativeFunction<Void> drawDecal = createVoidFn("drawDecal", FloatVector2D.LAYOUT, ValueLayout.ADDRESS, FloatVector2D.LAYOUT, Pixel.LAYOUT);

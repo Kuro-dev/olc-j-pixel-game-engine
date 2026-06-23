@@ -46,6 +46,31 @@ import static org.kurodev.jpixelgameengine.impl.ffm.NativeFunction.LINKER;
 public abstract class PixelGameEngine implements Cleaner.Cleanable {
     static final SymbolLookup LIB = SymbolLookup.loaderLookup();
     private static final Logger log = LoggerFactory.getLogger(PixelGameEngine.class);
+    private static final int DRAW_COMMAND_CAPACITY = 12;
+    private static final long DRAW_COMMAND_SIZE_BYTES = 64L;
+    private static final long DRAW_COMMAND_ARGS_OFFSET = 4L;
+    private static final long DRAW_COMMAND_TEXT_OFFSET = 56L;
+    private static final int CMD_DRAW = 1;
+    private static final int CMD_DRAW_LINE = 2;
+    private static final int CMD_DRAW_RECT = 3;
+    private static final int CMD_FILL_RECT = 4;
+    private static final int CMD_DRAW_TRIANGLE = 5;
+    private static final int CMD_FILL_TRIANGLE = 6;
+    private static final int CMD_DRAW_CIRCLE = 7;
+    private static final int CMD_FILL_CIRCLE = 8;
+    private static final int CMD_CLEAR = 9;
+    private static final int CMD_CLEAR_BUFFER = 10;
+    private static final int CMD_DRAW_STRING = 11;
+    private static final int CMD_DRAW_STRING_PROP = 12;
+    private static final int CMD_SET_SCREEN_SIZE = 20;
+    private static final int CMD_SET_DRAW_TARGET_SPRITE = 21;
+    private static final int CMD_SET_DRAW_TARGET_LAYER = 22;
+    private static final int CMD_SET_PIXEL_MODE = 23;
+    private static final int CMD_SET_PIXEL_MODE_CUSTOM = 24;
+    private static final int CMD_SET_PIXEL_BLEND = 25;
+    private static final int CMD_ENABLE_PIXEL_TRANSFER = 26;
+    private static final int CMD_SET_DECAL_MODE = 27;
+    private static final int CMD_SET_DECAL_STRUCTURE = 28;
     private static final NativeFunction<Void> GAME_ENGINE_DESTROY = new NativeFunction<>("gameEngine_destroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
     private static final NativeFunction<MemorySegment> NATIVE_CONSTRUCTOR = new NativeFunction<>("createGameEngineInstance",
             FunctionDescriptor.of(
@@ -62,8 +87,12 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     private final OlcMethods methods;
     private final engineInitializer engineInitializer = new engineInitializer();
     private final Map<Integer, Runnable> layerRenderFunctions = new HashMap<>();
+    private final List<QueuedDrawCommand> drawQueue = new ArrayList<>(64);
+    private MemorySegment drawCommandBuffer = MemorySegment.NULL;
+    private int drawCommandBufferCapacity;
     private PixelModeFunction customPixelModeFunction;
     private MemorySegment customPixelModeStub = MemorySegment.NULL;
+    private boolean batchingDrawCommands;
 
     public PixelGameEngine(int width, int height, int pixelWidth, int pixelHeight) {
         this(width, height, pixelWidth, pixelHeight, false, false, false, false);
@@ -115,6 +144,18 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     @NativeCallCandidate
     public abstract boolean onUserUpdate(float delta);
+
+    @NativeCallCandidate
+    final boolean internalOnUserUpdate(float delta) {
+        batchingDrawCommands = true;
+        try {
+            boolean keepRunning = onUserUpdate(delta);
+            flushQueuedDrawCommands();
+            return keepRunning;
+        } finally {
+            batchingDrawCommands = false;
+        }
+    }
 
     /**
      * Called once on application termination, so you can be one clean coder
@@ -207,10 +248,18 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @return True if the drawing was successful, false otherwise
      */
     public final boolean draw(int x, int y, Pixel p) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW, null, MemorySegment.NULL, x, y, p.getRGBA());
+            return true;
+        }
         return methods.draw.invoke(instancePtr, x, y, p.getRGBA());
     }
 
     public final void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_LINE, null, MemorySegment.NULL, x1, y1, x2, y2, p.getRGBA(), pattern);
+            return;
+        }
         methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
@@ -223,6 +272,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void drawRect(int x, int y, int width, int height, Pixel p) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_RECT, null, MemorySegment.NULL, x, y, width, height, p.getRGBA());
+            return;
+        }
         methods.drawRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
@@ -231,6 +284,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void fillRect(int x, int y, int width, int height, Pixel p) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_FILL_RECT, null, MemorySegment.NULL, x, y, width, height, p.getRGBA());
+            return;
+        }
         methods.fillRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
@@ -239,6 +296,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_TRIANGLE, null, MemorySegment.NULL, x1, y1, x2, y2, x3, y3, p.getRGBA());
+            return;
+        }
         methods.drawTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
@@ -247,6 +308,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_FILL_TRIANGLE, null, MemorySegment.NULL, x1, y1, x2, y2, x3, y3, p.getRGBA());
+            return;
+        }
         methods.fillTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
@@ -355,6 +420,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param height the new height of the screen in pixels
      */
     public final void setScreenSize(int width, int height) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_SCREEN_SIZE, null, MemorySegment.NULL, width, height);
+            return;
+        }
         methods.setScreenSize.invoke(instancePtr, width, height);
     }
 
@@ -392,6 +461,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Sets a sprite as the active software draw target. Passing {@code null} restores the screen.
      */
     public final void setDrawTarget(Sprite sprite) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_DRAW_TARGET_SPRITE, null, sprite == null ? MemorySegment.NULL : sprite.getSpritePtr());
+            return;
+        }
         methods.setDrawTargetSprite.invoke(instancePtr, sprite == null ? MemorySegment.NULL : sprite.getSpritePtr());
     }
 
@@ -400,6 +473,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void setDrawTarget(int layer, boolean dirty) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_DRAW_TARGET_LAYER, null, MemorySegment.NULL, layer, dirty ? 1 : 0);
+            return;
+        }
         methods.setDrawTargetLayer.invoke(instancePtr, (byte) layer, dirty);
     }
 
@@ -454,6 +531,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param scale the scaling factor for the text (1 = original size)
      */
     public final void drawString(int x, int y, String text, Pixel color, int scale) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_STRING, text, MemorySegment.NULL, x, y, color.getRGBA(), scale);
+            return;
+        }
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawString.invoke(instancePtr, x, y, cString, color.getRGBA(), scale);
     }
@@ -470,6 +551,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Draws proportional text at the specified position.
      */
     public final void drawStringProp(int x, int y, String text, Pixel color, int scale) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_STRING_PROP, text, MemorySegment.NULL, x, y, color.getRGBA(), scale);
+            return;
+        }
         methods.drawStringProp.invoke(instancePtr, x, y, arena.allocateFrom(text), color.getRGBA(), scale);
     }
 
@@ -494,6 +579,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param color  the color of the circle
      */
     public final void drawCircle(int x, int y, int radius, Pixel color) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA(), 0xFF);
+            return;
+        }
         methods.drawCircle.invoke(instancePtr, x, y, radius, color.getRGBA(), 0xFF);
     }
 
@@ -520,6 +609,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     //TODO:maybe replace "mask" with some kind of intuitive wrapper class to allow for something like SEMI_CIRCLE or something
     public final void drawCircle(int x, int y, int radius, Pixel color, int mask) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_DRAW_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA(), mask);
+            return;
+        }
         methods.drawCircle.invoke(instancePtr, x, y, radius, color.getRGBA(), mask);
     }
 
@@ -536,6 +629,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param color  the fill color of the circle
      */
     public final void fillCircle(int x, int y, int radius, Pixel color) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_FILL_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA());
+            return;
+        }
         methods.fillCircle.invoke(instancePtr, x, y, radius, color.getRGBA());
     }
 
@@ -609,6 +706,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
+        flushQueuedDrawCommands();
         methods.drawSprite.invoke(instancePtr, x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
     }
 
@@ -621,6 +719,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void drawSprite(Vector2D<Float> pos, SpritePatch patch, Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         methods.drawSpritePatch.invoke(instancePtr, pos.toPtr(), patch.toPtr(), scale.toPtr());
     }
 
@@ -643,6 +742,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param mode   Optional Flip mode to mirror the sprite.
      */
     public final void drawPartialSprite(int x, int y, Sprite sprite, int ox, int oy, int w, int h, int scale, FlipMode mode) {
+        flushQueuedDrawCommands();
         methods.drawPartialSprite.invoke(instancePtr, x, y, sprite.getSpritePtr(), ox, oy, w, h, scale, (byte) mode.ordinal());
     }
 
@@ -651,6 +751,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void setPixelMode(PixelMode mode) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_PIXEL_MODE, null, MemorySegment.NULL, mode.ordinal());
+            return;
+        }
         customPixelModeFunction = null;
         customPixelModeStub = MemorySegment.NULL;
         methods.setPixelMode.invoke(instancePtr, mode.ordinal());
@@ -673,6 +777,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
             customPixelModeStub = LINKER.upcallStub(handle,
                     FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT),
                     arena);
+            if (batchingDrawCommands) {
+                enqueueDrawCommand(CMD_SET_PIXEL_MODE_CUSTOM, null, customPixelModeStub);
+                return;
+            }
             methods.setPixelModeCustom.invoke(instancePtr, customPixelModeStub);
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -686,6 +794,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void setPixelBlend(float blend) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_PIXEL_BLEND, null, MemorySegment.NULL, Float.floatToRawIntBits(blend));
+            return;
+        }
         methods.setPixelBlend.invoke(instancePtr, blend);
     }
 
@@ -702,6 +814,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param tint  Tint
      */
     public final void drawDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> scale, Pixel tint) {
+        flushQueuedDrawCommands();
         methods.drawDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), scale.toPtr(), tint.toPtr());
     }
 
@@ -726,10 +839,12 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param tint       Tint of the Decal
      */
     public final void drawPartialDecal(Vector2D<Float> pos, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Vector2D<Float> scale, Pixel tint) {
+        flushQueuedDrawCommands();
         methods.drawPartialDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), scale.toPtr(), tint.toPtr());
     }
 
     public final void drawPartialDecal(Vector2D<Float> pos, Vector2D<Float> size, Decal decal, Vector2D<Float> sourcePos, Vector2D<Float> sourceSize, Pixel tint) {
+        flushQueuedDrawCommands();
         methods.drawPartialDecalSized.invoke(instancePtr, pos.toPtr(), size.toPtr(), decal.getPtr(), sourcePos.toPtr(), sourceSize.toPtr(), tint.toPtr());
     }
 
@@ -738,6 +853,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void drawDecal(Vector2D<Float> pos, DecalPatch patch, Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         methods.drawDecalPatch.invoke(instancePtr, pos.toPtr(), patch.toPtr(), scale.toPtr());
     }
 
@@ -755,6 +871,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void drawExplicitDecal(Decal decal, Vector2D<Float>[] positions,
                                         Vector2D<Float>[] uvs, Pixel[] colors) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -772,6 +889,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * @param tint      overall colour tint; set to {@code Pixel.WHITE} for no tint
      */
     public final void drawWarpedDecal(Decal decal, Vector2D<Float>[] positions, Pixel tint) {
+        flushQueuedDrawCommands();
         requireLength(positions, 4, "positions");
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         methods.drawWarpedDecal.invoke(instancePtr, decal.getPtr(), posArray, tint.toPtr());
@@ -789,6 +907,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawPartialWarpedDecal(Decal decal, Vector2D<Float>[] positions,
                                              Vector2D<Float> sourcePos, Vector2D<Float> sourceSize,
                                              Pixel tint) {
+        flushQueuedDrawCommands();
         requireLength(positions, 4, "positions");
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         methods.drawPartialWarpedDecal.invoke(instancePtr, decal.getPtr(), posArray,
@@ -809,6 +928,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawRotatedDecal(Vector2D<Float> pos, Decal decal, float angle,
                                        Vector2D<Float> center, Vector2D<Float> scale,
                                        Pixel tint) {
+        flushQueuedDrawCommands();
         methods.drawRotatedDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), scale.toPtr(), tint.toPtr());
     }
@@ -829,6 +949,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
                                               Vector2D<Float> center, Vector2D<Float> sourcePos,
                                               Vector2D<Float> sourceSize, Vector2D<Float> scale,
                                               Pixel tint) {
+        flushQueuedDrawCommands();
         methods.drawPartialRotatedDecal.invoke(instancePtr, pos.toPtr(), decal.getPtr(), angle,
                 center.toPtr(), sourcePos.toPtr(),
                 sourceSize.toPtr(), scale.toPtr(),
@@ -845,6 +966,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void drawStringDecal(Vector2D<Float> pos, String text, Pixel color,
                                       Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringDecal.invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
@@ -855,6 +977,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void drawStringPropDecal(Vector2D<Float> pos, String text, Pixel color,
                                           Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawStringPropDecal.invoke(instancePtr, pos.toPtr(), cString, color.toPtr(), scale.toPtr());
     }
@@ -863,6 +986,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Draws an un‑filled axis‑aligned rectangle.
      */
     public final void drawRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+        flushQueuedDrawCommands();
         methods.drawRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
@@ -870,6 +994,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Draws a filled axis‑aligned rectangle.
      */
     public final void fillRectDecal(Vector2D<Float> pos, Vector2D<Float> size, Pixel color) {
+        flushQueuedDrawCommands();
         methods.fillRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(), color.toPtr());
     }
 
@@ -880,12 +1005,14 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void gradientFillRectDecal(Vector2D<Float> pos, Vector2D<Float> size,
                                             Pixel colorTL, Pixel colorBL,
                                             Pixel colorBR, Pixel colorTR) {
+        flushQueuedDrawCommands();
         methods.gradientFillRectDecal.invoke(instancePtr, pos.toPtr(), size.toPtr(),
                 colorTL.toPtr(), colorBL.toPtr(),
                 colorBR.toPtr(), colorTR.toPtr());
     }
 
     public final void gradientLineDecal(Vector2D<Float> posA, Vector2D<Float> posB, Pixel startColor, Pixel endColor, int thickness) {
+        flushQueuedDrawCommands();
         methods.gradientLineDecal.invoke(instancePtr, posA.toPtr(), posB.toPtr(), startColor.toPtr(), endColor.toPtr(), thickness);
     }
 
@@ -894,6 +1021,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void fillTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                         Vector2D<Float> p2, Pixel color) {
+        flushQueuedDrawCommands();
         methods.fillTriangleDecal.invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(), color.toPtr());
     }
 
@@ -903,6 +1031,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void gradientTriangleDecal(Vector2D<Float> p0, Vector2D<Float> p1,
                                             Vector2D<Float> p2, Pixel c0, Pixel c1,
                                             Pixel c2) {
+        flushQueuedDrawCommands();
         methods.gradientTriangleDecal.invoke(instancePtr, p0.toPtr(), p1.toPtr(), p2.toPtr(),
                 c0.toPtr(), c1.toPtr(), c2.toPtr());
     }
@@ -917,6 +1046,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel tint) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, uvs);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -929,6 +1059,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        float[] depths, Vector2D<Float>[] uvs,
                                        Pixel tint) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, depths, uvs);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
@@ -942,6 +1073,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      */
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel[] colors) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -956,6 +1088,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        Vector2D<Float>[] uvs, Pixel[] colors,
                                        Pixel tint) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment uvArray = MemUtil.toArrayPtr(arena, uvs);
@@ -970,6 +1103,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawPolygonDecal(Decal decal, Vector2D<Float>[] positions,
                                        float[] depths, Vector2D<Float>[] uvs,
                                        Pixel[] colors, Pixel tint) {
+        flushQueuedDrawCommands();
         requireSameLength(positions, depths, uvs, colors);
         MemorySegment posArray = MemUtil.toArrayPtr(arena, positions);
         MemorySegment depthArray = MemUtil.toArrayPtr(arena, depths);
@@ -984,6 +1118,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Draws a single anti‑aliased line between {@code pos1} and {@code pos2}.
      */
     public final void drawLineDecal(Vector2D<Float> pos1, Vector2D<Float> pos2, Pixel color) {
+        flushQueuedDrawCommands();
         methods.drawLineDecal.invoke(instancePtr, pos1.toPtr(), pos2.toPtr(), color.toPtr());
     }
 
@@ -995,6 +1130,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawRotatedStringDecal(Vector2D<Float> pos, String text, float angle,
                                              Vector2D<Float> center, Pixel color,
                                              Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringDecal.invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
@@ -1006,6 +1142,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     public final void drawRotatedStringPropDecal(Vector2D<Float> pos, String text, float angle,
                                                  Vector2D<Float> center, Pixel color,
                                                  Vector2D<Float> scale) {
+        flushQueuedDrawCommands();
         MemorySegment cString = arena.allocateFrom(text);
         methods.drawRotatedStringPropDecal.invoke(instancePtr, pos.toPtr(), cString, angle,
                 center.toPtr(), color.toPtr(), scale.toPtr());
@@ -1015,6 +1152,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Clears the entire frame buffer to {@code color}. Call once per frame, typically at the top of your render loop.
      */
     public final void clear(Pixel color) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_CLEAR, null, MemorySegment.NULL, color.getRGBA());
+            return;
+        }
         methods.clear.invoke(instancePtr, color.toPtr());
     }
 
@@ -1023,6 +1164,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void clearBuffer(Pixel color, boolean depth) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_CLEAR_BUFFER, null, MemorySegment.NULL, color.getRGBA(), depth ? 1 : 0);
+            return;
+        }
         methods.clearBuffer.invoke(instancePtr, color.toPtr(), depth);
     }
 
@@ -1043,6 +1188,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public final void enablePixelTransfer(boolean enable) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_ENABLE_PIXEL_TRANSFER, null, MemorySegment.NULL, enable ? 1 : 0);
+            return;
+        }
         methods.enablePixelTransfer.invoke(instancePtr, enable);
     }
 
@@ -1050,6 +1199,10 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Sets the blending mode used for subsequent decal draws.
      */
     public final void setDecalMode(DecalMode mode) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_DECAL_MODE, null, MemorySegment.NULL, mode.ordinal());
+            return;
+        }
         methods.setDecalMode.invoke(instancePtr, mode.ordinal());
     }
 
@@ -1057,7 +1210,62 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
      * Sets the vertex structure (position‑only, position+uv, etc.) that the following decal calls will assume.
      */
     public final void setDecalStructure(DecalStructure structure) {
+        if (batchingDrawCommands) {
+            enqueueDrawCommand(CMD_SET_DECAL_STRUCTURE, null, MemorySegment.NULL, structure.ordinal());
+            return;
+        }
         methods.setDecalStructure.invoke(instancePtr, structure.ordinal());
+    }
+
+    private void enqueueDrawCommand(int opcode, String text, MemorySegment pointer, int... args) {
+        drawQueue.add(new QueuedDrawCommand(opcode, text, pointer, args));
+    }
+
+    private void flushQueuedDrawCommands() {
+        if (drawQueue.isEmpty()) {
+            return;
+        }
+
+        try (Arena local = Arena.ofConfined()) {
+            int commandCount = drawQueue.size();
+            MemorySegment commandBuffer = ensureDrawCommandBuffer(commandCount);
+            for (int i = 0; i < commandCount; i++) {
+                QueuedDrawCommand command = drawQueue.get(i);
+                MemorySegment commandSegment = commandBuffer.asSlice((long) i * DRAW_COMMAND_SIZE_BYTES, DRAW_COMMAND_SIZE_BYTES);
+                commandSegment.set(ValueLayout.JAVA_INT, 0, command.opcode);
+
+                int argCount = Math.min(command.args.length, DRAW_COMMAND_CAPACITY);
+                for (int j = 0; j < argCount; j++) {
+                    commandSegment.set(ValueLayout.JAVA_INT, DRAW_COMMAND_ARGS_OFFSET + (long) j * Integer.BYTES, command.args[j]);
+                }
+                for (int j = argCount; j < DRAW_COMMAND_CAPACITY; j++) {
+                    commandSegment.set(ValueLayout.JAVA_INT, DRAW_COMMAND_ARGS_OFFSET + (long) j * Integer.BYTES, 0);
+                }
+
+                MemorySegment textPtr = command.text == null ? MemorySegment.NULL : local.allocateFrom(command.text);
+                if (command.pointer != null && !MemorySegment.NULL.equals(command.pointer)) {
+                    textPtr = command.pointer;
+                }
+                commandSegment.set(ValueLayout.ADDRESS, DRAW_COMMAND_TEXT_OFFSET, textPtr);
+            }
+            methods.flushDrawQueue.invoke(instancePtr, commandBuffer, commandCount);
+            drawQueue.clear();
+        }
+    }
+
+    private MemorySegment ensureDrawCommandBuffer(int commandCount) {
+        if (!MemorySegment.NULL.equals(drawCommandBuffer) && drawCommandBufferCapacity >= commandCount) {
+            return drawCommandBuffer;
+        }
+        drawCommandBufferCapacity = Math.max(commandCount, Math.max(16, drawCommandBufferCapacity * 2));
+        drawCommandBuffer = arena.allocate(DRAW_COMMAND_SIZE_BYTES * drawCommandBufferCapacity, 8);
+        return drawCommandBuffer;
+    }
+
+    private record QueuedDrawCommand(int opcode, String text, MemorySegment pointer, int[] args) {
+        private QueuedDrawCommand {
+            args = args == null ? new int[0] : args.clone();
+        }
     }
 
     /**

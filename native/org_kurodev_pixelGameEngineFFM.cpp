@@ -57,6 +57,20 @@ static std::array<float, 4> copyArray4(const float *data) {
     return result;
 }
 
+struct DrawCommand {
+    int32_t op;
+    int32_t args[12];
+    const void *payload;
+};
+
+static_assert(sizeof(DrawCommand) == 64, "DrawCommand layout must stay stable");
+
+static float intBitsToFloat(int32_t bits) {
+    float value;
+    std::memcpy(&value, &bits, sizeof(value));
+    return value;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -448,6 +462,92 @@ void setPixelModeCustom(GameEngine *instance, customPixelModeFn fn) {
 
 void setPixelBlend(GameEngine *instance, float blend) {
     instance->SetPixelBlend(blend);
+}
+
+void flushDrawQueue(GameEngine *instance, const DrawCommand *commands, int32_t count) {
+    if (instance == nullptr || commands == nullptr || count <= 0) {
+        return;
+    }
+
+    for (int32_t i = 0; i < count; i++) {
+        const DrawCommand &command = commands[i];
+        switch (command.op) {
+            case 1:
+                instance->Draw(olc::vi2d(command.args[0], command.args[1]), olc::Pixel(command.args[2]));
+                break;
+            case 2:
+                instance->DrawLine(command.args[0], command.args[1], command.args[2], command.args[3],
+                                   olc::Pixel(command.args[4]), static_cast<uint32_t>(command.args[5]));
+                break;
+            case 3:
+                instance->DrawRect(command.args[0], command.args[1], command.args[2], command.args[3],
+                                   olc::Pixel(command.args[4]));
+                break;
+            case 4:
+                instance->FillRect(command.args[0], command.args[1], command.args[2], command.args[3],
+                                   olc::Pixel(command.args[4]));
+                break;
+            case 5:
+                instance->DrawTriangle(command.args[0], command.args[1], command.args[2], command.args[3],
+                                       command.args[4], command.args[5], olc::Pixel(command.args[6]));
+                break;
+            case 6:
+                instance->FillTriangle(command.args[0], command.args[1], command.args[2], command.args[3],
+                                       command.args[4], command.args[5], olc::Pixel(command.args[6]));
+                break;
+            case 7:
+                instance->DrawCircle(command.args[0], command.args[1], command.args[2], olc::Pixel(command.args[3]),
+                                     command.args[4]);
+                break;
+            case 8:
+                instance->FillCircle(command.args[0], command.args[1], command.args[2], olc::Pixel(command.args[3]));
+                break;
+            case 9:
+                instance->Clear(olc::Pixel(command.args[0]));
+                break;
+            case 10:
+                instance->ClearBuffer(olc::Pixel(command.args[0]), command.args[1] != 0);
+                break;
+            case 11:
+                instance->DrawString(command.args[0], command.args[1], static_cast<const char *>(command.payload),
+                                     olc::Pixel(command.args[2]), static_cast<uint32_t>(command.args[3]));
+                break;
+            case 12:
+                instance->DrawStringProp(command.args[0], command.args[1], static_cast<const char *>(command.payload),
+                                        olc::Pixel(command.args[2]), static_cast<uint32_t>(command.args[3]));
+                break;
+            case 20:
+                instance->SetScreenSize(command.args[0], command.args[1]);
+                break;
+            case 21:
+                instance->SetDrawTarget(static_cast<olc::Sprite *>(const_cast<void *>(command.payload)));
+                break;
+            case 22:
+                instance->SetDrawTarget(static_cast<uint8_t>(command.args[0]), command.args[1] != 0);
+                break;
+            case 23:
+                instance->SetPixelMode(olc::Pixel::Mode(command.args[0]));
+                break;
+            case 24:
+                setPixelModeCustom(instance, reinterpret_cast<customPixelModeFn>(const_cast<void *>(command.payload)));
+                break;
+            case 25:
+                instance->SetPixelBlend(intBitsToFloat(command.args[0]));
+                break;
+            case 26:
+                instance->EnablePixelTransfer(command.args[0] != 0);
+                break;
+            case 27:
+                instance->SetDecalMode(olc::DecalMode(command.args[0]));
+                break;
+            case 28:
+                instance->SetDecalStructure(olc::DecalStructure(command.args[0]));
+                break;
+            default:
+                std::cerr << "Unknown draw command opcode: " << command.op << std::endl;
+                break;
+        }
+    }
 }
 
 olc::Sprite *sprite_create() {

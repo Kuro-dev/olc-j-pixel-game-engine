@@ -28,7 +28,7 @@ public class engineInitializer {
 
     MemorySegment createOnUserUpdateStub(Linker linker, Arena arena, Object binding) throws NoSuchMethodException, IllegalAccessException {
         MethodHandle handle = MethodHandles.lookup()
-                .findVirtual(binding.getClass(), "onUserUpdate",
+                .findVirtual(binding.getClass(), "internalOnUserUpdate",
                         MethodType.methodType(boolean.class, float.class))
                 .bindTo(binding);
         return onUserUpdateStub = linker.upcallStub(
