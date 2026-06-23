@@ -249,7 +249,7 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
     }
 
     public void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
-        methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p, pattern);
+        methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
     public void drawRect(int x, int y, int width, int height, Pixel p) {
