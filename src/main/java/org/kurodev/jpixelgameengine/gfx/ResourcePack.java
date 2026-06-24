@@ -29,7 +29,7 @@ public final class ResourcePack implements AutoCloseable {
 
     public ResourcePack() {
         ptr = CREATE.invokeExact(segment -> segment);
-        cleanable = CLEANER.register(this, () -> DESTROY.invoke(ptr));
+        cleanable = CLEANER.register(this, new OlcReferenceCleaner(() -> DESTROY.invoke(ptr)));
     }
 
     /**

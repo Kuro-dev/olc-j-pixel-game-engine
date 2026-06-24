@@ -202,10 +202,20 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         }
     }
 
+    /**
+     * Writes text to the native console and appends a newline.
+     *
+     * @param text text to print
+     */
     public void consoleWriteln(String text) {
         consoleWrite(text + "\n");
     }
 
+    /**
+     * Writes text to the native console without appending a newline.
+     *
+     * @param text text to print
+     */
     public void consoleWrite(String text) {
         methods.printToConsole.invoke(instancePtr, arena.allocateFrom(text));
     }
@@ -240,46 +250,125 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return methods.draw.invoke(instancePtr, x, y, p.getRGBA());
     }
 
+    /**
+     * Draws a solid line between two points.
+     *
+     * @param pos1 start point
+     * @param pos2 end point
+     * @param p    line color
+     */
     public void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p) {
         drawLine(pos1, pos2, p, 0xFFFFFFFF);
     }
 
+    /**
+     * Draws a line between two points using a 32-bit stipple pattern.
+     *
+     * @param pos1    start point
+     * @param pos2    end point
+     * @param p       line color
+     * @param pattern bit pattern controlling which pixels are drawn
+     */
     public void drawLine(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Pixel p, int pattern) {
         drawLine(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), p, pattern);
     }
 
+    /**
+     * Draws a line using integer screen coordinates.
+     *
+     * @param x1      start x-coordinate
+     * @param y1      start y-coordinate
+     * @param x2      end x-coordinate
+     * @param y2      end y-coordinate
+     * @param p       line color
+     * @param pattern bit pattern controlling which pixels are drawn
+     */
     public void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
         methods.drawLine.invoke(instancePtr, x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
+    /**
+     * Draws the outline of a rectangle.
+     *
+     * @param x      top-left x-coordinate
+     * @param y      top-left y-coordinate
+     * @param width  rectangle width in pixels
+     * @param height rectangle height in pixels
+     * @param p      outline color
+     */
     public void drawRect(int x, int y, int width, int height, Pixel p) {
         methods.drawRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
+    /**
+     * Draws the outline of a rectangle.
+     *
+     * @param pos  top-left position
+     * @param size rectangle size
+     * @param p    outline color
+     */
     public void drawRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
         drawRect(pos.getX(), pos.getY(), size.getX(), size.getY(), p);
     }
 
+    /**
+     * Draws a filled rectangle.
+     *
+     * @param x      top-left x-coordinate
+     * @param y      top-left y-coordinate
+     * @param width  rectangle width in pixels
+     * @param height rectangle height in pixels
+     * @param p      fill color
+     */
     public void fillRect(int x, int y, int width, int height, Pixel p) {
         methods.fillRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
+    /**
+     * Draws a filled rectangle.
+     *
+     * @param pos  top-left position
+     * @param size rectangle size
+     * @param p    fill color
+     */
     public void fillRect(Vector2D<Integer> pos, Vector2D<Integer> size, Pixel p) {
         fillRect(pos.getX(), pos.getY(), size.getX(), size.getY(), p);
     }
 
+    /**
+     * Draws the outline of a triangle.
+     */
     public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         methods.drawTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
+    /**
+     * Draws the outline of a triangle.
+     *
+     * @param pos1 first vertex
+     * @param pos2 second vertex
+     * @param pos3 third vertex
+     * @param p    outline color
+     */
     public void drawTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
         drawTriangle(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), pos3.getX(), pos3.getY(), p);
     }
 
+    /**
+     * Draws a filled triangle.
+     */
     public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         methods.fillTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
+    /**
+     * Draws a filled triangle.
+     *
+     * @param pos1 first vertex
+     * @param pos2 second vertex
+     * @param pos3 third vertex
+     * @param p    fill color
+     */
     public void fillTriangle(Vector2D<Integer> pos1, Vector2D<Integer> pos2, Vector2D<Integer> pos3, Pixel p) {
         fillTriangle(pos1.getX(), pos1.getY(), pos2.getX(), pos2.getY(), pos3.getX(), pos3.getY(), p);
     }
@@ -397,22 +486,37 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return PixelgameEngineReturnCode.fromCode(methods.showWindowFrame.invoke(instancePtr, showFrame));
     }
 
+    /**
+     * @return current logical screen width in engine pixels
+     */
     public final int screenWidth() {
         return methods.screenWidth.invoke(instancePtr);
     }
 
+    /**
+     * @return current logical screen height in engine pixels
+     */
     public final int screenHeight() {
         return methods.screenHeight.invoke(instancePtr);
     }
 
+    /**
+     * @return width of the current draw target in pixels
+     */
     public final int getDrawTargetWidth() {
         return methods.getDrawTargetWidth.invoke(instancePtr);
     }
 
+    /**
+     * @return height of the current draw target in pixels
+     */
     public final int getDrawTargetHeight() {
         return methods.getDrawTargetHeight.invoke(instancePtr);
     }
 
+    /**
+     * @return active software draw target, or {@code null} when drawing to the screen
+     */
     public final Sprite getDrawTarget() {
         MemorySegment ptr = methods.getDrawTarget.invoke(instancePtr);
         return MemorySegment.NULL.equals(ptr) ? null : Sprite.wrapNative(ptr, "draw target");
@@ -425,22 +529,42 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         methods.setDrawTargetSprite.invoke(instancePtr, sprite == null ? MemorySegment.NULL : sprite.getSpritePtr());
     }
 
+    /**
+     * Selects a layer as the active draw target and marks it dirty.
+     *
+     * @param layer layer index returned by {@link #createLayer()}
+     */
     public void setDrawTarget(int layer) {
         setDrawTarget(layer, true);
     }
 
+    /**
+     * Selects a layer as the active draw target.
+     *
+     * @param layer layer index returned by {@link #createLayer()}
+     * @param dirty whether the layer should be marked dirty after drawing
+     */
     public void setDrawTarget(int layer, boolean dirty) {
         methods.setDrawTargetLayer.invoke(instancePtr, (byte) layer, dirty);
     }
 
+    /**
+     * @return elapsed time for the current frame in seconds
+     */
     public final float getElapsedTime() {
         return methods.getElapsedTime.invoke(instancePtr);
     }
 
+    /**
+     * @return size of one engine pixel in window pixels
+     */
     public final Vector2D<Integer> getPixelSize() {
         return methods.getPixelSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
+    /**
+     * @return file paths dropped onto the window since the last update
+     */
     public final List<String> getDroppedFiles() {
         int count = methods.getDroppedFilesCount.invoke(instancePtr);
         List<String> files = new ArrayList<>(count);
@@ -450,6 +574,9 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return files;
     }
 
+    /**
+     * @return mouse position where the most recent file drop occurred
+     */
     public final Vector2D<Integer> getDroppedFilesPoint() {
         return methods.getDroppedFilesPoint.invokeObj(IntVector2D::new, instancePtr);
     }
@@ -573,10 +700,16 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         fillCircle(pos.getX(), pos.getY(), radius, color);
     }
 
+    /**
+     * @return size of each logical screen pixel in host window pixels
+     */
     public final Vector2D<Integer> getScreenPixelSize() {
         return methods.getScreenPixelSize.invokeObj(IntVector2D::new, instancePtr);
     }
 
+    /**
+     * @return logical screen size in engine pixels
+     */
     public final Vector2D<Integer> getScreenSize() {
         return methods.getScreenSize.invokeObj(IntVector2D::new, instancePtr);
     }
@@ -589,14 +722,25 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         methods.consoleShow.invoke(instancePtr, closeKey.ordinal(), suspendTime);
     }
 
+    /**
+     * Clears the native engine console.
+     */
     public void consoleClear() {
         methods.consoleClear.invoke(instancePtr);
     }
 
+    /**
+     * Enables or disables redirecting standard output to the native engine console.
+     *
+     * @param capture {@code true} to capture standard output
+     */
     public void consoleCaptureStdOut(boolean capture) {
         methods.consoleCaptureStdOut.invoke(instancePtr, capture);
     }
 
+    /**
+     * @return whether the native engine console is currently visible
+     */
     public boolean isConsoleShowing() {
         return methods.isConsoleShowing.invoke(instancePtr);
     }
@@ -626,30 +770,57 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         methods.textEntryEnable.invoke(instancePtr, enable, arena.allocateFrom(initialText));
     }
 
+    /**
+     * @return current text entry buffer contents
+     */
     public final String textEntryGetString() {
         return methods.textEntryGetString.invoke(instancePtr);
     }
 
+    /**
+     * @return cursor position inside the current text entry buffer
+     */
     public final int textEntryGetCursor() {
         return methods.textEntryGetCursor.invoke(instancePtr);
     }
 
+    /**
+     * @return whether text entry mode is currently enabled
+     */
     public boolean isTextEntryEnabled() {
         return methods.isTextEntryEnabled.invoke(instancePtr);
     }
 
+    /**
+     * Draws a sprite at integer screen coordinates.
+     *
+     * @param x      destination x-coordinate
+     * @param y      destination y-coordinate
+     * @param sprite sprite to draw
+     * @param scale  integer scale factor
+     * @param mode   optional flip mode
+     */
     public void drawSprite(int x, int y, Sprite sprite, int scale, FlipMode mode) {
         methods.drawSprite.invoke(instancePtr, x, y, sprite.getSpritePtr(), scale, (byte) mode.ordinal());
     }
 
+    /**
+     * Draws a sprite at integer screen coordinates.
+     */
     public void drawSprite(Vector2D<Integer> pos, Sprite sprite, int scale, FlipMode mode) {
         drawSprite(pos.getX(), pos.getY(), sprite, scale, mode);
     }
 
+    /**
+     * Draws the sprite patch at its patch scale.
+     */
     public void drawSprite(Vector2D<Float> pos, SpritePatch patch) {
         drawSprite(pos, patch, FloatVector2D.ONE);
     }
 
+    /**
+     * Draws the sprite patch with an additional scale factor.
+     */
     public void drawSprite(Vector2D<Float> pos, SpritePatch patch, Vector2D<Float> scale) {
         methods.drawSpritePatch.invoke(instancePtr, pos.toPtr(), patch.toPtr(), scale.toPtr());
     }
@@ -680,10 +851,18 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         drawPartialSprite(pos.getX(), pos.getY(), sprite, sourcePos.getX(), sourcePos.getY(), size.getX(), size.getY(), scale, mode);
     }
 
+    /**
+     * @return current software pixel blend mode
+     */
     public final PixelMode getPixelMode() {
         return PixelMode.values()[methods.getPixelMode.invoke(instancePtr)];
     }
 
+    /**
+     * Sets the software pixel blend mode used by subsequent software drawing calls.
+     *
+     * @param mode blend mode to use
+     */
     public void setPixelMode(PixelMode mode) {
         customPixelModeFunction = null;
         customPixelModeStub = MemorySegment.NULL;
@@ -715,6 +894,11 @@ public abstract class PixelGameEngine implements Cleaner.Cleanable {
         return result.getRGBA();
     }
 
+    /**
+     * Sets the alpha blend factor used by {@link PixelMode#ALPHA}.
+     *
+     * @param blend blend amount, typically between {@code 0.0f} and {@code 1.0f}
+     */
     public void setPixelBlend(float blend) {
         methods.setPixelBlend.invoke(instancePtr, blend);
     }

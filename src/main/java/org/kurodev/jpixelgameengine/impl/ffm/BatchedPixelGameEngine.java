@@ -24,6 +24,9 @@ import static org.kurodev.jpixelgameengine.impl.ffm.NativeFunction.LINKER;
 /**
  * Variant of {@link PixelGameEngine} that batches direct screen draw calls and draw-state changes
  * until the end of each update cycle.
+ * <p>
+ * Methods overridden in this class add a compact command to an internal queue. The queue is flushed
+ * after {@link #onUserUpdate(float)} returns, so batched calls keep their order within a frame.
  */
 public abstract class BatchedPixelGameEngine extends PixelGameEngine {
     private static final int DRAW_COMMAND_CAPACITY = 12;
@@ -59,16 +62,28 @@ public abstract class BatchedPixelGameEngine extends PixelGameEngine {
     private PixelModeFunction customPixelModeFunction;
     private MemorySegment customPixelModeStub = MemorySegment.NULL;
 
+    /**
+     * Creates a batched engine using the default window flags.
+     */
     public BatchedPixelGameEngine(int width, int height, int pixelWidth, int pixelHeight) {
         super(width, height, pixelWidth, pixelHeight);
         log.info("Creating BatchedPixelGameEngine with width: {}, height: {}", width, height);
     }
 
+    /**
+     * Creates a batched engine with explicit native window flags.
+     */
     public BatchedPixelGameEngine(int width, int height, int pixelWidth, int pixelHeight, boolean fullScreen, boolean vSync, boolean cohesion, boolean realWindow) {
         super(width, height, pixelWidth, pixelHeight, fullScreen, vSync, cohesion, realWindow);
         log.info("Creating BatchedPixelGameEngine with width: {}, height: {}", width, height);
     }
 
+    /**
+     * Runs the user update callback and flushes all queued batched commands before the frame ends.
+     *
+     * @param delta time since the last frame
+     * @return {@code true} while the engine should keep running
+     */
     @Override
     protected boolean internalOnUserUpdate(float delta) {
         boolean keepRunning = onUserUpdate(delta);
@@ -77,7 +92,9 @@ public abstract class BatchedPixelGameEngine extends PixelGameEngine {
     }
 
     /**
-     * @return Will always return true
+     * Queues a single-pixel draw command for the end-of-frame batch.
+     *
+     * @return always {@code true} because the native result is not available until the queue is flushed
      */
     @Override
     public boolean draw(int x, int y, Pixel p) {
@@ -85,79 +102,133 @@ public abstract class BatchedPixelGameEngine extends PixelGameEngine {
         return true;
     }
 
+    /**
+     * Queues a line draw command for the end-of-frame batch.
+     */
     @Override
     public void drawLine(int x1, int y1, int x2, int y2, Pixel p, int pattern) {
         enqueueDrawCommand(CMD_DRAW_LINE, null, MemorySegment.NULL, x1, y1, x2, y2, p.getRGBA(), pattern);
     }
 
+    /**
+     * Queues an outlined rectangle draw command for the end-of-frame batch.
+     */
     @Override
     public void drawRect(int x, int y, int width, int height, Pixel p) {
         enqueueDrawCommand(CMD_DRAW_RECT, null, MemorySegment.NULL, x, y, width, height, p.getRGBA());
     }
 
+    /**
+     * Queues a filled rectangle draw command for the end-of-frame batch.
+     * <p>
+     * This override also forwards the call immediately to the native engine, matching the current
+     * implementation behavior.
+     */
     @Override
     public void fillRect(int x, int y, int width, int height, Pixel p) {
         enqueueDrawCommand(CMD_FILL_RECT, null, MemorySegment.NULL, x, y, width, height, p.getRGBA());
         methods.fillRect.invoke(instancePtr, x, y, width, height, p.getRGBA());
     }
 
+    /**
+     * Queues an outlined triangle draw command for the end-of-frame batch.
+     * <p>
+     * This override also forwards the call immediately to the native engine, matching the current
+     * implementation behavior.
+     */
     @Override
     public void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         enqueueDrawCommand(CMD_DRAW_TRIANGLE, null, MemorySegment.NULL, x1, y1, x2, y2, x3, y3, p.getRGBA());
         methods.drawTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
+    /**
+     * Queues a filled triangle draw command for the end-of-frame batch.
+     * <p>
+     * This override also forwards the call immediately to the native engine, matching the current
+     * implementation behavior.
+     */
     @Override
     public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Pixel p) {
         enqueueDrawCommand(CMD_FILL_TRIANGLE, null, MemorySegment.NULL, x1, y1, x2, y2, x3, y3, p.getRGBA());
         methods.fillTriangle.invoke(instancePtr, x1, y1, x2, y2, x3, y3, p.getRGBA());
     }
 
+    /**
+     * Queues a screen-size change; it takes effect when the batch is flushed.
+     */
     @Override
     public void setScreenSize(int width, int height) {
         enqueueDrawCommand(CMD_SET_SCREEN_SIZE, null, MemorySegment.NULL, width, height);
     }
 
+    /**
+     * Queues a draw-target change to a sprite; it takes effect when the batch is flushed.
+     */
     @Override
     public void setDrawTarget(Sprite sprite) {
         enqueueDrawCommand(CMD_SET_DRAW_TARGET_SPRITE, null, sprite == null ? MemorySegment.NULL : sprite.getSpritePtr());
     }
 
+    /**
+     * Queues a draw-target change to a layer; it takes effect when the batch is flushed.
+     */
     @Override
     public void setDrawTarget(int layer, boolean dirty) {
         enqueueDrawCommand(CMD_SET_DRAW_TARGET_LAYER, null, MemorySegment.NULL, layer, dirty ? 1 : 0);
     }
 
+    /**
+     * Queues fixed-width bitmap text for the end-of-frame batch.
+     */
     @Override
     public void drawString(int x, int y, String text, Pixel color, int scale) {
         enqueueDrawCommand(CMD_DRAW_STRING, text, MemorySegment.NULL, x, y, color.getRGBA(), scale);
     }
 
+    /**
+     * Queues proportional bitmap text for the end-of-frame batch.
+     */
     @Override
     public void drawStringProp(int x, int y, String text, Pixel color, int scale) {
         enqueueDrawCommand(CMD_DRAW_STRING_PROP, text, MemorySegment.NULL, x, y, color.getRGBA(), scale);
     }
 
+    /**
+     * Queues a full outlined circle draw command for the end-of-frame batch.
+     */
     @Override
     public void drawCircle(int x, int y, int radius, Pixel color) {
         enqueueDrawCommand(CMD_DRAW_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA(), 0xFF);
     }
 
+    /**
+     * Queues a masked outlined circle draw command for the end-of-frame batch.
+     */
     @Override
     public void drawCircle(int x, int y, int radius, Pixel color, int mask) {
         enqueueDrawCommand(CMD_DRAW_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA(), mask);
     }
 
+    /**
+     * Queues a filled circle draw command for the end-of-frame batch.
+     */
     @Override
     public void fillCircle(int x, int y, int radius, Pixel color) {
         enqueueDrawCommand(CMD_FILL_CIRCLE, null, MemorySegment.NULL, x, y, radius, color.getRGBA());
     }
 
+    /**
+     * Queues a pixel-mode change; following queued draw commands observe this order when flushed.
+     */
     @Override
     public void setPixelMode(PixelMode mode) {
         enqueueDrawCommand(CMD_SET_PIXEL_MODE, null, MemorySegment.NULL, mode.ordinal());
     }
 
+    /**
+     * Queues a custom pixel-mode function for batched software drawing.
+     */
     @Override
     public void setPixelMode(PixelModeFunction pixelModeFunction) {
         try {
@@ -176,31 +247,49 @@ public abstract class BatchedPixelGameEngine extends PixelGameEngine {
         }
     }
 
+    /**
+     * Queues a blend-factor change for batched alpha drawing.
+     */
     @Override
     public void setPixelBlend(float blend) {
         enqueueDrawCommand(CMD_SET_PIXEL_BLEND, null, MemorySegment.NULL, Float.floatToRawIntBits(blend));
     }
 
+    /**
+     * Queues a frame-buffer clear for the end-of-frame batch.
+     */
     @Override
     public void clear(Pixel color) {
         enqueueDrawCommand(CMD_CLEAR, null, MemorySegment.NULL, color.getRGBA());
     }
 
+    /**
+     * Queues a color/depth buffer clear for the end-of-frame batch.
+     */
     @Override
     public void clearBuffer(Pixel color, boolean depth) {
         enqueueDrawCommand(CMD_CLEAR_BUFFER, null, MemorySegment.NULL, color.getRGBA(), depth ? 1 : 0);
     }
 
+    /**
+     * Queues pixel-transfer enablement for the end-of-frame batch.
+     */
     @Override
     public void enablePixelTransfer(boolean enable) {
         enqueueDrawCommand(CMD_ENABLE_PIXEL_TRANSFER, null, MemorySegment.NULL, enable ? 1 : 0);
     }
 
+    /**
+     * Queues a decal-mode change for subsequent queued decal-related work.
+     */
     @Override
     public void setDecalMode(DecalMode mode) {
         enqueueDrawCommand(CMD_SET_DECAL_MODE, null, MemorySegment.NULL, mode.ordinal());
     }
 
+    /**
+     * Queues a decal-structure change for subsequent queued decal-related work.
+     */
     @Override
     public void setDecalStructure(DecalStructure structure) {
         enqueueDrawCommand(CMD_SET_DECAL_STRUCTURE, null, MemorySegment.NULL, structure.ordinal());
