@@ -58,7 +58,19 @@ public abstract class Vector2D<T extends Number> extends PointerClass {
 
     public abstract T distanceSquared(Vector2D<T> v);
 
+    /**
+     * Dot product of two vectors.
+     * @implNote  This has not been square rooted.
+     */
     public abstract T dot(Vector2D<T> v);
+
+    /**
+     * Dot product of this vector.
+     * @implNote  This has not been square rooted.
+     */
+    public final T dot() {
+        return dot(this);
+    }
 
     public abstract Vector2D<Float> normalize();
 
@@ -70,12 +82,15 @@ public abstract class Vector2D<T extends Number> extends PointerClass {
     public Vector2D<Float> toFloatVector() {
         return Vector2D.ofFloat(getX().floatValue(), getY().floatValue());
     }
+
     public Vector2D<Double> toDoubleVector() {
         return Vector2D.ofDouble(getX().doubleValue(), getY().doubleValue());
     }
+
     public Vector2D<Integer> toIntVector() {
         return Vector2D.ofInt(getX().intValue(), getY().intValue());
     }
+
     public Vector2D<Long> toLongVector() {
         return Vector2D.ofLong(getX().longValue(), getY().longValue());
     }
